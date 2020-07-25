@@ -84,7 +84,7 @@ else
 		# show root@ when we don't have colors
 		PS1='\u@\h \W \$ '
 	else
-		PS1='\u@\h \W \$ '
+		PS1='\u@\h \w \$ '
 	fi
 fi
 
@@ -137,7 +137,3 @@ ex ()
     echo "'$1' is not a valid file"
   fi
 }
-
-export NVM_DIR="$HOME/.nvm"
-[ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
-[ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
