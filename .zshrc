@@ -2,6 +2,7 @@
 alias ls="ls --color"
 alias ll="ls -lh"
 alias mv="mv -i"
+alias xopen="xdg-open"
 
 # Alias to dotfiles repository
 alias dotfiles='/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
@@ -208,3 +209,6 @@ esac
 
 # Set Vim in Shell
 bindkey -v
+
+# Pyenv Config
+eval "$(pyenv init -)"
