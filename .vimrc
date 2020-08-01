@@ -94,3 +94,7 @@ map <C-b> :NERDTreeToggle<CR>
 
 " Importing extra files
 source ~/.vimxc/coc.vim
+
+" Colorscheme
+set background=dark
+colorscheme gruvbox
