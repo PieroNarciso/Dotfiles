@@ -23264,6 +23264,7 @@ const manager_3 = tslib_1.__importDefault(__webpack_require__(255));
 const sources_1 = tslib_1.__importDefault(__webpack_require__(331));
 const types_1 = __webpack_require__(294);
 const util_1 = __webpack_require__(237);
+const clipboardy_1 = tslib_1.__importDefault(__webpack_require__(455));
 const workspace_1 = tslib_1.__importDefault(__webpack_require__(256));
 const logger = __webpack_require__(64)('plugin');
 class Plugin extends events_1.EventEmitter {
@@ -23353,9 +23354,16 @@ class Plugin extends events_1.EventEmitter {
         this.addAction('openLocalConfig', async () => {
             await workspace_1.default.openLocalConfig();
         });
-        this.addAction('openLog', () => {
+        this.addAction('openLog', async () => {
             let file = logger.getLogFile();
-            nvim.call(`coc#util#open_url`, [file], true);
+            try {
+                await clipboardy_1.default.write(file);
+            }
+            catch (e) {
+                await nvim.command(`let @*='${file.replace(/'/g, "''")}'`);
+            }
+            let level = process.env.NVIM_COC_LOG_LEVEL || 'info';
+            workspace_1.default.showMessage(`Copied filepath to clipboard, current log level: ${level}`, 'more');
         });
         this.addAction('attach', () => {
             return workspace_1.default.attach();
@@ -23458,7 +23466,7 @@ class Plugin extends events_1.EventEmitter {
         this.addAction('refreshSource', async (name) => {
             await sources_1.default.refresh(name);
         });
-        this.addAction('tokenSource', name => {
+        this.addAction('toggleSource', name => {
             sources_1.default.toggleSource(name);
         });
         this.addAction('diagnosticInfo', async () => {
@@ -23680,7 +23688,7 @@ class Plugin extends events_1.EventEmitter {
         });
     }
     get version() {
-        return workspace_1.default.version + ( true ? '-' + "285a133071" : undefined);
+        return workspace_1.default.version + ( true ? '-' + "0ff42027ff" : undefined);
     }
     hasAction(method) {
         return this.actions.has(method);
@@ -25235,6 +25243,7 @@ const mutex_1 = __webpack_require__(254);
 const position_1 = __webpack_require__(310);
 const string_1 = __webpack_require__(309);
 const watchman_1 = tslib_1.__importDefault(__webpack_require__(323));
+const object_1 = __webpack_require__(248);
 const logger = __webpack_require__(64)('workspace');
 let NAME_SPACE = 1080;
 class Workspace {
@@ -25673,16 +25682,25 @@ class Workspace {
                     }
                 }
                 let changedMap = new Map();
-                for (let change of documentChanges) {
+                // let changes: Map<string, TextEdit[]> = new Map()
+                let textEdits = [];
+                for (let i = 0; i < documentChanges.length; i++) {
+                    let change = documentChanges[i];
                     if (index_1.isDocumentEdit(change)) {
                         let { textDocument, edits } = change;
-                        if (vscode_uri_1.URI.parse(textDocument.uri).toString() == uri)
-                            currEdits = edits;
+                        let next = documentChanges[i + 1];
+                        textEdits.push(...edits);
+                        if (next && index_1.isDocumentEdit(next) && object_1.equals(next.textDocument, textDocument)) {
+                            continue;
+                        }
                         let doc = await this.loadFile(textDocument.uri);
-                        await doc.applyEdits(edits);
-                        for (let edit of edits) {
+                        if (textDocument.uri == uri)
+                            currEdits = textEdits;
+                        await doc.applyEdits(textEdits);
+                        for (let edit of textEdits) {
                             locations.push({ uri: doc.uri, range: edit.range });
                         }
+                        textEdits = [];
                     }
                     else if (vscode_languageserver_protocol_1.CreateFile.is(change)) {
                         let file = vscode_uri_1.URI.parse(change.uri).fsPath;
@@ -41619,7 +41637,7 @@ class Extensions {
     async reloadExtension(id) {
         let item = this.extensions.get(id);
         if (!item) {
-            workspace_1.default.showMessage(`Extension ${id} not registed`, 'error');
+            workspace_1.default.showMessage(`Extension ${id} not registered`, 'error');
             return;
         }
         if (item.type == types_1.ExtensionType.Internal) {
@@ -41784,7 +41802,7 @@ class Extensions {
         }
         let item = this.extensions.get(id);
         if (!item) {
-            throw new Error(`Extension ${id} not registed!`);
+            throw new Error(`Extension ${id} not registered!`);
         }
         let { extension } = item;
         if (extension.isActive)
@@ -41806,7 +41824,7 @@ class Extensions {
     async call(id, method, args) {
         let item = this.extensions.get(id);
         if (!item)
-            throw new Error(`extension ${id} not registed`);
+            throw new Error(`extension ${id} not registered`);
         let { extension } = item;
         if (!extension.isActive) {
             await this.activate(id);
@@ -42459,7 +42477,7 @@ class Installer {
         this.log(`Using npm from: ${this.npm}`);
         let info = await this.getInfo();
         if (version && info.version && semver_1.default.gte(version, info.version)) {
-            this.log(`Current version ${version}  is up to date.`);
+            this.log(`Current version ${version} is up to date.`);
             return;
         }
         let required = info['engines.coc'] ? info['engines.coc'].replace(/^\^/, '>=') : '';
@@ -70248,8 +70266,6 @@ class Complete {
         let followPart = (!fixInsertedWord || cid == 0) ? '' : this.getFollowPart();
         if (results.length == 0)
             return [];
-        // max score of high priority source
-        let maxScore = 0;
         let arr = [];
         let codes = fuzzy_1.getCharCodes(input);
         let words = new Set();
@@ -70273,10 +70289,6 @@ class Complete {
                     continue;
                 let score = item.kind && filterText == input ? 64 : match_1.matchScore(filterText, codes);
                 if (input.length && score == 0)
-                    continue;
-                if (priority > 90)
-                    maxScore = Math.max(maxScore, score);
-                if (maxScore > 5 && priority <= 10 && score < maxScore)
                     continue;
                 if (followPart.length && !item.isSnippet) {
                     if (item.word.endsWith(followPart)) {
