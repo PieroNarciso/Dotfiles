@@ -1,6 +1,6 @@
 # Custom Bindings
 alias ls="ls --color"
-alias ll="ls -alh"
+alias ll="ls -alhF"
 alias mv="mv -i"
 alias xopen="xdg-open"
 
