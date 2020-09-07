@@ -43,6 +43,7 @@ set backspace=indent,eol,start
 " Tab configuration
 set softtabstop=4
 set shiftwidth=4
+set autoindent
 set noexpandtab
 set smartindent
 set cindent
@@ -52,7 +53,8 @@ autocmd Filetype python setlocal sw=4 sts=4 expandtab
 autocmd Filetype html setlocal sw=2 sts=2 expandtab
 autocmd Filetype vue setlocal sw=2 sts=2 expandtab
 autocmd Filetype javascript setlocal sw=2 sts=2 expandtab
-autocmd Filetype typescript setlocal sw=2 sts=2 expandtab
+autocmd Filetype typescript setlocal sw=4 sts=4 expandtab
+autocmd Filetype mason setlocal sw=2 sts=2 expandtab
 
 
 " By default, Vim doesn't let you hide a buffer (i.e. have a buffer that isn't
