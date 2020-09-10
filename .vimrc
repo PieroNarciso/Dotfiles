@@ -99,11 +99,11 @@ inoremap <Right> <ESC>:echoe "Use l"<CR>
 inoremap <Up>    <ESC>:echoe "Use k"<CR>
 inoremap <Down>  <ESC>:echoe "Use j"<CR>
 
-"Mapping customs keys
-map <C-b> :NERDTreeToggle<CR>
 
 " Importing extra files
 source ~/.vimxc/coc.vim
+source ~/.vimxc/easymotion.vim
+source ~/.vimxc/nerdtree.vim
 
 " Colorscheme
 set background=dark
