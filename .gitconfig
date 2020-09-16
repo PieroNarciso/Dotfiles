@@ -1,0 +1,7 @@
+[user]
+	name = Piero Narciso
+	email = pieronarciso988@gmail.com
+[core]
+	editor = vim
+[diff]
+	tool = vimdiff
