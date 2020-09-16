@@ -1,6 +1,6 @@
 *coc-nvim.txt*				LSP support for Vim & Neovim.
 
-Version: 0.0.78
+Version: 0.0.79
 Author: Qiming Zhao <chemzqm at gmail.com>
 License: MIT license
 
@@ -340,6 +340,14 @@ Built-in configurations:~
 
 	Enable highlighting line numbers for diagnostics, only works with
 	neovim and `diagnostic.enableSign` is true.
+
+	default: `true`
+
+"diagnostic.locationlistUpdate"~
+
+	Update locationlist on diagnostics change, only works with
+	locationlist opened by :CocDiagnostics command and first window of
+	associated buffer.
 
 	default: `true`
 
@@ -790,6 +798,8 @@ Built-in configurations:~
 	- "disableCompletion": Disable completion feature for this
 	  languageserver.
 
+	- "formatterPriority": Priority of this languageserver's fomatter.
+
 	- "revealOutputChannelOn": Configure message level to show the output
 	  channel buffer.
 
@@ -1017,7 +1027,7 @@ normal mode, `v_` works for visual mode.
 
 <Plug>(coc-fix-current)					*n_coc-fix-current*
 
-	Try to run quickfix action for diagnostics on the current line.
+	Try first quickfix action for diagnostics on the current line.
 
 <Plug>(coc-float-hide)					*n_coc-float-hide*
 
@@ -1097,8 +1107,13 @@ VARIABLES						*coc-variables*
 b:coc_enabled						*b:coc_enabled*
 
 	Set to `0` on buffer create if you don't want coc.nvim receive content
-	from buffer, usually used for improve performance with large files.
-
+	from buffer. Normally used with |BufAdd| autocmd, ex:
+>
+	" Disable file with size > 1MB
+	autocmd BufAdd * if getfsize(expand('<afile>')) > 1024*1024 |
+				\ let b:coc_enabled=0 |
+				\ ndif
+<
 b:coc_root_patterns					*b:coc_root_patterns*
 
 	Root patterns used for resolving workspaceFolder for
@@ -1142,6 +1157,18 @@ b:coc_current_function					*b:coc_current_function*
 	Set `"coc.preferences.currentFunctionSymbolAutoUpdate": true`
 	in coc-settings.json to update it on CursorHold.
 
+g:coc_disable_startup_warning 				*g:coc_disable_startup_warning*
+
+	Disable possible warning on startup for old vim/node version.
+
+	Default: 0
+
+g:coc_disable_uncaught_error 				 *g:coc_disable_uncaught_error*
+
+	Disable uncaught error messages from node process of coc.nvim.
+
+	Default: 0
+	
 g:coc_channel_timeout					*g:coc_channel_timeout*
 
 	Channel timeout in seconds for request to node client.
@@ -2041,7 +2068,7 @@ COMMANDS						*coc-commands*
 
 :CocOpenLog						*:CocOpenLog*
 
-	Copy filepath of log to system clipboard. 
+	Open log file of coc.nvim.
 
 	Use environmental variable `NVIM_COC_LOG_FILE` for fixed log file.
 	Note: the log would be cleared when coc.nvim started.
