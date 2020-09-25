@@ -75,7 +75,7 @@ set smartcase
 " Enable searching as you type, rather than waiting till you press enter.
 set incsearch
 " Enable highlighting searching
-set hlsearch
+" set hlsearch
 
 " Unbind some useless/annoying default key bindings.
 nmap Q <Nop> " 'Q' in normal mode enters Ex mode. You almost never want this.
