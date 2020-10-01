@@ -105,7 +105,7 @@ bindsym $mod+e layout toggle split
 bindsym $mod+Shift+space floating toggle
 
 # change focus between tiling / floating windows
-bindsym $mod+space focus mode_toggle
+#bindsym $mod+space focus mode_toggle
 
 # focus the parent container
 bindsym $mod+a focus parent
@@ -193,10 +193,8 @@ bindsym $mod+r mode "resize"
 
 # Start i3bar to display a workspace bar (plus the system information i3status
 # finds out, if available)
-bar {
-        status_command i3status
-	position       top
-}
+# Using polybar (yay -S polybar)
+exec_always --no-startup-id $HOME/.config/polybar/launch.sh
 
 # i3 Gaps
 for_window [class="^.*"] border pixel 2
@@ -208,6 +206,10 @@ exec --no-startup-id setxkbmap -option caps:escape
 
 # Disable mouse accel
 exec_always --no-startup-id xinput --set-prop 11 'libinput Accel Profile Enabled' 0, 1
+
+# Set keyboard layout 
+exec "setxkbmap -layout us,us -variant ,altgr-intl"
+exec "setxkbmap -option 'grp:win_space_toggle'"
 
 # Set background color/image
 exec --no-startup-id xsetroot -solid "#706f6f"
