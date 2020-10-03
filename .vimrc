@@ -103,6 +103,16 @@ inoremap <Right> <ESC>:echoe "Use l"<CR>
 inoremap <Up>    <ESC>:echoe "Use k"<CR>
 inoremap <Down>  <ESC>:echoe "Use j"<CR>
 
+call plug#begin('~/.vim/plugged')
+    Plug 'scrooloose/nerdtree' 
+    Plug 'ctrlpvim/ctrlp.vim'
+    Plug 'yggdroot/indentline'
+    Plug 'neoclide/coc.nvim', {'branch': 'release'}
+    Plug 'itchyny/lightline.vim'
+    Plug 'tpope/vim-surround'
+    Plug 'easymotion/vim-easymotion'
+    Plug 'posva/vim-vue'
+call plug#end()
 
 " Importing extra files
 source ~/.vimxc/coc.vim
