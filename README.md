@@ -12,7 +12,7 @@ $ alias dotfiles='/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
 $ echo ".dotfiles" >> .gitignore
 ```
 
-* Clone this this repository in a `bare` repository.
+* Clone this repository in a `bare` repository.
 
 ```bash
 git clone --bare https://github.com/PieroNarciso/Dotfiles.git $HOME/.dotfiles
