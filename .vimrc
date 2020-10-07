@@ -108,16 +108,20 @@ call plug#begin('~/.vim/plugged')
     Plug 'ctrlpvim/ctrlp.vim'
     Plug 'yggdroot/indentline'
     Plug 'neoclide/coc.nvim', {'branch': 'release'}
-    Plug 'itchyny/lightline.vim'
+    "Plug 'itchyny/lightline.vim'
+    Plug 'vim-airline/vim-airline'
+    Plug 'vim-airline/vim-airline-themes'
+    Plug 'edkolev/tmuxline.vim'
     Plug 'tpope/vim-surround'
     Plug 'easymotion/vim-easymotion'
     Plug 'posva/vim-vue'
 call plug#end()
 
 " Importing extra files
-source ~/.vimxc/coc.vim
-source ~/.vimxc/easymotion.vim
-source ~/.vimxc/nerdtree.vim
+source ~/.vim/plugins/coc.vim
+source ~/.vim/plugins/easymotion.vim
+source ~/.vim/plugins/nerdtree.vim
+source ~/.vim/plugins/airline.vim
 
 " Colorscheme
 set background=dark
