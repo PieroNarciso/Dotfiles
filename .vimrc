@@ -104,24 +104,32 @@ inoremap <Up>    <ESC>:echoe "Use k"<CR>
 inoremap <Down>  <ESC>:echoe "Use j"<CR>
 
 call plug#begin('~/.vim/plugged')
-    Plug 'scrooloose/nerdtree' 
-    Plug 'ctrlpvim/ctrlp.vim'
+    "" Utilities
     Plug 'yggdroot/indentline'
+    Plug 'tpope/vim-surround'
+    Plug 'easymotion/vim-easymotion'
+    Plug 'chiel92/vim-autoformat'
+
+    "" Integration
+    Plug 'scrooloose/nerdtree' 
+    Plug 'xuyuanp/nerdtree-git-plugin'
+    Plug 'ctrlpvim/ctrlp.vim'
+
+    "" Language support
     Plug 'neoclide/coc.nvim', {'branch': 'release'}
-    "Plug 'itchyny/lightline.vim'
+    Plug 'posva/vim-vue'
+
+    "" Interface
     Plug 'vim-airline/vim-airline'
     Plug 'vim-airline/vim-airline-themes'
     Plug 'edkolev/tmuxline.vim'
-    Plug 'tpope/vim-surround'
-    Plug 'easymotion/vim-easymotion'
-    Plug 'posva/vim-vue'
 call plug#end()
 
 " Importing extra files
-source ~/.vim/plugins/coc.vim
-source ~/.vim/plugins/easymotion.vim
-source ~/.vim/plugins/nerdtree.vim
-source ~/.vim/plugins/airline.vim
+source $HOME/.vim/plugins/coc.vim
+source $HOME/.vim/plugins/easymotion.vim
+source $HOME/.vim/plugins/nerdtree.vim
+source $HOME/.vim/plugins/airline.vim
 
 " Colorscheme
 set background=dark
