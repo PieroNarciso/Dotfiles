@@ -1,16 +1,12 @@
-# Custom Bindings
-alias ls="ls --color"
-alias ll="ls -alhF"
-alias mv="mv -i"
-alias xopen="xdg-open"
-
 # Alias to dotfiles repository
 alias dotfiles='/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
 
 # Setup NVM
 source /usr/share/nvm/init-nvm.sh
 
-## Options section
+#####################
+## Options section ##
+#####################
 setopt correct                                                  # Auto correct mistakes
 setopt extendedglob                                             # Extended globbing. Allows using regular expressions with *
 setopt nocaseglob                                               # Case insensitive globbing
@@ -37,7 +33,9 @@ SAVEHIST=500
 WORDCHARS=${WORDCHARS//\/[&.;]}                                 # Don't consider certain characters part of the word
 
 
-## Keybindings section
+#########################
+## Keybindings section ##
+#########################
 bindkey -e
 bindkey '^[[7~' beginning-of-line                               # Home key
 bindkey '^[[H' beginning-of-line                                # Home key
@@ -64,13 +62,25 @@ bindkey '^[[1;5C' forward-word                                  #
 bindkey '^H' backward-kill-word                                 # delete previous word with ctrl+backspace
 bindkey '^[[Z' undo                                             # Shift+tab undo last action
 
-## Alias section 
+###################
+## Alias section ##
+###################
 alias cp="cp -i"                                                # Confirm before overwriting something
 alias df='df -h'                                                # Human-readable sizes
 alias free='free -m'                                            # Show sizes in MB
 alias gitu='git add . && git commit && git push'
+alias ll="ls -alhF"
+alias mv="mv -i"                                                # Prompt to overwrite
+alias xopen="xdg-open"
+## Colored output ##
+alias ls="ls --color=auto"
+alias diff="diff --color=auto"
+alias grep="grep --color=auto"
+alias ip="ip -color=auto"
 
-# Theming section  
+#####################
+## Theming section ##
+#####################
 autoload -U compinit colors zcalc
 compinit -d
 colors
