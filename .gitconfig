@@ -1,7 +1,41 @@
 [user]
-	name = Piero Narciso
-	email = pieronarciso988@gmail.com
+    name = Piero Narciso
+    email = pieronarciso988@gmail.com
+
+[init]
+    defaultBranch = main
+
 [core]
-	editor = vim
+    editor = vim
+
 [diff]
-	tool = vimdiff
+    tool = vimdiff
+
+[merge]
+    tool = vimdiff
+
+[pull]
+    ff = only
+
+[pager]
+    log = false
+    diff = false
+    show = false
+    branch = false
+
+[color]
+    ui = auto
+[color "status"]
+    changed = yellow
+    untracked = red
+    added = green bold
+
+[alias]
+    a = add
+    aa = add --all
+    c = commit --verbose
+    co = checkout
+    b = branch
+    cl = clone
+    pu = push
+    re = reset
