@@ -4,6 +4,7 @@ alias dotfiles='/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
 # Setup NVM
 source /usr/share/nvm/init-nvm.sh
 
+
 #####################
 ## Options section ##
 #####################
@@ -177,6 +178,12 @@ export LESS_TERMCAP_ue=$'\E[0m'
 export LESS_TERMCAP_us=$'\E[01;36m'
 export LESS=-r
 
+#############
+## VI MODE ##
+#############
+bindkey -v
+export KEYTIMEOUT=1
+
 
 ## Plugins section: Enable fish style features
 # Use syntax highlighting
@@ -189,6 +196,12 @@ bindkey "$terminfo[kcuu1]" history-substring-search-up
 bindkey "$terminfo[kcud1]" history-substring-search-down
 bindkey '^[[A' history-substring-search-up			
 bindkey '^[[B' history-substring-search-down
+bindkey '^R' history-incremental-search-backward             # Search commands in history
+bindkey '^P' history-beginning-search-backward
+bindkey '^N' history-beginning-search-forward
+
+bindkey -M vicmd 'k' history-substring-search-up
+bindkey -M vicmd 'j' history-substring-search-down
 
 # Apply different settigns for different terminals
 case $(basename "$(cat "/proc/$PPID/comm")") in
@@ -222,9 +235,6 @@ case $(basename "$(cat "/proc/$PPID/comm")") in
   		ZSH_AUTOSUGGEST_HIGHLIGHT_STYLE='fg=8'
     ;;
 esac
-
-# Set Vim in Shell
-bindkey -v
 
 # Pyenv Config
 eval "$(pyenv init -)"
