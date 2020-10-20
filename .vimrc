@@ -118,6 +118,7 @@ call plug#begin('~/.vim/plugged')
     Plug 'tpope/vim-surround'
     Plug 'easymotion/vim-easymotion'
     Plug 'chiel92/vim-autoformat'
+    Plug 'tpope/vim-commentary'
 
     "" Integration
     Plug 'scrooloose/nerdtree' 
@@ -133,6 +134,7 @@ call plug#begin('~/.vim/plugged')
     Plug 'vim-airline/vim-airline-themes'
     Plug 'edkolev/tmuxline.vim'
 call plug#end()
+
 
 " Importing extra files
 source $HOME/.vim/plugins/coc.vim
