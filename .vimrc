@@ -129,6 +129,9 @@ call plug#begin('~/.vim/plugged')
     Plug 'neoclide/coc.nvim', {'branch': 'release'}
     Plug 'posva/vim-vue'
 
+    "" Syntax Highlighting
+    Plug 'octol/vim-cpp-enhanced-highlight'
+
     "" Interface
     Plug 'vim-airline/vim-airline'
     Plug 'vim-airline/vim-airline-themes'
