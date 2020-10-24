@@ -29,3 +29,20 @@ $ dotfiles checkout
 ```bash
 $ dotfiles config --local status.showUntrackedFiles no
 ```
+
+# i3
+
+## Configuration for keyboard
+
+Create this file in `/etc/X11/xorg.conf.d/00-keyboard.conf`
+
+```bash
+Section "InputClass"
+        Identifier "system-keyboard"
+        MatchIsKeyboard "on"
+        Option "XkbLayout" "us,us"
+        Option "XkbModel" "pc105"
+        Option "XkbVariant" ",altgr-intl"
+        Option "XkbOptions" "grp:win_space_toggle,caps:escape"
+EndSection
+```
