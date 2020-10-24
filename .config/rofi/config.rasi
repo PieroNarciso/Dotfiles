@@ -1,0 +1,5 @@
+configuration {
+	modi: "drun,run";
+	theme: "/usr/share/rofi/themes/Arc-Dark.rasi";
+	font: "hack 12";
+}
