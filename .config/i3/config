@@ -95,7 +95,7 @@ bindsym $mod+d exec rofi -show drun
 
 # Screenshot with `maim`
 bindsym --release Print exec maim | xclip -selection clipboard -t image/png
-bindsym --release Control+Shift+Print exec maim -s | xclip -selection clipboard -t image/png
+bindsym --release Control+Shift+Print exec "maim -s -n -l -c 0.157,0.333,0.466,0.4 | xclip -selection clipboard -t image/png"
 
 
 ######################
