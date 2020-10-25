@@ -15,8 +15,21 @@
 #############
 
 set $mod Mod4
-set $background /home/piero/.local/share/wallpapers/ArchLinuxCustom/1776218.jpg
 
+
+###################
+## DESIGN CONFIG ##
+###################
+# Using polybar (yay -S polybar)
+exec_always --no-startup-id $HOME/.config/polybar/launch.sh
+
+# Set background
+exec --no-startup-id feh --bg-scale $HOME/.local/share/wallpapers/arch-linux-wp.jpg
+
+# i3 Gaps
+for_window [class="^.*"] border pixel 3
+gaps inner 8
+gaps outer 2
 
 # Font for window titles. Will also be used by the bar unless a different font
 # is used in the bar {} block below.
@@ -24,7 +37,7 @@ set $background /home/piero/.local/share/wallpapers/ArchLinuxCustom/1776218.jpg
 
 # This font is widely installed, provides lots of unicode glyphs, right-to-left
 # text rendering and scalability on retina/hidpi displays (thanks to pango).
-font pango:DejaVu Sans Mono 8
+font pango:Droid Sans Mono 8
 
 # The combination of xss-lock, nm-applet and pactl is a popular choice, so
 # they are included here as an example. Modify as you see fit.
