@@ -46,3 +46,16 @@ Section "InputClass"
         Option "XkbOptions" "grp:win_space_toggle,caps:escape"
 EndSection
 ```
+## Configuration for Mouse Acceleration
+
+Create file in `/etc/X11/xorg.conf.d/50-mouse-accelaration.conf`
+
+```bash
+Section "InputClass"
+	Identifier "Logitech G403"
+	Driver "libinput"
+	MatchIsPointer "yes"
+	Option "AccelProfile" "flat"
+	Option "AccelSpeed" "0"
+EndSection
+```
