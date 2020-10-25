@@ -256,7 +256,10 @@ bindsym $mod+r mode "resize"
 ###################
 
 # Audio system tray icon
-exec --no-startup-id pasystray
+exec --no-startup-id pasystray --volume-max 150
+
+# Mic system tray icon
+exec --no-startup-id mictray
 
 # Clipboard manager (xfce4-clipman-plugin)
 exec --no-startup-id xfce4-clipman
