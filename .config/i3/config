@@ -79,7 +79,9 @@ bindsym $mod+d exec rofi -show drun
 # installed.
 # bindsym $mod+d exec --no-startup-id i3-dmenu-desktop
 
-## Quick Start Applications
+# Screenshot with `maim`
+bindsym --release Print exec maim | xclip -selection clipboard -t image/png
+bindsym --release Control+Shift+Print exec maim -s | xclip -selection clipboard -t image/png
 
 
 # change focus
