@@ -234,20 +234,35 @@ bindsym $mod+r mode "resize"
 #     position top
 # }
 
-# i3 Gaps
-for_window [class="^.*"] border pixel 2
-gaps inner 10
-gaps outer 2
+
+
+####################
+## STARTUP CONFIG ##
+####################
 
 # Bind Caps Lock to Esc
-exec --no-startup-id setxkbmap -option caps:escape
+#exec --no-startup-id setxkbmap -option caps:escape
 
 # Disable mouse accel
-exec_always --no-startup-id xinput --set-prop 11 'libinput Accel Profile Enabled' 0, 1
+# exec_always --no-startup-id xinput --set-prop 11 'libinput Accel Profile Enabled' 0, 1
 
 # Set keyboard layout 
-exec "setxkbmap -layout us,us -variant ,altgr-intl"
-exec "setxkbmap -option 'grp:win_space_toggle'"
+#exec --no-startup-id "setxkbmap -layout us,us -variant ,altgr-intl"
+#exec --no-startup-id "setxkbmap -option 'grp:win_space_toggle'"
 
-# Set background color/image
-exec --no-startup-id xsetroot -solid "#706f6f"
+###################
+## INIT PROGRAMS ##
+###################
+
+# Audio system tray icon
+exec --no-startup-id pasystray
+
+# Clipboard manager (xfce4-clipman-plugin)
+exec --no-startup-id xfce4-clipman
+
+# NetworkManager is the most popular way to manage wireless networks on Linux,
+# and nm-applet is a desktop environment-independent system tray GUI for it.
+exec --no-startup-id nm-applet
+
+# Start compositor
+exec --no-startup-id picom
