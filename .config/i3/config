@@ -229,8 +229,10 @@ bindsym $mod+r mode "resize"
 
 # Start i3bar to display a workspace bar (plus the system information i3status
 # finds out, if available)
-# Using polybar (yay -S polybar)
-exec_always --no-startup-id $HOME/.config/polybar/launch.sh
+# bar {
+#     status_command i3status
+#     position top
+# }
 
 # i3 Gaps
 for_window [class="^.*"] border pixel 2
