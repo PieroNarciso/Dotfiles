@@ -13,8 +13,9 @@
 #############
 # Variables #
 #############
-
 set $mod Mod4
+set $volumeStatusNotify $HOME/.config/i3/scripts/volumeStatusNotify.sh
+set $micStatusNotify $HOME/.config/i3/scripts/micStatusNotify.sh
 
 
 ###################
@@ -50,20 +51,29 @@ exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork
 #########################
 ## MEDIA CONFIGURATION ##
 #########################
-
 # Use pactl to adjust volume in PulseAudio.
-bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ +5%
-bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ -5%
-bindsym XF86AudioMute exec --no-startup-id pactl set-sink-mute @DEFAULT_SINK@ toggle
-bindsym XF86AudioMicMute exec --no-startup-id pactl set-source-mute @DEFAULT_SOURCE@ toggle
+# bindsym XF86AudioRaiseVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ +5%
+# bindsym XF86AudioLowerVolume exec --no-startup-id pactl set-sink-volume @DEFAULT_SINK@ -5%
+# bindsym XF86AudioMute exec --no-startup-id pactl set-sink-mute @DEFAULT_SINK@ toggle
+# bindsym XF86AudioMicMute exec --no-startup-id pactl set-source-mute @DEFAULT_SOURCE@ toggle
+
+bindsym XF86AudioRaiseVolume exec --no-startup-id amixer -q sset -M Master 5%+ && $volumeStatusNotify
+bindsym XF86AudioLowerVolume exec --no-startup-id amixer -q sset -M Master 5%- && $volumeStatusNotify
+bindsym XF86AudioMute exec --no-startup-id amixer -q sset Master toggle && $volumeStatusNotify
+
+# User playerctl to control media
+bindsym XF86AudioPlay exec --no-startup-id playerctl play-pause
+bindsym XF86AudioNext exec --no-startup-id playerctl next
+bindsym XF86AudioPrev exec --no-startup-id playerctl previous
+bindsym XF86AudioStop exec --no-startup-id playerctl stop
 
 # Mute microphone
-bindsym --release $mod+Control+m exec --no-startup-id pactl set-source-mute 2 toggle && pactl set-source-mute 3 toggle
+bindsym --release $mod+Control+m exec --no-startup-id amixer -q sset Capture toggle && $micStatusNotify
+
 
 ##################
 ## KEY BINDINGS ##
 ##################
-
 # Use Mouse+$mod to drag floating windows to their wanted position
 floating_modifier $mod
 
