@@ -80,6 +80,9 @@ floating_modifier $mod
 # start a terminal with alacritty
 bindsym $mod+Return exec alacritty
 
+# Start file manager (thunar)
+bindsym $mod+e exec thunar
+
 # kill focused window
 bindsym $mod+Shift+q kill
 
@@ -98,7 +101,6 @@ bindsym --release Control+Shift+Print exec maim -s | xclip -selection clipboard 
 ######################
 ## WINDOWS BINDINGS ##
 ######################
-
 # change focus
 bindsym $mod+h focus left
 bindsym $mod+j focus down
