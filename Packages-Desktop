@@ -13,7 +13,6 @@ cronie
 discord
 docker-compose
 dunst
-fakeroot
 flex
 gcc
 google-cloud-sdk
@@ -21,9 +20,11 @@ grub
 htop
 i3blocks
 intel-ucode
-kvantum-qt5
+lib32-libappindicator-gtk2
+lib32-libappindicator-gtk3
+libappindicator-gtk2
 libreoffice-fresh
-lightdm-webkit-theme-litarvan
+lightdm-webkit-theme-aether
 lxappearance-gtk3
 maim
 make
@@ -38,6 +39,7 @@ numlockx
 nvidia
 nvidia-lts
 nvm
+pacman-contrib
 papirus-icon-theme
 pasystray
 patch
@@ -47,6 +49,7 @@ playerctl
 polybar
 pyenv
 qt5-doc
+qt5ct
 ranger
 reflector
 rofi
