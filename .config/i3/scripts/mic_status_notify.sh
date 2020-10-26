@@ -4,7 +4,6 @@ icon_activate="notification-microphone-sensitivity-high"
 icon_muted="notification-microphone-sensitivity-muted"
 
 status="$(amixer get Capture | tail -1 | awk '{print $6}' | sed 's/[^a-z]*//g')"
-echo $status
 
 if [[ "$status" == "on" ]]; then
     # Notification for mic activated
