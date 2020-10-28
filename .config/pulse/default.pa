@@ -135,7 +135,7 @@ load-module module-filter-apply
 
 
 ### Enable Echo/Noise-Cancellation
-load-module module-echo-cancel use_master_format=1 aec_method=webrtc aec_args="analog_gain_control=0 digital_gain_control=0" source_name=echoCancel_source sink_name=echoCancel_sink
+load-module module-echo-cancel use_master_format=1 aec_method=webrtc aec_args="analog_gain_control=0 digital_gain_control=0 noise_suppression=1" source_name=echoCancel_source sink_name=echoCancel_sink
 
 ### Make some devices default
 set-default-source echoCancel_source
