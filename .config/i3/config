@@ -28,8 +28,8 @@ exec_always --no-startup-id $HOME/.config/polybar/launch.sh
 exec --no-startup-id feh --bg-scale $HOME/.local/share/wallpapers/arch-linux-wp.jpg
 
 # i3 Gaps
-for_window [class="^.*"] border pixel 3
-gaps inner 8
+for_window [class="^.*"] border pixel 2
+gaps inner 6
 gaps outer 2
 
 # Font for window titles. Will also be used by the bar unless a different font
@@ -38,14 +38,7 @@ gaps outer 2
 
 # This font is widely installed, provides lots of unicode glyphs, right-to-left
 # text rendering and scalability on retina/hidpi displays (thanks to pango).
-font pango:Droid Sans Mono 8
-
-# The combination of xss-lock, nm-applet and pactl is a popular choice, so
-# they are included here as an example. Modify as you see fit.
-
-# xss-lock grabs a logind suspend inhibit lock and will use i3lock to lock the
-# screen before suspend. Use loginctl lock-session to lock your screen.
-exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork
+font pango:Droid Sans Mono 11
 
 
 #########################
@@ -252,7 +245,6 @@ bindsym $mod+r mode "resize"
 ####################
 ## STARTUP CONFIG ##
 ####################
-
 # Bind Caps Lock to Esc
 #exec --no-startup-id setxkbmap -option caps:escape
 
@@ -263,12 +255,19 @@ bindsym $mod+r mode "resize"
 #exec --no-startup-id "setxkbmap -layout us,us -variant ,altgr-intl"
 #exec --no-startup-id "setxkbmap -option 'grp:win_space_toggle'"
 
+
 ###################
 ## INIT PROGRAMS ##
 ###################
+# xss-lock grabs a logind suspend inhibit lock and will use i3lock to lock the
+# screen before suspend. Use loginctl lock-session to lock your screen.
+exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork -i $HOME/.local/share/wallpapers/arch-linux-wp-blur.png
+
+# Polkit authentication agent
+exec --no-startup-id /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1
 
 # Audio system tray icon
-exec --no-startup-id pasystray --volume-max 150
+exec --no-startup-id pasystray --volume-max 100
 
 # Mic system tray icon
 exec --no-startup-id mictray
