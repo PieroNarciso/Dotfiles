@@ -13,5 +13,5 @@ else
     # Show the sound activate notification
     bar=$(seq -s "─" $(($volume / 5)) | sed 's/[0-9]//g')
     dunstify -u low -i $icon_audio_activate -r "$msg_id" -t 2000 \
-	"Volume: ${volume}%     $bar"
+	"Vol: ${volume}%  $bar"
 fi
