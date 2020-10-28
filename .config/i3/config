@@ -18,9 +18,9 @@ set $volumeStatusNotify $HOME/.config/i3/scripts/volume_status_notify.sh
 set $micStatusNotify $HOME/.config/i3/scripts/mic_status_notify.sh
 
 
-###################
-## DESIGN CONFIG ##
-###################
+#########################
+## DESIGN/THEME CONFIG ##
+#########################
 # Using polybar (yay -S polybar)
 exec_always --no-startup-id $HOME/.config/polybar/launch.sh
 
@@ -39,6 +39,16 @@ gaps outer 2
 # This font is widely installed, provides lots of unicode glyphs, right-to-left
 # text rendering and scalability on retina/hidpi displays (thanks to pango).
 font pango:Droid Sans Mono 11
+
+## Default config
+#			|------ Titlebar -----|
+# class                 border  backgr. text    indicator child_border
+client.focused          #4c7899 #285577 #ffffff #2e9ef4   #285577
+client.focused_inactive #333333 #5f676a #ffffff #484e50   #5f676a
+client.unfocused        #333333 #222222 #888888 #292d2e   #222222
+client.urgent           #2f343a #900000 #ffffff #900000   #900000
+client.placeholder      #000000 #0c0c0c #ffffff #000000   #0c0c0c
+client.background       #ffffff
 
 
 #########################
@@ -71,10 +81,10 @@ bindsym --release $mod+Control+m exec --no-startup-id amixer -q sset Capture tog
 floating_modifier $mod
 
 # start a terminal with alacritty
-bindsym $mod+Return exec alacritty
+bindsym $mod+Return exec --no-startup-id alacritty
 
-# Start file manager (thunar)
-bindsym $mod+e exec thunar
+# Start file manager (ranger)
+bindsym $mod+e exec --no-startup-id alacritty -e ranger
 
 # kill focused window
 bindsym $mod+Shift+q kill
@@ -87,8 +97,8 @@ bindsym $mod+d exec rofi -show drun
 # bindsym $mod+d exec --no-startup-id i3-dmenu-desktop
 
 # Screenshot with `maim`
-bindsym --release Print exec maim | xclip -selection clipboard -t image/png
-bindsym --release Control+Shift+Print exec "maim -s -n -l -c 0.157,0.333,0.466,0.4 | xclip -selection clipboard -t image/png"
+bindsym --release Print exec --no-startup-id "maim | xclip -selection clipboard -t image/png"
+bindsym --release Control+Shift+Print exec --no-startup-id "maim -s -n -l -c 0.157,0.333,0.466,0.4 | xclip -selection clipboard -t image/png"
 
 
 ######################
@@ -242,23 +252,9 @@ bindsym $mod+r mode "resize"
 
 
 
-####################
-## STARTUP CONFIG ##
-####################
-# Bind Caps Lock to Esc
-#exec --no-startup-id setxkbmap -option caps:escape
-
-# Disable mouse accel
-# exec_always --no-startup-id xinput --set-prop 11 'libinput Accel Profile Enabled' 0, 1
-
-# Set keyboard layout 
-#exec --no-startup-id "setxkbmap -layout us,us -variant ,altgr-intl"
-#exec --no-startup-id "setxkbmap -option 'grp:win_space_toggle'"
-
-
-###################
-## INIT PROGRAMS ##
-###################
+######################
+## STARTUP PROGRAMS ##
+######################
 # xss-lock grabs a logind suspend inhibit lock and will use i3lock to lock the
 # screen before suspend. Use loginctl lock-session to lock your screen.
 exec --no-startup-id xss-lock --transfer-sleep-lock -- i3lock --nofork -i $HOME/.local/share/wallpapers/arch-linux-wp-blur.png
