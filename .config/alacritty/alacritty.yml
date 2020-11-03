@@ -171,8 +171,10 @@ colors:
     # The dimmed foreground color is calculated automatically if it is not present.
     # If the bright foreground color is not set, or `draw_bold_text_with_bright_colors`
     # is `false`, the normal foreground color will be used.
-    #dim_foreground: '#eff0f1'
-    #bright_foreground: '#ffffff'
+    dim_foreground: '#eff0f1'
+    bright_foreground: '#ffffff'
+    dim_background: '#31363b'
+    bright_background: '#000000'
 
   # Cursor colors
   #
@@ -190,9 +192,9 @@ colors:
   #
   # Allowed values are CellForeground and CellBackground, which reference the
   # affected cell, or hexadecimal colors like #ff00ff.
-  #vi_mode_cursor:
-  #  text: CellBackground
-  #  cursor: CellForeground
+  vi_mode_cursor:
+    text: CellBackground
+    cursor: CellForeground
 
   # Selection colors
   #
@@ -227,7 +229,7 @@ colors:
     yellow: '#f67400'
     blue: '#1d99f3'
     magenta: '#9b59b6'
-    cyan: '#1abc9c'
+    cyan: '#21DEEF'
     white: '#fcfcfc'
 
   # Bright colors
@@ -238,23 +240,23 @@ colors:
     yellow: '#fdbc4b'
     blue: '#3daee9'
     magenta: '#8e44ad'
-    cyan: '#16a085'
-    white: '#ffffff'
-    
+    cyan:    '#73FBF1'
+    white:   '#ffffff'
+
 
   # Dim colors
   #
   # If the dim colors are not set, they will be calculated automatically based
   # on thee`normal` colors.
-  dim:
-    black: '#31363b'
-    red: '#783228'
-    green: '#17a262'
-    yellow: '#b65619'
-    blue: '#1b668f'
-    magenta: '#614a73'
-    cyan: '#186c60'
-    white: '#63686d'
+  # dim:
+    # black:   '#1d2021'
+    # red:     '#421e1e'
+    # green:   '#232b0f'
+    # yellow:  '#4d3b27'
+    # blue:    '#2b3c44'
+    # magenta: '#4e3d45'
+    # cyan:    '#205161'
+    # white:   '#f4e8ba'
 
   # Indexed Colors
   #
