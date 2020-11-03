@@ -119,6 +119,7 @@ call plug#begin('~/.vim/plugged')
     Plug 'easymotion/vim-easymotion'
     Plug 'chiel92/vim-autoformat'
     Plug 'tpope/vim-commentary'
+    " Plug 'jiangmiao/auto-pairs'
 
     "" Integration
     Plug 'scrooloose/nerdtree' 
