@@ -2,13 +2,8 @@
 ## OUTPUT TO CONSOLE ##
 #######################
 echo $USER@$HOST $(uname -srm)
+# neofetch
 
-# Enable Powerlevel10k instant prompt. Should stay close to the top of ~/.zshrc.
-# Initialization code that may require console input (password prompts, [y/n]
-# confirmations, etc.) must go above this block; everything else may go below.
-if [[ -r "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh" ]]; then
-  source "${XDG_CACHE_HOME:-$HOME/.cache}/p10k-instant-prompt-${(%):-%n}.zsh"
-fi
 
 ## COMMAND COMPLETION
 
@@ -83,7 +78,8 @@ alias df='df -h'
 alias free='free -m'
 alias ll='ls -alhF'
 alias mv='mv -i'
-
+alias ..='cd ..'
+alias ...='cd ../..'
 
 ####################
 ## Colored output ##
@@ -104,11 +100,49 @@ export LESS_TERMCAP_ue=$'\E[0m'        # reset underline
 
 
 ###################
-## PROMT CONFIG ##
+## PROMPT CONFIG ##
 ###################
-source /usr/share/zsh-theme-powerlevel10k/powerlevel10k.zsh-theme
-# To customize prompt, run `p10k configure` or edit ~/.p10k.zsh.
-[[ ! -f ~/.p10k.zsh ]] || source ~/.p10k.zsh
+autoload -Uz promptinit
+promptinit
+prompt spaceship
+
+SPACESHIP_PROMPT_ADD_NEWLINE=false
+SPACESHIP_PROMPT_SEPARATE_LINE=false
+SPACESHIP_CHAR_SUFFIX=" "
+SPACESHIP_CHAR_SYMBOL=❯
+SPACESHIP_DIR_TRUNC=2
+SPACESHIP_DIR_TRUNC_PREFIX='~/../'
+SPACESHIP_DIR_TRUNC_REPO=true
+# Packages
+SPACESHIP_PACKAGE_SHOW=false
+SPACESHIP_NODE_SHOW=false
+SPACESHIP_RUBY_SHOW=false
+SPACESHIP_ELM_SHOW=false
+SPACESHIP_ELIXIR_SHOW=false
+SPACESHIP_XCODE_SHOW_LOCAL=false
+SPACESHIP_SWIFT_SHOW_LOCAL=false
+SPACESHIP_GOLANG_SHOW=false
+SPACESHIP_PHP_SHOW=false
+SPACESHIP_RUST_SHOW=false
+SPACESHIP_HASKELL_SHOW=false
+SPACESHIP_JULIA_SHOW=false
+SPACESHIP_DOCKER_SHOW=false
+SPACESHIP_DOCKER_CONTEXT_SHOW=false
+SPACESHIP_AWS_SHOW=false
+SPACESHIP_GCLOUD_SHOW=false
+SPACESHIP_VENV_SHOW=true
+SPACESHIP_CONDA_SHOW=true
+SPACESHIP_PYENV_SHOW=true
+SPACESHIP_DOTNET_SHOW=false
+SPACESHIP_EMBER_SHOW=false
+SPACESHIP_KUBECTL_SHOW=false
+SPACESHIP_KUBECTL_VERSION_SHOW=false
+SPACESHIP_KUBECONTEXT_SHOW=false
+SPACESHIP_TERRAFORM_SHOW=false
+SPACESHIP_EXEC_TIME_SHOW=true
+SPACESHIP_BATTERY_SHOW=false
+SPACESHIP_VI_MODE_SHOW=false
+SPACESHIP_EXIT_CODE_SHOW=true
 
 
 #####################
@@ -122,6 +156,7 @@ source /usr/share/zsh/plugins/zsh-history-substring-search/zsh-history-substring
 ## VIM MODE
 bindkey -v
 export KEYTIMEOUT=1
+
 
 ####################
 ## HISTORY SEARCH ##
