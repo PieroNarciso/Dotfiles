@@ -32,12 +32,17 @@ WORDCHARS=${WORDCHARS//\/[&.;]}
 setopt correct
 setopt extendedglob
 setopt nocaseglob
+setopt rcexpandparam
+setopt numericglobsort
+setopt nobeep
+setopt appendhistory
+setopt histignorealldups
+setopt autocd
 
 
 ##################
 ## KEY BINDINGS ##
 ##################
-
 typeset -g -A key
 
 key[Home]="${terminfo[khome]}"
