@@ -5,8 +5,9 @@ echo $USER@$HOST $(uname -srm)
 # neofetch
 
 
-## COMMAND COMPLETION
-
+################
+## COMPLETION ##
+################
 autoload -Uz compinit
 compinit
 setopt COMPLETE_ALIASES
@@ -14,6 +15,15 @@ setopt COMPLETE_ALIASES
 HISTFILE=~/.zhistory
 HISTSIZE=1000
 SAVEHIST=500
+
+zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
+zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
+zstyle ':completion:*' rehash true
+# Speed up  Completions
+zstyle ':completion:*' accept-exact '*(N)'
+zstyle ':completion:*' use-cache-on
+zstyle ':completion:*' cache-path ~/.zsh/cache
+WORDCHARS=${WORDCHARS//\/[&.;]}
 
 
 #####################
