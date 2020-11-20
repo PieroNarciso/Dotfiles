@@ -89,6 +89,9 @@ bindsym $mod+b exec --no-startup-id brave
 # Start file manager (ranger)
 bindsym $mod+e exec --no-startup-id alacritty -e ranger
 
+# Start calendar (calcurse)
+bindsym $mod+c exec --no-startup-id alacritty -e calcurse
+
 # kill focused window
 bindsym $mod+Shift+q kill
 
@@ -102,6 +105,9 @@ bindsym $mod+d exec rofi -show drun
 # Screenshot with `maim`
 bindsym --release Print exec --no-startup-id "maim | xclip -selection clipboard -t image/png"
 bindsym --release Control+Shift+Print exec --no-startup-id "maim -s -n -l -c 0.157,0.333,0.466,0.4 | xclip -selection clipboard -t image/png"
+
+# Emoji picker
+bindsym $mod+period exec rofi -show emoji -modi emoji
 
 
 ######################
@@ -132,10 +138,10 @@ bindsym $mod+Shift+Up move up
 bindsym $mod+Shift+Right move right
 
 # split in horizontal orientation
-bindsym $mod+- split h
+bindsym $mod+bar split h
 
 # split in vertical orientation
-bindsym $mod+| split v
+bindsym $mod+minus split v
 
 # enter fullscreen mode for the focused container
 bindsym $mod+f fullscreen toggle
