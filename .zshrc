@@ -93,12 +93,14 @@ alias df='df -h'
 alias free='free -m'
 alias ll='ls -alhF'
 alias mv='mv -i'
-alias ..='cd ..'
-alias ...='cd ../..'
 
-####################
-## Colored output ##
-####################
+
+##################
+## COLOR OUTPUT ##
+##################
+autoload -Uz colors
+colors
+
 alias ls='ls --color=auto'
 alias diff='diff --color=auto'
 alias grep='grep --color=auto'
