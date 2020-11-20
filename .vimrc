@@ -145,6 +145,7 @@ source $HOME/.vim/plugins/coc.vim
 source $HOME/.vim/plugins/easymotion.vim
 source $HOME/.vim/plugins/nerdtree.vim
 source $HOME/.vim/plugins/airline.vim
+source $HOME/.vim/plugins/ctrlp.vim
 
 " Colorscheme
 set background=dark
