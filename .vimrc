@@ -103,6 +103,9 @@ inoremap <Right> <ESC>:echoe "Use l"<CR>
 inoremap <Up>    <ESC>:echoe "Use k"<CR>
 inoremap <Down>  <ESC>:echoe "Use j"<CR>
 
+" Copy | Yank to clipboard (gVim)
+set clipboard=unnamedplus
+
 " Vmap for maintain Visual Mode after shifting > and <
 vmap < <gv
 vmap > >gv
