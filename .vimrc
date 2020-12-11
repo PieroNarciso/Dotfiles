@@ -128,6 +128,7 @@ call plug#begin('~/.vim/plugged')
     Plug 'scrooloose/nerdtree' 
     Plug 'xuyuanp/nerdtree-git-plugin'
     Plug 'ctrlpvim/ctrlp.vim'
+    " Plug 'puremourning/vimspector'
 
     "" Language support
     Plug 'neoclide/coc.nvim', {'branch': 'release'}
