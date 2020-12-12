@@ -22,7 +22,7 @@ set $micStatusNotify $HOME/.config/i3/scripts/mic_status_notify.sh
 ## DESIGN/THEME CONFIG ##
 #########################
 # Using polybar (yay -S polybar)
-exec_always --no-startup-id $HOME/.config/polybar/launch.sh
+exec_always --no-startup-id $HOME/.config/polybar/launchi3.sh
 
 # Set background
 exec --no-startup-id feh --bg-scale $HOME/.local/share/wallpapers/arch-linux-wp.jpg
