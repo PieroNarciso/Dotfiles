@@ -7,4 +7,4 @@ killall -q polybar
 while pgrep -u $UID -x polybar >/dev/null; do sleep 1; done
 
 # Launch polybar, using default config location $HOME/.config/polybar/config
-polybar i3bar &
+polybar bspwmbar &
