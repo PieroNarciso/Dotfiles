@@ -1,1 +1,1 @@
-set wildignore+=*/node_modules/*,*.zip,*.o,*/.venv/*,*/venv/*,*/data/*
+set wildignore+=*/node_modules/*,*.zip,*.o,*/.venv/*,*/venv/*,*/data/*,*/dist/*
