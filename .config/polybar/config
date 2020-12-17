@@ -83,7 +83,7 @@ tray-position = right
 tray-padding = 2
 tray-background = ${colors.opabackground}
 
-;wm-restack = bspwm
+wm-restack = bspwm
 ;wm-restack = i3
 
 ;override-redirect = true
