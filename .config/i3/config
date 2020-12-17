@@ -176,7 +176,7 @@ set $ws4 "4: "
 set $ws5 "5: "
 set $ws6 "6: :"
 set $ws7 "7: "
-set $ws8 "8: "
+set $ws8 "8: "
 set $ws9 "9: "
 set $ws10 "10: "
 
@@ -212,11 +212,14 @@ bindsym $mod+Shift+0 move container to workspace number $ws10
 ## Apps in default workspace
 #assign [class="Brave-browser"] $ws1
 #assign [class="Alacritty"] $ws2
+assign [class="Unity"] $ws2
+assign [class="Rambox"] $ws8
 assign [class="discord"] $ws9
 for_window [class="Spotify"] move to workspace $ws10
+for_window [class="Steam"] move to workspace $ws2
 
 ## Ignore tiling Apps
-for_window[class="Steam"] floating enable
+for_window [class="Steam"] floating enable
 
 # reload the configuration file
 bindsym $mod+Shift+c reload
