@@ -71,7 +71,7 @@ bindsym XF86AudioPrev exec --no-startup-id playerctl previous
 bindsym XF86AudioStop exec --no-startup-id playerctl stop
 
 # Mute microphone
-bindsym --release $mod+Control+m exec --no-startup-id amixer -q sset Capture toggle && $micStatusNotify
+bindsym --release $mod+Shift+m exec --no-startup-id amixer -q sset Capture toggle && $micStatusNotify
 
 
 ##################
