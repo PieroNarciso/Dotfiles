@@ -2,25 +2,41 @@
 # wm independent hotkeys
 #
 
+##### LAUNCH PROGRAMS ####
+
 # terminal emulator
 super + Return
 	alacritty
+
+# File manager
+super + e
+	alacritty -e ranger
 
 # web browser
 super + b
 	brave
 
+# Calendar
+super + c
+	alacritty -e calcurse
+
 # program launcher
 super + shift + Return
 	rofi -show drun
+
+# Screenshot with maim
+Print
+	maim | xclip -selection clipboard -t image/png
+
+ctrl + shift + Print
+	maim -s -n -l -c 0.157,0.333,0.466,0.4 | xclip -selection clipboard -t image/png
 
 # make sxhkd reload its configuration files:
 super + Escape
 	pkill -USR1 -x sxhkd
 
-#
-# bspwm hotkeys
-#
+
+##### BSPWM HOTKEYS #####
 
 # quit/restart bspwm
 super + alt + {q,r}
@@ -126,3 +142,33 @@ super + alt + shift + {h,j,k,l}
 # move a floating window
 super + {Left,Down,Up,Right}
 	bspc node -v {-20 0,0 20,0 -20,20 0}
+
+
+##### MEDIA CONTROL #####
+XF86AudioRaiseVolume
+	amixer -q sset -M Master 5%+ && \
+	$HOME/.scripts/volume_status_notify.sh
+
+XF86AudioLowerVolume
+	amixer -q sset -M Master 5%- && \
+	$HOME/.scripts/volume_status_notify.sh
+
+XF86AudioLowerVolume
+	amixer -q sset Master toggle && \
+	$HOME/.scripts/volume_status_notify.sh
+
+XF86AudioPlay
+	playerctl play-pause
+
+XF86AudioNext
+	playerctl next
+
+XF86AudioPrev
+	playerctl previous
+
+XF86AudioStop
+	playerctl stop
+
+super + shift + m
+	amixer -q sset Capture toggle && \
+	$HOME/.scripts/mic_status_notify.sh
