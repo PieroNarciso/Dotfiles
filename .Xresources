@@ -1,26 +1,7 @@
-#define BACKGROUND #232627
-#define FOREGROUND #fcfcfc
-
-#define BLACK #232627
-#define RED   #ed1515
-#define GREEN #11d116
-#define YELLOW #f67400
-#define BLUE #1d99f3
-#define MAGENTA #9b59b6
-#define CYAN #21DEEF
-#define WHITE #fcfcfc
-
-#define BBLACK #7f8c8d
-#define BRED #c0392b
-#define BGREEN #1cdc9a
-#define BYELLOW #fdbc4b
-#define BBLUE #3daee9
-#define BMAGENTA #8e44ad
-#define BCYAN #73FBF1
-#define BWHITE #ffffff
-
+#include "./.Xresources.d/colors"
 
 *.background: BACKGROUND
+*.opabackground: OPABACKGROUND
 *.foreground: FOREGROUND
 *.black: BLACK
 *.red: RED
