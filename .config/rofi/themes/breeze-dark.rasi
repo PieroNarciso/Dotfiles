@@ -25,7 +25,7 @@
     /* Universal */
     background-color: @invisible;
     border-color: @default-border;
-    font: "Noto Sans 11";
+    font: "Droid Sans 11";
     text-color: @default-foreground;
 }
 
