@@ -18,12 +18,13 @@
 
 [colors]
 background = ${xrdb:background}
+opabackground = ${xrdb:opabackground}
 background-alt = ${xrdb:bblack}
 foreground = ${xrdb:foreground}
 foreground-alt = ${xrdb:foreground}
 primary = ${xrdb:blue}
 secondary = ${xrdb:cyan}
-alert = ${xrdb:red}
+alert = ${xrdb:bred}
 black = ${xrdb:black}
 red = ${xrdb:red}
 green = ${xrdb:green}
@@ -52,13 +53,13 @@ height = 27
 radius = 0.0
 fixed-center = false
 
-background = ${colors.background}
+background = ${colors.opabackground}
 foreground = ${colors.foreground}
 
 line-size = 3
 line-color = ${colors.red}
 
-border-size = 4
+border-size = 0
 border-color = ${colors.red}
 
 padding-left = 0
@@ -105,7 +106,7 @@ height = 27
 radius = 0.0
 fixed-center = false
 
-background = ${colors.background}
+background = ${colors.opabackground}
 foreground = ${colors.foreground}
 
 line-size = 3
@@ -134,6 +135,7 @@ modules-right = spotify filesystem xbacklight xkeyboard memory cpu temperature d
 tray-position = right
 tray-padding = 2
 tray-background = ${colors.background}
+tray-detached = false
 
 ;wm-restack = bspwm
 ;wm-restack = i3
@@ -183,21 +185,34 @@ label-unmounted-foreground = ${colors.foreground-alt}
 [module/bspwm]
 type = internal/bspwm
 
-label-focused = %index%
+format = <label-state> <label-mode>
+
+ws-icon-0 = 1;
+ws-icon-1 = 2;
+ws-icon-2 = 3;
+ws-icon-3 = 4;
+ws-icon-4 = 5;
+ws-icon-5 = 6;
+ws-icon-6 = 7;
+ws-icon-7 = 8;
+ws-icon-8 = 9;
+ws-icon-9 = 10;
+
+label-focused = %index%: %icon%
 label-focused-background = ${colors.background-alt}
 label-focused-underline= ${colors.primary}
 label-focused-padding = 2
 
-label-occupied = %index%
+label-occupied = %index%: %icon%
 label-occupied-padding = 2
 
-label-urgent = %index%!
+label-urgent = %index%: %icon%
 label-urgent-background = ${colors.alert}
 label-urgent-padding = 2
 
-label-empty = %index%
+label-empty = 
 label-empty-foreground = ${colors.foreground-alt}
-label-empty-padding = 2
+label-empty-padding = 0
 
 ; Separator in between workspaces
 ; label-separator = |
@@ -215,7 +230,7 @@ enable-scroll = false
 ;pin-workspaces = true
 
 label-mode-padding = 2
-label-mode-foreground = #000
+label-mode-foreground = ${colors.foreground}
 label-mode-background = ${colors.primary}
 
 ; focused = Active workspace on focused monitor
@@ -264,11 +279,11 @@ label = BL
 
 bar-width = 10
 bar-indicator = |
-bar-indicator-foreground = #fff
+bar-indicator-foreground = ${colors.foreground-alt}
 bar-indicator-font = 2
 bar-fill = ─
 bar-fill-font = 2
-bar-fill-foreground = #9f78e1
+bar-fill-foreground = ${colors.magenta}
 bar-empty = ─
 bar-empty-font = 2
 bar-empty-foreground = ${colors.foreground-alt}
