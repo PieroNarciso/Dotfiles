@@ -1,7 +1,3 @@
-#
-# wm independent hotkeys
-#
-
 ##### LAUNCH PROGRAMS ####
 
 # terminal emulator
@@ -23,6 +19,10 @@ super + c
 # program launcher
 super + shift + Return
 	rofi -show drun
+
+# emoji picker
+super + period
+	rofi -show emoji -modi emoji
 
 # Screenshot with maim
 Print
