@@ -2,7 +2,7 @@
 
 #### AUTOSTART ####
 xsetroot -cursor_name left_ptr &
-feh --bg-scale $HOME/.local/share/wallpapers/way-to-sunshine.jpg &
+pgrep -x nitrogen > /dev/null || nitrogen --restore &
 pgrep -x dunst > /dev/null || dunst &
 pgrep -x sxhkd > /dev/null || sxhkd &
 pgrep -x picom > /dev/null || picom &

@@ -25,7 +25,7 @@ set $micStatusNotify $HOME/.scripts/mic_status_notify.sh
 exec_always --no-startup-id $HOME/.config/polybar/launchi3.sh
 
 # Set background
-exec --no-startup-id feh --bg-scale $HOME/.local/share/wallpapers/arch-linux-wp.jpg
+exec --no-startup-id nitrogen --restore &
 
 # i3 Gaps
 for_window [class="^.*"] border pixel 2
