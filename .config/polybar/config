@@ -200,7 +200,7 @@ ws-icon-9 = 10;
 
 label-focused = %index%: %icon%
 label-focused-background = ${colors.background-alt}
-label-focused-underline= ${colors.primary}
+label-focused-underline = ${colors.primary}
 label-focused-padding = 2
 
 label-occupied = %index%: %icon%
