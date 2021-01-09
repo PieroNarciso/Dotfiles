@@ -11,6 +11,9 @@
 " `vim -u foo`).
 set nocompatible
 
+" filetype plugin
+filetype plugin on
+
 " Turn on syntax highlighting.
 syntax on
 
