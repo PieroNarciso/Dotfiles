@@ -37,3 +37,5 @@ bspc rule -a Steam desktop=2 state=floating
 
 # floting windows
 bspc rule -a Pavucontrol state=floating
+bspc rule -a UnityHub state=floating
+bspc rule -a Peek state=floating
