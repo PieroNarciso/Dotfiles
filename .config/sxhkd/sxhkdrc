@@ -10,7 +10,7 @@ super + e
 
 # web browser
 super + b
-	brave
+	firefox
 
 # Calendar
 super + c
