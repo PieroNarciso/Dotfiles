@@ -14,7 +14,7 @@ setopt COMPLETE_ALIASES
 
 HISTFILE=~/.zhistory
 HISTSIZE=1000
-SAVEHIST=500
+SAVEHIST=1000
 
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
