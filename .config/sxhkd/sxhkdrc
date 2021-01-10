@@ -24,6 +24,10 @@ super + shift + Return
 super + period
 	rofi -show emoji -modi emoji
 
+# Spotify player
+super + p
+	alacritty --class spotify-tui,SpotifyTui --title SpotifyTui -e spt
+
 # Screenshot with maim
 Print
 	maim | xclip -selection clipboard -t image/png
