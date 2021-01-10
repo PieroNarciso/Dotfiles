@@ -157,7 +157,7 @@ XF86AudioLowerVolume
 	amixer -q sset -M Master 5%- && \
 	$HOME/.scripts/volume_status_notify.sh
 
-XF86AudioLowerVolume
+XF86AudioMute
 	amixer -q sset Master toggle && \
 	$HOME/.scripts/volume_status_notify.sh
 
