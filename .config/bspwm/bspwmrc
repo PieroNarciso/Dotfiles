@@ -31,9 +31,13 @@ bspc config borderless_monocle   true
 bspc config gapless_monocle      true
 
 #### RULES ####
-bspc rule -a VirtualBoxVM desktop=5 state=floating
-bspc rule -a discord desktop=9
+
 bspc rule -a Steam desktop=2 state=floating
+bspc rule -a VirtualBoxVM desktop=5 state=floating
+bspc rule -a Calcurse desktop=7
+bspc rule -a TelegramDesktop desktop=8
+bspc rule -a discord desktop=9
+bspc rule -a SpotifyTui desktop=10
 
 # floting windows
 bspc rule -a Pavucontrol state=floating
