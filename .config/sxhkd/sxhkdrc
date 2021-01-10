@@ -14,7 +14,7 @@ super + b
 
 # Calendar
 super + c
-	alacritty -e calcurse
+	alacritty --class calcurse,Calcurse --title Calcurse -e calcurse
 
 # program launcher
 super + shift + Return
