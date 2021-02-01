@@ -56,7 +56,7 @@ autocmd Filetype python setlocal sw=4 ts=4 sts=4 expandtab
 autocmd Filetype html setlocal sw=2 ts=2 sts=2 expandtab
 autocmd Filetype vue setlocal sw=2 ts=2 sts=2 expandtab
 autocmd Filetype javascript setlocal sw=2 ts=2 sts=2 expandtab
-autocmd Filetype typescript setlocal sw=4 ts=4 sts=4 expandtab
+autocmd Filetype typescript setlocal sw=2 ts=2 sts=2 expandtab
 autocmd Filetype mason setlocal sw=2 ts=4 sts=2 expandtab
 autocmd Filetype json setlocal sw=2 ts=4 sts=2 expandtab
 autocmd Filetype make setloc sw=4 ts=4 sts=4 noexpandtab
@@ -78,7 +78,7 @@ set smartcase
 " Enable searching as you type, rather than waiting till you press enter.
 set incsearch
 " Enable highlighting searching
-" set hlsearch
+set nohlsearch
 
 " Unbind some useless/annoying default key bindings.
 nmap Q <Nop> " 'Q' in normal mode enters Ex mode. You almost never want this.
@@ -130,7 +130,9 @@ call plug#begin('~/.vim/plugged')
     "" Integration
     Plug 'scrooloose/nerdtree' 
     Plug 'xuyuanp/nerdtree-git-plugin'
-    Plug 'ctrlpvim/ctrlp.vim'
+    Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
+    Plug 'junegunn/fzf.vim'
+    " Plug 'ctrlpvim/ctrlp.vim'
     " Plug 'puremourning/vimspector'
 
     "" Language support
@@ -152,7 +154,8 @@ source $HOME/.vim/plugins/coc.vim
 source $HOME/.vim/plugins/easymotion.vim
 source $HOME/.vim/plugins/nerdtree.vim
 source $HOME/.vim/plugins/airline.vim
-source $HOME/.vim/plugins/ctrlp.vim
+" source $HOME/.vim/plugins/ctrlp.vim
+source $HOME/.vim/plugins/fzf.vim
 
 " Colorscheme
 set background=dark
