@@ -93,6 +93,8 @@ alias df='df -h'
 alias free='free -m'
 alias ll='ls -alhF'
 alias mv='mv -i'
+alias v='vim'
+alias nv='nvim'
 
 
 ##################
@@ -196,8 +198,21 @@ bindkey -M vicmd 'j' history-substring-search-down
 ###########################
 # dotfiles setup
 alias dotfiles='/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
+
 # Init NVM
 [[ -f "/usr/share/nvm/init-nvm.sh" ]] \
     && source /usr/share/nvm/init-nvm.sh
+
 # Init pyenv
 eval "$(pyenv init -)"
+
+# FZF completion and keybindings
+[[ -f "/usr/share/fzf/completion.zsh" ]] \
+    && source /usr/share/fzf/completion.zsh
+[[ -f "/usr/share/fzf/key-bindings.zsh" ]] \
+    && source /usr/share/fzf/key-bindings.zsh
+
+# Set FZF default Command
+if [[ -f "/usr/bin/rg" ]] ; then
+    export FZF_DEFAULT_COMMAND='rg --files';
+fi
