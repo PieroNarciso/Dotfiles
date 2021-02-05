@@ -6,7 +6,7 @@ super + Return
 
 # File manager
 super + e
-	alacritty -e ranger
+	alacritty -e lf
 
 # web browser
 super + b
