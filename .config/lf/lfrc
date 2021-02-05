@@ -1,0 +1,8 @@
+set incsearch
+set number
+set relativenumber
+set icons true
+set preview true
+set previewer ~/.config/lf/scripts/preview.sh
+
+map . set hidden!
