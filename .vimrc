@@ -11,6 +11,9 @@
 " `vim -u foo`).
 set nocompatible
 
+" Remap Leader key
+let mapleader = " "
+
 " filetype plugin
 filetype plugin on
 
@@ -43,6 +46,15 @@ set noshowmode
 " backspace over anything.
 set backspace=indent,eol,start
 
+" Set curcor to block (for neovim)
+set guicursor=
+
+" Enable color column to 80
+set colorcolumn=80
+
+" Set off set for scrolling
+set scrolloff=8
+
 " Tab configuration
 set softtabstop=4
 set shiftwidth=4
@@ -57,7 +69,7 @@ autocmd Filetype html setlocal sw=2 ts=2 sts=2 expandtab
 autocmd Filetype vue setlocal sw=2 ts=2 sts=2 expandtab
 autocmd Filetype javascript setlocal sw=2 ts=2 sts=2 expandtab
 autocmd Filetype typescript setlocal sw=2 ts=2 sts=2 expandtab
-autocmd Filetype typescriptreact setlocal sw=3 ts=2 sts=2 expandtab
+autocmd Filetype typescriptreact setlocal sw=2 ts=2 sts=2 expandtab
 autocmd Filetype mason setlocal sw=2 ts=4 sts=2 expandtab
 autocmd Filetype json setlocal sw=2 ts=4 sts=2 expandtab
 autocmd Filetype make setloc sw=4 ts=4 sts=4 noexpandtab
@@ -161,3 +173,8 @@ source $HOME/.vim/plugins/fzf.vim
 " Colorscheme
 set background=dark
 colorscheme gruvbox
+if has('nvim')
+    " Background transparency
+    set termguicolors
+    highlight Normal guibg=none
+endif
