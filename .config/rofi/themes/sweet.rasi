@@ -7,7 +7,7 @@
 
 configuration {
     columns: 1;
-    font: "Noto Sans 12";
+    font: "Droid Sans 12";
     sidebar-mode: true;
     show-icons: true;
     terminal: "kitty";
@@ -18,23 +18,25 @@ configuration {
 
 * {
     /* Base */
-    default-background: rgba(40, 42, 54, 80%); // <- change this for transparency
-    default-foreground: rgba(248, 248, 242, 100%);
-    default-border: rgba(189, 147, 249, 100%);
-    alternative-background: rgba(40, 42, 54, 100%);
+    default-background: rgba(35, 38, 39, 80%); // <- change this for transparency
+    /* default-background: rgba(40, 42, 54, 80%); // <- change this for transparency */
+    default-foreground: rgba(252, 252, 252, 100%);
+    default-border: rgba(142, 68, 173, 100%);
+    /* default-border: rgba(189, 147, 249, 100%); */ // Default border color
+    alternative-background: rgba(35, 38, 39, 100%);
     invisible: rgba(0, 0, 0, 0%);
 
     /* Colors */
-    hard-blue: rgba(154, 237, 254, 100%);
-    light-blue: rgba(139, 233, 253, 100%);
+    hard-blue: rgba(29, 153, 243, 100%);
+    light-blue: rgba(61, 174, 233, 100%);
 
-    hard-red: rgba(255, 110, 103, 100%);
-    light-red: rgba(255, 85, 85, 100%);
+    hard-red: rgba(237, 21, 21, 100%);
+    light-red: rgba(192, 57, 43, 100%);
 
-    hard-green: rgba(90, 247, 142, 100%);
-    light-green: rgba(80, 250, 123, 100%);
+    hard-green: rgba(17, 209, 22, 100%);
+    light-green: rgba(28, 220, 154, 100%);
 
-    pink: rgba(255, 121, 198, 100%);
+    pink: rgba(155, 89, 182, 100%);
 
     /* Universal */
     background-color: @invisible;
