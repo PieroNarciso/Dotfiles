@@ -30,7 +30,7 @@ $ dotfiles checkout
 $ dotfiles config --local status.showUntrackedFiles no
 ```
 
-# i3
+# i3 / BSPWM
 
 ## Configuration for keyboard
 
