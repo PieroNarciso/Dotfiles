@@ -13,8 +13,8 @@ compinit
 setopt COMPLETE_ALIASES
 
 HISTFILE=~/.zhistory
-HISTSIZE=1000
-SAVEHIST=1000
+HISTSIZE=1500
+SAVEHIST=1500
 
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
@@ -214,5 +214,5 @@ eval "$(pyenv init -)"
 
 # Set FZF default Command
 if [[ -f "/usr/bin/rg" ]] ; then
-    export FZF_DEFAULT_COMMAND='rg --files';
+    export FZF_DEFAULT_COMMAND='rg --hidden --files --glob "!.git"';
 fi
