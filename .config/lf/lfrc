@@ -2,7 +2,28 @@ set incsearch
 set number
 set relativenumber
 set icons true
+set drawbox
 set preview true
 set previewer ~/.config/lf/scripts/preview.sh
 
+
+#############
+## Binding ##
+#############
+
 map . set hidden!
+map D trash
+
+
+######################
+## Custom functions ##
+######################
+
+cmd open ${{
+    case $(file --mime-type "$f" -b) in
+        text/*) nvim "$fx";;
+        *) for f in "$fx"; do setsid xdg-open "$f" > /dev/null 2> /dev/null & done;;
+    esac
+}}
+
+cmd trash %trash-put "$fx"
