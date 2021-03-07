@@ -9,11 +9,11 @@ configuration {
     columns: 2;
     font: "Droid Sans 12";
     sidebar-mode: true;
-    show-icons: true;
+    show-icons: false;
     terminal: "alacritty";
     drun-match-fields: "name,generic,exec,categories";
     levenshtein-sort: true;
-    matching: "fuzzy";
+    matching: "regex";
 }
 
 * {
