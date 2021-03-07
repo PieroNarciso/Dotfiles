@@ -16,6 +16,7 @@ let mapleader = " "
 
 " filetype plugin
 filetype plugin on
+filetype indent off
 
 " Turn on syntax highlighting.
 syntax on
@@ -68,6 +69,8 @@ autocmd Filetype python setlocal sw=4 ts=4 sts=4 expandtab
 autocmd Filetype html setlocal sw=2 ts=2 sts=2 expandtab
 autocmd Filetype vue setlocal sw=2 ts=2 sts=2 expandtab
 autocmd Filetype javascript setlocal sw=2 ts=2 sts=2 expandtab
+autocmd Filetype javascriptreact setlocal sw=2 ts=2 sts=2 expandtab
+autocmd Filetype javascript.jsx setlocal sw=2 ts=2 sts=2 expandtab
 autocmd Filetype typescript setlocal sw=2 ts=2 sts=2 expandtab
 autocmd Filetype typescriptreact setlocal sw=2 ts=2 sts=2 expandtab
 autocmd Filetype mason setlocal sw=2 ts=4 sts=2 expandtab
@@ -132,6 +135,7 @@ nnoremap n nzzzv
 nnoremap N Nzzzv
 
 call plug#begin('~/.vim/plugged')
+
     "" Utilities
     Plug 'yggdroot/indentline'
     Plug 'tpope/vim-surround'
@@ -139,6 +143,8 @@ call plug#begin('~/.vim/plugged')
     Plug 'chiel92/vim-autoformat'
     Plug 'tpope/vim-commentary'
     " Plug 'jiangmiao/auto-pairs'
+    Plug 'prettier/vim-prettier', { 'do': 'npm install' }
+
 
     "" Integration
     Plug 'scrooloose/nerdtree' 
@@ -148,17 +154,26 @@ call plug#begin('~/.vim/plugged')
     " Plug 'ctrlpvim/ctrlp.vim'
     " Plug 'puremourning/vimspector'
 
+
     "" Language support
     Plug 'neoclide/coc.nvim', {'branch': 'release'}
-    Plug 'posva/vim-vue'
+
 
     "" Syntax Highlighting
     Plug 'octol/vim-cpp-enhanced-highlight'
+    " Plug 'posva/vim-vue'
+    Plug 'maxmellon/vim-jsx-pretty'
+    " Plug 'pangloss/vim-javascript'
+    Plug 'herringtondarkholme/yats.vim'
+
 
     "" Interface
     Plug 'vim-airline/vim-airline'
     Plug 'vim-airline/vim-airline-themes'
     Plug 'edkolev/tmuxline.vim'
+    Plug 'ryanoasis/vim-devicons'
+    Plug 'tiagofumo/vim-nerdtree-syntax-highlight'
+
 call plug#end()
 
 
@@ -169,6 +184,7 @@ source $HOME/.vim/plugins/nerdtree.vim
 source $HOME/.vim/plugins/airline.vim
 " source $HOME/.vim/plugins/ctrlp.vim
 source $HOME/.vim/plugins/fzf.vim
+source $HOME/.vim/plugins/prettier.vim
 
 " Colorscheme
 set background=dark
