@@ -1,3 +1,5 @@
 {
     "python.jediEnabled": false,
+    "vetur.validation.templateProps": true,
+    "vetur.experimental.templateInterpolationService": true
 } 
