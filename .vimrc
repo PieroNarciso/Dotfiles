@@ -16,7 +16,7 @@ let mapleader = " "
 
 " filetype plugin
 filetype plugin on
-filetype indent off
+filetype indent on
 
 " Turn on syntax highlighting.
 syntax on
@@ -161,7 +161,7 @@ call plug#begin('~/.vim/plugged')
 
     "" Syntax Highlighting
     Plug 'octol/vim-cpp-enhanced-highlight'
-    " Plug 'posva/vim-vue'
+    Plug 'posva/vim-vue'
     Plug 'maxmellon/vim-jsx-pretty'
     " Plug 'pangloss/vim-javascript'
     Plug 'herringtondarkholme/yats.vim'
@@ -193,4 +193,6 @@ if has('nvim')
     " Background transparency
     set termguicolors
     highlight Normal guibg=none
+else
+    hi Normal guibg=NONE ctermbg=NONE
 endif
