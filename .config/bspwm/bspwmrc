@@ -38,6 +38,7 @@ bspc config gapless_monocle      true
 
 bspc rule -a Steam desktop=2 state=floating
 bspc rule -a VirtualBoxVM desktop=5 state=floating
+bspc rule -a Mailspring desktop=6 follow=off
 bspc rule -a Calcurse desktop=7
 bspc rule -a TelegramDesktop desktop=8
 bspc rule -a KotatogramDesktop desktop=8
