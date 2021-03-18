@@ -160,11 +160,12 @@ call plug#begin('~/.vim/plugged')
 
 
     "" Syntax Highlighting
-    Plug 'octol/vim-cpp-enhanced-highlight'
+    " Plug 'octol/vim-cpp-enhanced-highlight'
     Plug 'posva/vim-vue'
     Plug 'maxmellon/vim-jsx-pretty'
     " Plug 'pangloss/vim-javascript'
     Plug 'herringtondarkholme/yats.vim'
+    " Plug 'sheerun/vim-polyglot' 
 
 
     "" Interface
@@ -194,5 +195,5 @@ if has('nvim')
     set termguicolors
     highlight Normal guibg=none
 else
-    hi Normal guibg=NONE ctermbg=NONE
+    highlight Normal guibg=NONE ctermbg=NONE
 endif
