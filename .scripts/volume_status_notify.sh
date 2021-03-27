@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/sh
 msg_id="991049"
 icon_audio_activate="notification-audio-volume-high"
 icon_audio_muted="notification-audio-volume-muted"
