@@ -1,4 +1,4 @@
-#! /bin/sh
+#!/bin/sh
 
 xresource() {
     xrdb -query | grep -E "^(bspwm|\*)\.$1" | sed -r "s/^[^:]+:\s+//" | tail -n 1

@@ -5,7 +5,7 @@ icon_muted="notification-microphone-sensitivity-muted"
 
 status="$(amixer get Capture | tail -1 | awk '{print $6}' | sed 's/[^a-z]*//g')"
 
-if [[ "$status" == "on" ]]; then
+if [ "$status" = "on" ]; then
     # Notification for mic activated
     dunstify -u low -i $icon_activate -r "$msg_id" -t 2000 "Mic active"
 else
