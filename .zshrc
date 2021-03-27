@@ -212,6 +212,10 @@ eval "$(pyenv init -)"
 [[ -f "/usr/share/fzf/key-bindings.zsh" ]] \
     && source /usr/share/fzf/key-bindings.zsh
 
+# GCloud Command Line Completion
+[[ -f "/opt/google-cloud-sdk/completion.zsh.inc" ]] \
+    && source /opt/google-cloud-sdk/completion.zsh.inc
+
 # Set FZF default Command
 if [[ -f "/usr/bin/rg" ]] ; then
     export FZF_DEFAULT_COMMAND='rg --hidden --files --glob "!.git"';
