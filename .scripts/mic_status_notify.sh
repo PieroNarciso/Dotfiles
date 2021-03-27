@@ -1,4 +1,4 @@
-#!/usr/bin/bash
+#!/bin/sh
 msg_id="991050"
 icon_activate="notification-microphone-sensitivity-high"
 icon_muted="notification-microphone-sensitivity-muted"
