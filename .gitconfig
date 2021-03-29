@@ -40,3 +40,5 @@
     pu = push
     re = reset
     logg = log --all --decorate --graph --oneline
+[commit]
+    gpgsign = true
