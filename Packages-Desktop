@@ -1,19 +1,21 @@
 adobe-source-sans-pro-fonts
 alacritty
 alsa-utils
+appstream-glib
 arc-gtk-theme
 asar
 autoconf
 automake
 base
+bat
 bison
 breeze-gtk
 bspwm
 calcurse
 calibre
-chromium
 cmake
 cmatrix
+dash
 deno
 discord
 docker-compose
@@ -22,7 +24,10 @@ evince
 firefox
 flex
 fzf
+gamemode
+gimp
 go
+google-cloud-sdk
 gparted
 grub
 htop
@@ -31,6 +36,7 @@ inkscape
 intel-ucode
 kvantum-theme-sweet-git
 lf
+lib32-gamemode
 lib32-libappindicator-gtk2
 lib32-libappindicator-gtk3
 libappindicator-gtk2
@@ -73,6 +79,7 @@ spaceship-prompt-git
 steam
 sweet-gtk-theme-nova-git
 system-config-printer
+timeshift
 tree
 ttf-font-awesome
 ttf-hack
@@ -82,6 +89,7 @@ unzip
 vala
 vim-plug
 virtualbox
+visual-studio-code-bin
 wget
 xcursor-breeze
 xdg-user-dirs
