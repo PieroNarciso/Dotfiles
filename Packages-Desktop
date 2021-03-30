@@ -21,6 +21,7 @@ discord
 docker-compose
 dunst
 evince
+file-roller
 firefox
 flex
 fzf
@@ -80,12 +81,11 @@ steam
 sweet-gtk-theme-nova-git
 system-config-printer
 timeshift
+trash-cli
 tree
 ttf-font-awesome
 ttf-hack
 ttf-roboto
-unrar
-unzip
 vala
 vim-plug
 virtualbox
@@ -98,7 +98,6 @@ xorg-xev
 xorg-xinput
 xorg-xrdb
 yay
-zip
 zsh-autosuggestions
 zsh-history-substring-search
 zsh-syntax-highlighting
