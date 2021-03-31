@@ -172,6 +172,12 @@ source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
 source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
 source /usr/share/zsh/plugins/zsh-history-substring-search/zsh-history-substring-search.zsh
 
+ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern)
+ZSH_HIGHLIGHT_STYLES[arg0]=fg=blue,bold
+ZSH_HIGHLIGHT_STYLES[default]=fg=011
+ZSH_HIGHLIGHT_STYLES[path]=fg=011
+ZSH_HIGHLIGHT_STYLES[single-hyphen-option]=fg=cyan
+ZSH_HIGHLIGHT_STYLES[double-hyphen-option]=fg=cyan
 
 ## VIM MODE
 bindkey -v
