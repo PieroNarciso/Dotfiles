@@ -174,12 +174,12 @@ SPACESHIP_EXIT_CODE_SHOW=true
 #####################
 ## PLUGINS SECTION ##
 #####################
-[ -f "/usr/share/zsh/plugins/zsh-autosuggestions" ] \
+[ -d "/usr/share/zsh/plugins/zsh-autosuggestions" ] \
     && source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
-[ -f "/usr/share/zsh/plugins/zsh-history-substring-search" ] \
+[ -d "/usr/share/zsh/plugins/zsh-history-substring-search" ] \
     && source /usr/share/zsh/plugins/zsh-history-substring-search/zsh-history-substring-search.zsh
 
-if [ -f "/usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ] ; then
+if [ -d "/usr/share/zsh/plugins/zsh-syntax-highlighting" ] ; then
     source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
     ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern)
     ZSH_HIGHLIGHT_STYLES[suffix-alias]=fg=blue,underline
