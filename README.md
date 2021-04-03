@@ -1,5 +1,7 @@
 # Dotfiles Install
 
+![Preview](https://i.imgur.com/QjcLhhX.png)
+
 * Make an alias in your .zshrc or .bashrc file.
 
 ```bash
