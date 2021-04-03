@@ -23,7 +23,7 @@ git clone --bare https://github.com/PieroNarciso/Dotfiles.git $HOME/.dotfiles
 * Checkout the content from the bare repository to your `$HOME` directory. If you get an error with a list of files. Make a backup of those, remove them and re-run the command.
 
 ```bash
-$ dotfiles checkout
+$ dotfiles checkout --force
 ```
 
 * Flah showUntrackedFile to `no`.
