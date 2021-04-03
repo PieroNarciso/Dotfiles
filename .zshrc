@@ -1,8 +1,8 @@
 #######################
 ## OUTPUT TO CONSOLE ##
 #######################
-echo $USER@$HOST $(uname -srm)
-# neofetch
+# echo $USER@$HOST $(uname -srm)
+neofetch
 
 
 ################
@@ -97,6 +97,12 @@ alias v='vim'
 alias nv='nvim'
 
 
+####################
+## SUFFIX ALIASES ##
+####################
+alias -s {ts,html,py,js,md}=nvim
+
+
 ##################
 ## COLOR OUTPUT ##
 ##################
@@ -168,16 +174,22 @@ SPACESHIP_EXIT_CODE_SHOW=true
 #####################
 ## PLUGINS SECTION ##
 #####################
-source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
-source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
-source /usr/share/zsh/plugins/zsh-history-substring-search/zsh-history-substring-search.zsh
+[ -f "/usr/share/zsh/plugins/zsh-autosuggestions" ] \
+    && source /usr/share/zsh/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh
+[ -f "/usr/share/zsh/plugins/zsh-history-substring-search" ] \
+    && source /usr/share/zsh/plugins/zsh-history-substring-search/zsh-history-substring-search.zsh
 
-ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern)
-ZSH_HIGHLIGHT_STYLES[arg0]=fg=blue,bold
-ZSH_HIGHLIGHT_STYLES[default]=fg=011
-ZSH_HIGHLIGHT_STYLES[path]=fg=011
-ZSH_HIGHLIGHT_STYLES[single-hyphen-option]=fg=cyan
-ZSH_HIGHLIGHT_STYLES[double-hyphen-option]=fg=cyan
+if [ -f "/usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh" ] ; then
+    source /usr/share/zsh/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh
+    ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern)
+    ZSH_HIGHLIGHT_STYLES[suffix-alias]=fg=blue,underline
+    ZSH_HIGHLIGHT_STYLES[precommand]=fg=blue,underline
+    ZSH_HIGHLIGHT_STYLES[arg0]=fg=blue,bold
+    ZSH_HIGHLIGHT_STYLES[default]=fg=011
+    ZSH_HIGHLIGHT_STYLES[path]=fg=011
+    ZSH_HIGHLIGHT_STYLES[single-hyphen-option]=fg=cyan
+    ZSH_HIGHLIGHT_STYLES[double-hyphen-option]=fg=cyan
+fi
 
 ## VIM MODE
 bindkey -v
@@ -213,16 +225,16 @@ alias dotfiles='/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
 eval "$(pyenv init -)"
 
 # FZF completion and keybindings
-[[ -f "/usr/share/fzf/completion.zsh" ]] \
+[ -f "/usr/share/fzf/completion.zsh" ] \
     && source /usr/share/fzf/completion.zsh
-[[ -f "/usr/share/fzf/key-bindings.zsh" ]] \
+[ -f "/usr/share/fzf/key-bindings.zsh" ] \
     && source /usr/share/fzf/key-bindings.zsh
 
 # GCloud Command Line Completion
-[[ -f "/opt/google-cloud-sdk/completion.zsh.inc" ]] \
+[ -f "/opt/google-cloud-sdk/completion.zsh.inc" ] \
     && source /opt/google-cloud-sdk/completion.zsh.inc
 
 # Set FZF default Command
-if [[ -f "/usr/bin/rg" ]] ; then
+if [ -f "/usr/bin/rg" ] ; then
     export FZF_DEFAULT_COMMAND='rg --hidden --files --glob "!.git"';
 fi
