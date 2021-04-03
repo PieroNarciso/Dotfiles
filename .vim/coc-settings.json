@@ -1,6 +1,16 @@
 {
   "python.jediEnabled": false,
-  "vetur.validation.templateProps": true,
-  "vetur.experimental.templateInterpolationService": true,
-  "vetur.validation.style": true
-} 
+  "vetur": {
+    "validation": {
+      "templateProps": true,
+      "style": true
+    },
+    "experimental": {
+      "templateInterpolationService": true
+    }
+  },
+  "rpc": {
+    "detailsEditing": "{workspace} {filename}",
+    "lowerDetailsEditing": "Working on {workspace}"
+  }
+}
