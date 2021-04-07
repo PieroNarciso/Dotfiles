@@ -1,3 +1,13 @@
+# Requirements
+Requirements packages are in `Packages-Desktop` (**Arch Linux**)
+
+Some packages are from the [AUR](https://wiki.archlinux.org/index.php/Arch_User_Repository)
+
+To make it straitforward install the packages with a `AUR helper` (`paru`, `yay`)
+```bash
+$ paru -S --needed - < Packages-Desktop
+```
+
 # Dotfiles Install
 
 ![Preview](https://i.imgur.com/QjcLhhX.png)
