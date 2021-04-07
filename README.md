@@ -1,3 +1,6 @@
+# Dotfiles
+![Preview](https://i.imgur.com/QjcLhhX.png)
+
 # Requirements
 Requirements packages are in `Packages-Desktop` (**Arch Linux**)
 
@@ -9,8 +12,6 @@ $ paru -S --needed - < Packages-Desktop
 ```
 
 # Dotfiles Install
-
-![Preview](https://i.imgur.com/QjcLhhX.png)
 
 * Make an alias in your .zshrc or .bashrc file.
 
