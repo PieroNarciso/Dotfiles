@@ -1,1 +1,0 @@
-/home/piero/.vimrc
