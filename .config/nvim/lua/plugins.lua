@@ -20,6 +20,10 @@ return require('packer').startup(function()
   use 'xuyuanp/nerdtree-git-plugin'
   use 'junegunn/fzf.vim'
 
+  -- Language support
+  use 'neovim/nvim-lspconfig'
+  use 'kabouzeid/nvim-lspinstall'
+
   -- Syntax Hightlighting
   use { 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' }
   use 'sainnhe/gruvbox-material'
