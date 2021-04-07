@@ -3,6 +3,7 @@
   "vetur": {
     "validation": {
       "templateProps": true,
+      "interpolation": true,
       "style": true
     },
     "experimental": {
@@ -10,7 +11,9 @@
     }
   },
   "rpc": {
-    "detailsEditing": "{workspace} {filename}",
+    "workspaceElapsedTime": true,
+    "detailsEditing": "{filename}",
     "lowerDetailsEditing": "Working on {workspace}"
-  }
+  },
+  "rpc.enabled": false
 }
