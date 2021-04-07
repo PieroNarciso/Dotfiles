@@ -8,6 +8,7 @@ require('nv-fzf')
 require('nv-airline')
 require('nv-nerdtree')
 require('nv-lspinstall')
+require('nv-presence')
 
 -- LSP
 require('lsp')
