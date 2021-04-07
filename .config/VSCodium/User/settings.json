@@ -1,0 +1,5 @@
+{
+    "vscode-neovim.neovimInitVimPaths.linux": "/home/piero/.config/nvim/nv-vscode/init.vim",
+    "vscode-neovim.neovimExecutablePaths.linux": "/usr/bin/nvim",
+    "keyboard.dispatch": "keyCode"
+}
