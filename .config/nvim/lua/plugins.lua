@@ -14,6 +14,7 @@ return require('packer').startup(function()
   use 'tpope/vim-surround'
   use 'tpope/vim-commentary'
   use { 'prettier/vim-prettier', run = 'npm install' }
+  use 'andweeb/presence.nvim'
 
   -- Integration
   use 'scrooloose/nerdtree'
