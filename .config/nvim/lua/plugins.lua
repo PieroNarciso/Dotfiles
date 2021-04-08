@@ -31,17 +31,18 @@ return require('packer').startup(function()
   use 'neovim/nvim-lspconfig'
   use 'kabouzeid/nvim-lspinstall'
 
-  -- Syntax Hightlighting
+  -- Syntax Highlighting
   use { 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' }
   use 'maxmellon/vim-jsx-pretty'
   use 'HerringtonDarkholme/yats.vim'
+  use 'tiagofumo/vim-nerdtree-syntax-highlight'
+  use 'norcalli/nvim-colorizer.lua'
 
   -- Interface
   use 'vim-airline/vim-airline'
   use 'vim-airline/vim-airline-themes'
   use 'edkolev/tmuxline.vim'
   use 'ryanoasis/vim-devicons'
-  use 'tiagofumo/vim-nerdtree-syntax-highlight'
   use 'sainnhe/gruvbox-material'
   use 'christianchiarulli/nvcode-color-schemes.vim'
 

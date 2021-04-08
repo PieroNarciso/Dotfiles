@@ -9,6 +9,7 @@ require('nv-airline')
 require('nv-nerdtree')
 require('nv-presence')
 require('nv-compe')
+require('nv-colorizer')
 
 -- LSP
 require('lsp')
