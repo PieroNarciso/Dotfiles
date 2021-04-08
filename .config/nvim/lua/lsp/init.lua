@@ -21,8 +21,8 @@ buf_set_keymap('n', ']d', '<cmd>lua vim.lsp.diagnostic.goto_next()<CR>', opts)
 
 
 function on_attach(client, bufnr)
-  -- local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
-  -- buf_set_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
+  local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
+  buf_set_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
 
   -- Set some keybinds conditional on server capabilities
   if client.resolved_capabilities.document_formatting then
@@ -59,8 +59,21 @@ local function setup_servers()
       config = require'lsp.python'
     elseif server == 'html' then
       config = require'lsp.html'
+    elseif server == 'css' then
+      config = require'lsp.css'
+    elseif server == 'lua' then
+      config = require'lsp.lua'
+    elseif server == 'dockerfile' then
+      config = require'lsp.docker'
+    elseif server == 'tailwindcss' then
+      config = require'lsp.tailwindcss'
+    elseif server == 'vim' then
+      config = require'lsp.vim'
+    elseif server == 'yaml' then
+      config = require'lsp.yaml'
     end
     config.on_attach = on_attach
+    config.root_dir = function () return '.' end
     require'lspconfig'[server].setup(config)
   end
 end
