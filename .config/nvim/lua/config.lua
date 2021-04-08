@@ -6,7 +6,12 @@ vim.o.backspace = 'indent,eol,start'
 vim.o.belloff = 'all'
 vim.cmd('filetype plugin on')
 vim.cmd('filetype indent on')
-vim.cmd('filetype on')
+
+-- Swapfiles (disable for ssd)
+-- vim.bo.swapfile = false
+
+-- Decrease update time
+vim.o.updatetime = 750
  
 -- Show line numbers and enable relative line numbering mode.
 vim.wo.number = true
@@ -16,7 +21,7 @@ vim.wo.relativenumber = true
 vim.o.laststatus = 2
 
 -- No show --INSERT--, etc because of lightline
-vim.o.showmode = true
+vim.o.showmode = false
 
 -- Set cursor to block
 vim.o.guicursor = ''
@@ -46,8 +51,10 @@ vim.o.mouse = 'a'
 vim.o.clipboard = 'unnamedplus'
 
 -- Indentation
-vim.o.filetype = 'on'
+vim.bo.softtabstop = 4
+vim.bo.shiftwidth = 4
 vim.bo.autoindent = true
+vim.bo.expandtab = false
 vim.bo.smartindent = true
 
 vim.api.nvim_exec(

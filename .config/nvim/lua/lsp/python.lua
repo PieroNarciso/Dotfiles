@@ -1,1 +1,3 @@
-require'lspconfig'.pyright.setup {}
+return {
+  filetypes = { 'python '}
+}

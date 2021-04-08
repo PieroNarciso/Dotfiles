@@ -1,17 +1,14 @@
-require('keybinds')
-require('config')
+require('keymap')
 require('plugins')
+require('config')
 
 -- Plugins
 require('nv-treesitter')
 require('nv-fzf')
 require('nv-airline')
 require('nv-nerdtree')
-require('nv-lspinstall')
 require('nv-presence')
+require('nv-compe')
 
 -- LSP
 require('lsp')
--- require('lsp.python')
--- require('lsp.typescript')
--- require('lsp.vue')

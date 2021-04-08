@@ -10,7 +10,7 @@ return require('packer').startup(function()
   use 'wbthomason/packer.nvim'
 
   -- Utilities
-  use 'yggdroot/indentline'  
+  use 'yggdroot/indentline'
   use 'tpope/vim-surround'
   use 'tpope/vim-commentary'
   use { 'prettier/vim-prettier', run = 'npm install' }
@@ -21,13 +21,20 @@ return require('packer').startup(function()
   use 'xuyuanp/nerdtree-git-plugin'
   use 'junegunn/fzf.vim'
 
+  -- Completion
+  use 'mattn/emmet-vim'
+  use 'hrsh7th/nvim-compe'
+  use "rafamadriz/friendly-snippets"
+  use 'hrsh7th/vim-vsnip'
+
   -- Language support
   use 'neovim/nvim-lspconfig'
   use 'kabouzeid/nvim-lspinstall'
 
   -- Syntax Hightlighting
   use { 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' }
-  use 'sainnhe/gruvbox-material'
+  use 'maxmellon/vim-jsx-pretty'
+  use 'HerringtonDarkholme/yats.vim'
 
   -- Interface
   use 'vim-airline/vim-airline'
@@ -35,5 +42,7 @@ return require('packer').startup(function()
   use 'edkolev/tmuxline.vim'
   use 'ryanoasis/vim-devicons'
   use 'tiagofumo/vim-nerdtree-syntax-highlight'
+  use 'sainnhe/gruvbox-material'
+  use 'christianchiarulli/nvcode-color-schemes.vim'
 
 end)

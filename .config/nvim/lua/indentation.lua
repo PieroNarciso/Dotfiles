@@ -1,3 +1,4 @@
+-- TODO filetype is not set at load
 local utils = require('utils')
 
 vim.o.filetype = 'on'
