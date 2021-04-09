@@ -13,6 +13,9 @@ set('n', '<S-Tab>', ':bprevious<CR>', { noremap = true })
 set('v', '<', '<gv', {})
 set('v', '>', '>gv', {})
 
+-- Close current buffer
+set('n', '<Leader>cb', ':bdelete<CR>', {})
+
 -- Search mapping: Center next and previous search
 set('n', 'n', 'nzzzv', { noremap = true })
 set('n', 'N', 'Nzzzv', { noremap = true })
