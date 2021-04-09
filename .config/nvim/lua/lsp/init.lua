@@ -71,9 +71,13 @@ local function setup_servers()
       config = require'lsp.vim'
     elseif server == 'yaml' then
       config = require'lsp.yaml'
+    else
+      config = {}
     end
     config.on_attach = on_attach
-    config.root_dir = function () return '.' end
+    if not config.root_dir then
+      config.root_dir = function () return vim.fn.getcwd() end
+    end
     require'lspconfig'[server].setup(config)
   end
 end
