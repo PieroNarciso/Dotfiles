@@ -16,6 +16,7 @@ return require('packer').startup(function()
   use { 'prettier/vim-prettier', run = 'npm install' }
   use 'andweeb/presence.nvim'
   use 'iamcco/markdown-preview.nvim'
+  use 'tpope/vim-fugitive'
 
   -- Integration
   use 'scrooloose/nerdtree'
