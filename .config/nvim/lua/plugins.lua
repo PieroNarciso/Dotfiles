@@ -39,6 +39,7 @@ return require('packer').startup(function()
   use 'HerringtonDarkholme/yats.vim'
   use 'tiagofumo/vim-nerdtree-syntax-highlight'
   use 'norcalli/nvim-colorizer.lua'
+  use 'posva/vim-vue'
 
   -- Interface
   use 'vim-airline/vim-airline'
