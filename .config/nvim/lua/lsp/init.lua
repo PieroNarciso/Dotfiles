@@ -20,7 +20,7 @@ buf_set_keymap('n', ']d', '<cmd>lua vim.lsp.diagnostic.goto_next()<CR>', opts)
 -- buf_set_keymap('n', '<space>q', '<cmd>lua vim.lsp.diagnostic.set_loclist()<CR>', opts)
 
 
-function on_attach(client, bufnr)
+local on_attach = function(client, bufnr)
   local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
   buf_set_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
 
@@ -72,7 +72,7 @@ local function setup_servers()
     elseif server == 'yaml' then
       config = require'lsp.yaml'
     else
-      config = {}
+      config = require'lsp.yaml'
     end
     config.on_attach = on_attach
     if not config.root_dir then
