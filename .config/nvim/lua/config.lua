@@ -74,12 +74,3 @@ vim.api.nvim_exec(
 	autocmd Filetype make setloc sw=4 ts=4 sts=4 noexpandtab
 ]],
 true)
-
--- Colorscheme
-vim.o.termguicolors = true
-vim.cmd('highlight Normal guibg=NONE ctermbg=NONE')
-vim.cmd('let g:gruvbox_material_palette = "original"')
-vim.cmd('let g:gruvbox_material_transparent_background = 1')
-vim.cmd('let g:gruvbox_material_visual = "reverse"')
-vim.cmd('let g:gruvbox_material_better_performance = 1')
-vim.cmd('colorscheme gruvbox-material')
