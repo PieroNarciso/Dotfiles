@@ -1,6 +1,7 @@
 require('keymap')
 require('plugins')
 require('config')
+require('colorscheme')
 
 -- Plugins
 require('nv-treesitter')
