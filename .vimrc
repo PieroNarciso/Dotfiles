@@ -68,6 +68,8 @@ set smartindent
 autocmd Filetype python setlocal sw=4 ts=4 sts=4 expandtab
 autocmd Filetype html setlocal sw=2 ts=2 sts=2 expandtab
 autocmd Filetype vue setlocal sw=2 ts=2 sts=2 expandtab
+autocmd Filetype lua setlocal sw=2 ts=2 sts=2 expandtab
+autocmd Filetype css setlocal sw=2 ts=2 sts=2 expandtab
 autocmd Filetype javascript setlocal sw=2 ts=2 sts=2 expandtab
 autocmd Filetype javascriptreact setlocal sw=2 ts=2 sts=2 expandtab
 autocmd Filetype javascript.jsx setlocal sw=2 ts=2 sts=2 expandtab
@@ -183,7 +185,6 @@ call plug#end()
 
 
 " Importing extra files
-source $HOME/.vim/plugins/coc.vim
 source $HOME/.vim/plugins/easymotion.vim
 source $HOME/.vim/plugins/nerdtree.vim
 source $HOME/.vim/plugins/airline.vim
@@ -200,4 +201,6 @@ if has('nvim')
     highlight Normal guibg=none
 else
     highlight Normal guibg=NONE ctermbg=NONE
+    " LSP support for vim
+    source $HOME/.vim/plugins/coc.vim
 endif

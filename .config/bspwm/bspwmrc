@@ -9,7 +9,7 @@ xsetroot -cursor_name left_ptr &
 pgrep -x nitrogen > /dev/null || nitrogen --restore &
 pgrep -x dunst > /dev/null || dunst &
 pgrep -x sxhkd > /dev/null || sxhkd &
-pgrep -x picom > /dev/null || picom &
+pgrep -x picom > /dev/null || picom --experimental-backends &
 pgrep -x pasystray > /dev/null || pasystray --volume-max 100 &
 pgrep -x mictray > /dev/null || mictray &
 pgrep -x xfce4-clipman > /dev/null || xfce4-clipman &

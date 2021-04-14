@@ -1,8 +1,8 @@
 #######################
 ## OUTPUT TO CONSOLE ##
 #######################
-# echo $USER@$HOST $(uname -srm)
-neofetch
+echo $USER@$HOST $(uname -srm)
+# neofetch
 
 
 ################
