@@ -13,6 +13,7 @@ application/x-extension-xhtml=firefox.desktop
 application/x-extension-xht=firefox.desktop
 application/pdf=org.gnome.Evince.desktop;
 application/vnd.openxmlformats-officedocument.wordprocessingml.document=libreoffice-writer.desktop;
+application/octet-stream=libreoffice-writer.desktop;
 x-scheme-handler/tg=userapp-Telegram Desktop-7HA000.desktop
 image/jpeg=sxiv.desktop;
 image/png=sxiv.desktop;

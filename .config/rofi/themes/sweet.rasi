@@ -9,7 +9,7 @@ configuration {
     columns: 2;
     font: "Droid Sans 12";
     sidebar-mode: true;
-    show-icons: false;
+    show-icons: true;
     terminal: "alacritty";
     drun-match-fields: "name,generic,exec,categories";
     levenshtein-sort: true;

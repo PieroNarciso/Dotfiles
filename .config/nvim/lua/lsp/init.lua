@@ -21,8 +21,8 @@ buf_set_keymap('n', ']d', '<cmd>lua vim.lsp.diagnostic.goto_next()<CR>', opts)
 
 
 local on_attach = function(client, bufnr)
-  local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
-  buf_set_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
+  -- local function buf_set_option(...) vim.api.nvim_buf_set_option(bufnr, ...) end
+  -- buf_set_option('omnifunc', 'v:lua.vim.lsp.omnifunc')
 
   -- Set some keybinds conditional on server capabilities
   if client.resolved_capabilities.document_formatting then
