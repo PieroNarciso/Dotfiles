@@ -180,6 +180,7 @@ call plug#begin('~/.vim/plugged')
     Plug 'edkolev/tmuxline.vim'
     Plug 'ryanoasis/vim-devicons'
     Plug 'tiagofumo/vim-nerdtree-syntax-highlight'
+    Plug 'morhetz/gruvbox'
 
 call plug#end()
 
