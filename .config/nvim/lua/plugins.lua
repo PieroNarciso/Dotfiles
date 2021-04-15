@@ -24,7 +24,7 @@ return require('packer').startup(function()
   use 'junegunn/fzf.vim'
 
   -- Completion
-  use 'mattn/emmet-vim'
+  -- use 'mattn/emmet-vim'
   use 'hrsh7th/nvim-compe'
   use "rafamadriz/friendly-snippets"
   use 'hrsh7th/vim-vsnip'

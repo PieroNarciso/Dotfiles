@@ -1,4 +1,4 @@
 -- Toggle
-vim.cmd('map <C-b> :NERDTreeToggle<CR>')
+vim.api.nvim_set_keymap('', '<C-b>', ':NERDTreeToggle<CR>', {})
 -- Position Window
-vim.cmd('let g:NERDTreeWinPos = "right"')
+vim.g.NERDTreeWinPos = "right"
