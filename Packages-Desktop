@@ -19,6 +19,7 @@ deno
 discord
 docker-compose
 dunst
+ethtool
 evince
 file-roller
 firefox
@@ -51,10 +52,12 @@ man-db
 man-pages
 mictray
 mpv
+ncdu
 neofetch
-neovim
+neovim-nightly-bin
 nerd-fonts-roboto-mono
 network-manager-applet
+nordic-theme-git
 numlockx
 nvidia
 nvidia-lts
@@ -63,7 +66,6 @@ papirus-icon-theme
 paru-bin
 pasystray
 patch
-picom
 pkgconf
 playerctl
 polkit-gnome
@@ -72,6 +74,8 @@ pyenv
 python-pipenv
 qt5-doc
 qt5ct
+r8168
+r8168-lts
 ranger
 reflector
 ripgrep
@@ -82,15 +86,16 @@ spotify
 spotify-tui-bin
 steam
 sweet-gtk-theme-nova-git
+sxiv
 system-config-printer
 telegram-desktop
 timeshift
 trash-cli
 tree
 ttf-hack
-ttf-roboto
 vim-plug
 virtualbox
+visual-studio-code-bin
 vscodium-bin
 wget
 xcursor-breeze
@@ -100,6 +105,7 @@ xorg-xev
 xorg-xinput
 xorg-xrdb
 xss-lock
+zoom
 zsh-autosuggestions
 zsh-history-substring-search
 zsh-syntax-highlighting
