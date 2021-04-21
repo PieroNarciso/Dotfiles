@@ -10,7 +10,7 @@ configuration {
 /*	yoffset: 0;*/
 /*	xoffset: 0;*/
 /*	fixed-num-lines: true;*/
-	show-icons: false;
+	show-icons: true;
 /*	terminal: "rofi-sensible-terminal";*/
 /*	ssh-client: "ssh";*/
 /*	ssh-command: "{terminal} -e {ssh-client} {host} [-p {port}]";*/
@@ -55,7 +55,7 @@ configuration {
 /*	window-format: "{w}    {c}   {t}";*/
 /*	click-to-exit: true;*/
 /*	show-match: true;*/
-	theme: "./themes/sweet.rasi";
+	theme: "./themes/gruvbox-dark-soft.rasi";
 /*	color-normal: ;*/
 /*	color-urgent: ;*/
 /*	color-active: ;*/

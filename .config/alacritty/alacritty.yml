@@ -161,21 +161,6 @@ font:
 
 # Colors (Tomorrow Night)
 colors:
-  # Default colors
-  primary:
-    background: '#232627'
-    foreground: '#fcfcfc'
-
-    # Bright and dim foreground colors
-    #
-    # The dimmed foreground color is calculated automatically if it is not present.
-    # If the bright foreground color is not set, or `draw_bold_text_with_bright_colors`
-    # is `false`, the normal foreground color will be used.
-    dim_foreground: '#eff0f1'
-    bright_foreground: '#ffffff'
-    dim_background: '#31363b'
-    bright_background: '#000000'
-
   # Cursor colors
   #
   # Colors which should be used to draw the terminal cursor.
@@ -221,42 +206,236 @@ colors:
   #    background: CellForeground
   #    foreground: CellBackground
 
+  #########################
+  #### AFTERGLOW THEME ####
+  #########################
+  # primary:
+  #   background: '#2c2c2c'
+  #   foreground: '#d6d6d6'
+
+  #   dim_foreground:    '#dbdbdb'
+  #   bright_foreground: '#d9d9d9'
+  #   dim_background:    '#202020' # not sure
+  #   bright_background: '#3a3a3a' # not sure
+
+  # cursor:
+  #   text:   '#2c2c2c'
+  #   cursor: '#d9d9d9'
+
+  # normal:
+  #   black:   '#1c1c1c'
+  #   red:     '#bc5653'
+  #   green:   '#909d63'
+  #   yellow:  '#ebc17a'
+  #   blue:    '#7eaac7'
+  #   magenta: '#aa6292'
+  #   cyan:    '#86d3ce'
+  #   white:   '#cacaca'
+
+  # bright:
+  #   black:   '#636363'
+  #   red:     '#bc5653'
+  #   green:   '#909d63'
+  #   yellow:  '#ebc17a'
+  #   blue:    '#7eaac7'
+  #   magenta: '#aa6292'
+  #   cyan:    '#86d3ce'
+  #   white:   '#f7f7f7'
+
+  # dim:
+  #   black:   '#232323'
+  #   red:     '#74423f'
+  #   green:   '#5e6547'
+  #   yellow:  '#8b7653'
+  #   blue:    '#556b79'
+  #   magenta: '#6e4962'
+  #   cyan:    '#5c8482'
+  #   white:   '#828282'
+
+  ##################
+  #### ARGONAUT ####
+  ##################
+  # primary:
+  #   background: '#292C3E'
+  #   foreground: '#EBEBEB'
+
+  # normal:
+  #   black:   '#0d0d0d'
+  #   red:     '#FF301B'
+  #   green:   '#A0E521'
+  #   yellow:  '#FFC620'
+  #   blue:    '#1BA6FA'
+  #   magenta: '#8763B8'
+  #   cyan:    '#21DEEF'
+  #   white:   '#EBEBEB'
+
+  # bright:
+  #   black:   '#6D7070'
+  #   red:     '#FF4352'
+  #   green:   '#B8E466'
+  #   yellow:  '#FFD750'
+  #   blue:    '#1BA6FA'
+  #   magenta: '#A578EA'
+  #   cyan:    '#73FBF1'
+  #   white:   '#FEFEF8'
+
+  ########################
+  #### AYU DARK THEME ####
+  ########################
+  # primary:
+  #   background: '#0A0E14'
+  #   foreground: '#B3B1AD'
+
+  # normal:
+  #   black:   '#01060E'
+  #   red:     '#EA6C73'
+  #   green:   '#91B362'
+  #   yellow:  '#F9AF4F'
+  #   blue:    '#53BDFA'
+  #   magenta: '#FAE994'
+  #   cyan:    '#90E1C6'
+  #   white:   '#C7C7C7'
+
+  # bright:
+  #   black:   '#686868'
+  #   red:     '#F07178'
+  #   green:   '#C2D94C'
+  #   yellow:  '#FFB454'
+  #   blue:    '#59C2FF'
+  #   magenta: '#FFEE99'
+  #   cyan:    '#95E6CB'
+  #   white:   '#FFFFFF'
+
+  ######################
+  #### BREEZE THEME ####
+  ######################
+  # primary:
+  #   background: '#232627'
+  #   foreground: '#fcfcfc'
+
+  #   dim_foreground: '#eff0f1'
+  #   bright_foreground: '#ffffff'
+  #   dim_background: '#31363b'
+  #   bright_background: '#000000'
+
+  # # Normal colors
+  # normal:
+  #   black: '#232627'
+  #   red: '#ed1515'
+  #   green: '#11d116'
+  #   yellow: '#f67400'
+  #   blue: '#1d99f3'
+  #   magenta: '#9b59b6'
+  #   cyan: '#1abc9c'
+  #   white: '#fcfcfc'
+
+  # # Bright colors
+  # bright:
+  #   black: '#7f8c8d'
+  #   red: '#c0392b'
+  #   green: '#1cdc9a'
+  #   yellow: '#fdbc4b'
+  #   blue: '#3daee9'
+  #   magenta: '#8e44ad'
+  #   cyan: '#16a085'
+  #   white: '#ffffff'
+
+  # # Dim colors
+  # dim:
+  #   black: '#31363b'
+  #   red: '#783228'
+  #   green: '#17a262'
+  #   yellow: '#b65619'
+  #   blue: '#1b668f'
+  #   magenta: '#614a73'
+  #   cyan: '#186c60'
+  #   white: '#63686d'
+
+  ############################
+  #### GRUVBOX DARK THEME ####
+  ############################
+  # Default colors
+  primary:
+    # hard contrast: background = '#1d2021'
+    background: '#282828'
+    # soft contrast: background = '#32302f'
+    foreground: '#ebdbb2'
+
   # Normal colors
   normal:
-    black: '#232627'
-    red: '#ed1515'
-    green: '#11d116'
-    yellow: '#f67400'
-    blue: '#1d99f3'
-    magenta: '#9b59b6'
-    cyan: '#21DEEF'
-    white: '#fcfcfc'
+    black:   '#282828'
+    red:     '#cc241d'
+    green:   '#98971a'
+    yellow:  '#d79921'
+    blue:    '#458588'
+    magenta: '#b16286'
+    cyan:    '#689d6a'
+    white:   '#a89984'
 
   # Bright colors
   bright:
-    black: '#7f8c8d'
-    red: '#c0392b'
-    green: '#1cdc9a'
-    yellow: '#fdbc4b'
-    blue: '#3daee9'
-    magenta: '#8e44ad'
-    cyan:    '#73FBF1'
-    white:   '#ffffff'
+    black:   '#928374'
+    red:     '#fb4934'
+    green:   '#b8bb26'
+    yellow:  '#fabd2f'
+    blue:    '#83a598'
+    magenta: '#d3869b'
+    cyan:    '#8ec07c'
+    white:   '#ebdbb2'
 
+  ####################
+  #### NORD THEME ####
+  ####################
+  # primary:
+  #   background: '0x2E3440'
+  #   foreground: '0xD8DEE9'
 
-  # Dim colors
-  #
-  # If the dim colors are not set, they will be calculated automatically based
-  # on thee`normal` colors.
-  # dim:
-    # black:   '#1d2021'
-    # red:     '#421e1e'
-    # green:   '#232b0f'
-    # yellow:  '#4d3b27'
-    # blue:    '#2b3c44'
-    # magenta: '#4e3d45'
-    # cyan:    '#205161'
-    # white:   '#f4e8ba'
+  # normal:
+  #   black:   '0x3B4252'
+  #   red:     '0xBF616A'
+  #   green:   '0xA3BE8C'
+  #   yellow:  '0xEBCB8B'
+  #   blue:    '0x81A1C1'
+  #   magenta: '0xB48EAD'
+  #   cyan:    '0x88C0D0'
+  #   white:   '0xE5E9F0'
+
+  # bright:
+  #   black:   '0x4C566A'
+  #   red:     '0xBF616A'
+  #   green:   '0xA3BE8C'
+  #   yellow:  '0xEBCB8B'
+  #   blue:    '0x81A1C1'
+  #   magenta: '0xB48EAD'
+  #   cyan:    '0x8FBCBB'
+  #   white:   '0xECEFF4'
+
+  ########################
+  #### ONE DARK THEME ####
+  ########################
+  # primary:
+  #   background: '0x1e2127'
+  #   foreground: '0xabb2bf'
+
+  # normal:
+  #   black:   '0x1e2127'
+  #   red:     '0xe06c75'
+  #   green:   '0x98c379'
+  #   yellow:  '0xd19a66'
+  #   blue:    '0x61afef'
+  #   magenta: '0xc678dd'
+  #   cyan:    '0x56b6c2'
+  #   white:   '0xabb2bf'
+
+  # bright:
+  #   black:   '0x5c6370'
+  #   red:     '0xe06c75'
+  #   green:   '0x98c379'
+  #   yellow:  '0xd19a66'
+  #   blue:    '0x61afef'
+  #   magenta: '0xc678dd'
+  #   cyan:    '0x56b6c2'
+  #   white:   '0xffffff'
 
   # Indexed Colors
   #
