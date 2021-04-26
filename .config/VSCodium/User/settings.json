@@ -1,5 +1,12 @@
 {
     "vscode-neovim.neovimInitVimPaths.linux": "/home/piero/.config/nvim/nv-vscode/init.vim",
     "vscode-neovim.neovimExecutablePaths.linux": "/usr/bin/nvim",
-    "keyboard.dispatch": "keyCode"
+    "keyboard.dispatch": "keyCode",
+    "workbench.iconTheme": "material-icon-theme",
+    "terminal.integrated.fontSize": 16,
+    "editor.fontSize": 16,
+    "vetur.validation.templateProps": true,
+    "vetur.experimental.templateInterpolationService": true,
+    "editor.fontFamily": "'monospace', monospace, 'Droid Sans Mono','Droid Sans Fallback'",
+    "workbench.colorTheme": "Gruvbox Dark Hard"
 }
