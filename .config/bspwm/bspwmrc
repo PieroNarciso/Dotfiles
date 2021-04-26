@@ -45,8 +45,10 @@ bspc rule -a KotatogramDesktop desktop=8
 bspc rule -a discord desktop=9 follow=off focus=off
 bspc rule -a SpotifyTui desktop=10
 
-# floting windows
+# floting windows and others
 bspc rule -a Pavucontrol state=floating
 bspc rule -a UnityHub state=floating
 bspc rule -a Peek state=floating
 bspc rule -a Discover-overlay state=floating
+
+bspc rule -a Plank layer=above manage=on border=off
