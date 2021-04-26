@@ -1,18 +1,45 @@
 return {
-  filetypes = { 'vue' },
+  filetypes = { "vue" },
   init_options = {
-    vetur =  {
-      completion = {
-        autoImport = true,
-        tagCasing = 'kebab',
-        useScaffoldSnippets = true
+    config = {
+      css = {},
+      emmet = {},
+      html = {
+        suggest = {}
       },
-      experimental = {
-        templateInterpolationService = true
+      javascript = {
+        format = {}
       },
-      validation = {
-        interpolation = true,
-        templateProps = true
+      stylusSupremacy = {},
+      typescript = {
+        format = {}
+      },
+      vetur = {
+        completion = {
+          autoImport = true,
+          tagCasing = "kebab",
+          useScaffoldSnippets = false
+        },
+        format = {
+          defaultFormatter = {
+            js = "none",
+            ts = "none"
+          },
+          defaultFormatterOptions = {},
+          scriptInitialIndent = false,
+          styleInitialIndent = false
+        },
+        experimental = {
+          templateInterpolationService = true
+        },
+        useWorkspaceDependencies = false,
+        validation = {
+          templateProps = true,
+          script = true,
+          style = true,
+          template = true,
+          interpolation = true,
+        }
       }
     }
   },

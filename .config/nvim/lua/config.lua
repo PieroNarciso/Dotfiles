@@ -68,6 +68,7 @@ vim.api.nvim_exec(
 	autocmd Filetype javascriptreact setlocal sw=2 ts=2 sts=2 expandtab
 	autocmd Filetype javascript.jsx setlocal sw=2 ts=2 sts=2 expandtab
 	autocmd Filetype typescript setlocal sw=2 ts=2 sts=2 expandtab
+	autocmd Filetype yaml setlocal sw=2 ts=2 sts=2 expandtab
 	autocmd Filetype typescriptreact setlocal sw=2 ts=2 sts=2 expandtab
 	autocmd Filetype mason setlocal sw=2 ts=4 sts=2 expandtab
 	autocmd Filetype json setlocal sw=2 ts=4 sts=2 expandtab
