@@ -11,6 +11,7 @@ require('nv-nerdtree')
 require('nv-presence')
 require('nv-compe')
 require('nv-colorizer')
+require('nv-prettier')
 
 -- LSP
 require('lsp')
