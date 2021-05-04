@@ -71,8 +71,8 @@ local function setup_servers()
       config = require'lsp.vim'
     elseif server == 'yaml' then
       config = require'lsp.yaml'
-    else
-      config = require'lsp.yaml'
+    elseif server == 'diagnosticls' then
+      config = require'lsp.diagnosticls'
     end
     config.on_attach = on_attach
     if not config.root_dir then
