@@ -50,5 +50,7 @@ bspc rule -a Pavucontrol state=floating
 bspc rule -a UnityHub state=floating
 bspc rule -a Peek state=floating
 bspc rule -a Discover-overlay state=floating
+bspc rule -a Nitrogen state=floating
 
+# Other rules
 bspc rule -a Plank layer=above manage=on border=off
