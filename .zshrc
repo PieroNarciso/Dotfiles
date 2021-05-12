@@ -23,6 +23,8 @@ zstyle ':completion:*' rehash true
 zstyle ':completion:*' accept-exact '*(N)'
 zstyle ':completion:*' use-cache-on
 zstyle ':completion:*' cache-path ~/.zsh/cache
+zstyle ':completion:*' menu select
+zmodload zsh/complist
 WORDCHARS=${WORDCHARS//\/[&.;]}
 
 
@@ -194,6 +196,11 @@ fi
 ## VIM MODE
 bindkey -v
 export KEYTIMEOUT=1
+
+bindkey -M menuselect 'h' vi-backward-char
+bindkey -M menuselect 'k' vi-up-line-or-history
+bindkey -M menuselect 'l' vi-forward-char
+bindkey -M menuselect 'j' vi-down-line-or-history
 
 
 ####################
