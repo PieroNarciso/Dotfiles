@@ -1,5 +1,5 @@
-require('keymap')
 require('plugins')
+require('keymap')
 require('config')
 require('colorscheme')
 
@@ -12,6 +12,7 @@ require('nv-presence')
 require('nv-compe')
 require('nv-colorizer')
 require('nv-prettier')
+require('nv-telescope')
 
 -- LSP
 require('lsp')
