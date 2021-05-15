@@ -1,4 +1,5 @@
 -- This file can be loaded by calling `lua require('plugins')` from your init.vim
+--
 
 -- Only required if you have packer configured as `opt`
 -- vim.cmd [[packadd packer.nvim]]
@@ -10,28 +11,32 @@ return require('packer').startup(function()
   use 'wbthomason/packer.nvim'
 
   -- Utilities
-  use 'yggdroot/indentline'
+  use { 'yggdroot/indentline' }
   use 'tpope/vim-surround'
   use 'tpope/vim-commentary'
   use { 'prettier/vim-prettier', run = 'npm install' }
-  use 'andweeb/presence.nvim'
-  use 'iamcco/markdown-preview.nvim'
-  use 'tpope/vim-fugitive'
+  use { 'andweeb/presence.nvim' }
+  use { 'iamcco/markdown-preview.nvim' }
+  use { 'tpope/vim-fugitive' }
 
   -- Integration
-  use 'scrooloose/nerdtree'
-  use 'xuyuanp/nerdtree-git-plugin'
-  use 'junegunn/fzf.vim'
+  use { 'scrooloose/nerdtree' }
+  use { 'xuyuanp/nerdtree-git-plugin' }
+  use { 'junegunn/fzf.vim' }
+  use {
+    'nvim-telescope/telescope.nvim',
+    requires = {{'nvim-lua/popup.nvim'}, {'nvim-lua/plenary.nvim'}}
+  }
 
   -- Completion
   -- use 'mattn/emmet-vim'
-  use 'hrsh7th/nvim-compe'
-  use "rafamadriz/friendly-snippets"
-  use 'hrsh7th/vim-vsnip'
+  use { 'hrsh7th/nvim-compe' }
+  use { "rafamadriz/friendly-snippets" }
+  use { 'hrsh7th/vim-vsnip' }
 
   -- Language support
-  use 'neovim/nvim-lspconfig'
-  use 'kabouzeid/nvim-lspinstall'
+  use { 'neovim/nvim-lspconfig' }
+  use { 'kabouzeid/nvim-lspinstall' }
 
   -- Syntax Highlighting
   use { 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' }
