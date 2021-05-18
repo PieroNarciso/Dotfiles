@@ -75,6 +75,8 @@ local function setup_servers()
       config = require'lsp.diagnosticls'
     elseif server == 'deno' then
       config = require'lsp.deno'
+    elseif server == 'cpp' then
+      config = require'lsp.cpp'
     end
     config.on_attach = on_attach
     if not config.root_dir then
