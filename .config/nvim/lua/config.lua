@@ -59,6 +59,14 @@ vim.bo.smartindent = true
 
 vim.api.nvim_exec(
 [[
+  autocmd BufRead,BufNewFile *.jsx setlocal filetype=javascript.jsx
+  autocmd BufRead,BufNewFile *.tsx setlocal filetype=typescript.tsx
+]],
+true
+)
+
+vim.api.nvim_exec(
+[[
 	autocmd Filetype python setlocal sw=4 ts=4 sts=4 expandtab
 	autocmd Filetype html setlocal sw=2 ts=2 sts=2 expandtab
 	autocmd Filetype vue setlocal sw=2 ts=2 sts=2 expandtab
@@ -69,8 +77,9 @@ vim.api.nvim_exec(
 	autocmd Filetype javascriptreact setlocal sw=2 ts=2 sts=2 expandtab
 	autocmd Filetype javascript.jsx setlocal sw=2 ts=2 sts=2 expandtab
 	autocmd Filetype typescript setlocal sw=2 ts=2 sts=2 expandtab
-	autocmd Filetype yaml setlocal sw=2 ts=2 sts=2 expandtab
+	autocmd Filetype typescript.tsx setlocal sw=2 ts=2 sts=2 expandtab
 	autocmd Filetype typescriptreact setlocal sw=2 ts=2 sts=2 expandtab
+	autocmd Filetype yaml setlocal sw=2 ts=2 sts=2 expandtab
 	autocmd Filetype mason setlocal sw=2 ts=4 sts=2 expandtab
 	autocmd Filetype json setlocal sw=2 ts=4 sts=2 expandtab
 	autocmd Filetype make setloc sw=4 ts=4 sts=4 noexpandtab

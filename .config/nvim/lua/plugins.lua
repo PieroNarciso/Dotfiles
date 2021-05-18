@@ -41,7 +41,7 @@ return require('packer').startup(function()
   -- Syntax Highlighting
   use { 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' }
   use 'maxmellon/vim-jsx-pretty'
-  use 'HerringtonDarkholme/yats.vim'
+  -- use 'HerringtonDarkholme/yats.vim'
   use 'tiagofumo/vim-nerdtree-syntax-highlight'
   use 'norcalli/nvim-colorizer.lua'
   use 'posva/vim-vue'
