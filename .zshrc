@@ -13,8 +13,8 @@ compinit
 setopt COMPLETE_ALIASES
 
 HISTFILE=~/.zhistory
-HISTSIZE=1500
-SAVEHIST=1500
+HISTSIZE=2000
+SAVEHIST=2000
 
 zstyle ':completion:*' matcher-list 'm:{a-zA-Z}={A-Za-z}'
 zstyle ':completion:*' list-colors "${(s.:.)LS_COLORS}"
@@ -227,9 +227,6 @@ alias dotfiles='/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
 # Init NVM
 [[ -f "/usr/share/nvm/init-nvm.sh" ]] \
     && source /usr/share/nvm/init-nvm.sh
-
-# Init pyenv
-eval "$(pyenv init -)"
 
 # FZF completion and keybindings
 [ -f "/usr/share/fzf/completion.zsh" ] \
