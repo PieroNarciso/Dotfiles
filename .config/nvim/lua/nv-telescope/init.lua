@@ -62,10 +62,10 @@ require('telescope').setup{
 local set = vim.api.nvim_set_keymap
 
 -- set('n', '<C-p>', ':Telescope find_files<CR>', { noremap = true })
--- set('n', '<Leader>ff', ':Telescope find_files<CR>', { noremap = true })
+set('n', '<Leader>ff', ':Telescope find_files<CR>', { noremap = true })
 -- set('n', '<Leader>ps', ':Telescope live_grep<CR>', { noremap = true })
--- set('n', '<Leader>fg', ':Telescope live_grep<CR>', { noremap = true })
+set('n', '<Leader>fg', ':Telescope live_grep<CR>', { noremap = true })
 -- set('n', '<Leader>pb', ':Telescope buffers<CR>', { noremap = true })
--- set('n', '<Leader>fb', ':Telescope buffers<CR>', { noremap = true })
--- set('n', '<Leader>fh', '<cmd>Telescope help_tags<CR>', { noremap = true })
+set('n', '<Leader>fb', ':Telescope buffers<CR>', { noremap = true })
+set('n', '<Leader>fh', '<cmd>Telescope help_tags<CR>', { noremap = true })
 set('n', 'gr', '<cmd>lua require"telescope.builtin".lsp_references{}<CR>', { noremap = true })

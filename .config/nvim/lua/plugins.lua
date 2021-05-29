@@ -51,7 +51,9 @@ return require('packer').startup(function()
   use 'vim-airline/vim-airline-themes'
   use 'edkolev/tmuxline.vim'
   use 'ryanoasis/vim-devicons'
+
+  -- Colorscheme
   use 'sainnhe/gruvbox-material'
-  use 'christianchiarulli/nvcode-color-schemes.vim'
+  use 'navarasu/onedark.nvim'
 
 end)
