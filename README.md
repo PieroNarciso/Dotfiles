@@ -1,5 +1,5 @@
 # Dotfiles
-![Preview](https://i.imgur.com/QjcLhhX.png)
+![Preview](https://i.imgur.com/GUPLgzh.png)
 
 # Requirements
 Requirements packages are in `Packages-Desktop` (**Arch Linux**)
