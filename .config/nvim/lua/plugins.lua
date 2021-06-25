@@ -11,18 +11,18 @@ return require('packer').startup(function()
   use 'wbthomason/packer.nvim'
 
   -- Utilities
-  use { 'yggdroot/indentline' }
+  use 'yggdroot/indentline'
   use 'tpope/vim-surround'
   use 'tpope/vim-commentary'
   use { 'prettier/vim-prettier', run = 'npm install' }
-  use { 'andweeb/presence.nvim' }
-  use { 'iamcco/markdown-preview.nvim' }
-  use { 'tpope/vim-fugitive' }
+  use 'andweeb/presence.nvim'
+  use 'iamcco/markdown-preview.nvim'
+  use 'tpope/vim-fugitive'
 
   -- Integration
-  use { 'scrooloose/nerdtree' }
-  use { 'xuyuanp/nerdtree-git-plugin' }
-  use { 'junegunn/fzf.vim' }
+  use 'scrooloose/nerdtree'
+  use 'xuyuanp/nerdtree-git-plugin'
+  use 'junegunn/fzf.vim'
   use {
     'nvim-telescope/telescope.nvim',
     requires = {{'nvim-lua/popup.nvim'}, {'nvim-lua/plenary.nvim'}}
@@ -30,18 +30,19 @@ return require('packer').startup(function()
 
   -- Completion
   -- use 'mattn/emmet-vim'
-  use { 'hrsh7th/nvim-compe' }
-  use { "rafamadriz/friendly-snippets" }
-  use { 'hrsh7th/vim-vsnip' }
+  use 'hrsh7th/nvim-compe'
+  use 'rafamadriz/friendly-snippets'
+  use 'hrsh7th/vim-vsnip'
+  use 'hrsh7th/vim-vsnip-integ'
 
   -- Language support
-  use { 'neovim/nvim-lspconfig' }
-  use { 'kabouzeid/nvim-lspinstall' }
+  use 'neovim/nvim-lspconfig'
+  use 'kabouzeid/nvim-lspinstall'
 
   -- Syntax Highlighting
   use { 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' }
   use 'maxmellon/vim-jsx-pretty'
-  -- use 'HerringtonDarkholme/yats.vim'
+  use 'HerringtonDarkholme/yats.vim'
   use 'tiagofumo/vim-nerdtree-syntax-highlight'
   use 'norcalli/nvim-colorizer.lua'
   use 'posva/vim-vue'
