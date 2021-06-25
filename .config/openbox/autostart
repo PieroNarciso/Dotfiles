@@ -15,3 +15,15 @@
 # If you want to use XFCE config tools...
 #
 #xfce-mcs-manager &
+
+pgrep -x nitrogen > /dev/null || nitrogen --restore &
+pgrep -x tint2 > /dev/null || tint2 &
+pgrep -x plank > /dev/null || plank &
+pgrep -x dunst > /dev/null || dunst &
+pgrep -x picom > /dev/null || picom --experimental-backends &
+pgrep -x pasystray > /dev/null || pasystray --volume-max 100 &
+pgrep -x mictray > /dev/null || mictray &
+pgrep -x xfce4-clipman > /dev/null || xfce4-clipman &
+pgrep -x nm-applet > /dev/null || nm-applet &
+/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 &
+pgrep -x xss-lock > /dev/null || xss-lock --transfer-sleep-lock -- i3lock --nofork -i $HOME/.local/share/wallpapers/arch-linux-wp-blur.png &
