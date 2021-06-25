@@ -7,6 +7,7 @@
     "editor.fontSize": 16,
     "vetur.validation.templateProps": true,
     "vetur.experimental.templateInterpolationService": true,
-    "editor.fontFamily": "'monospace', monospace, 'Droid Sans Mono','Droid Sans Fallback'",
-    "workbench.colorTheme": "Gruvbox Dark Hard"
+    "editor.fontFamily": "monospace, 'Droid Sans Mono','Droid Sans Fallback'",
+    "workbench.colorTheme": "Gruvbox Dark Hard",
+    "terminal.integrated.fontFamily": "'RobotoMono Nerd Font'"
 }
