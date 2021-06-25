@@ -22,6 +22,7 @@ require'compe'.setup {
   };
 }
 
+
 vim.o.completeopt = 'menuone,noselect'
 vim.cmd('set shortmess+=c')
 
