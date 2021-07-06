@@ -1,5 +1,5 @@
 -- Change the mapping Prettier
-vim.cmd("nmap <Leader>py <Plug>(PrettierAsync)")
+vim.cmd("nmap <Leader>pr <Plug>(PrettierAsync)")
 
 -- Max line length that prettier will wrap on: a number or 'auto' (use
 -- textwidth).
