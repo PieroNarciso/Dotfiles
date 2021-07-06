@@ -155,7 +155,6 @@ call plug#begin('~/.vim/plugged')
     "" Integration
     Plug 'scrooloose/nerdtree' 
     Plug 'xuyuanp/nerdtree-git-plugin'
-    Plug 'junegunn/fzf', { 'do': { -> fzf#install() } }
     Plug 'junegunn/fzf.vim'
     " Plug 'ctrlpvim/ctrlp.vim'
     " Plug 'puremourning/vimspector'

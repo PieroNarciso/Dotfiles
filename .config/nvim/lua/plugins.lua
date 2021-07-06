@@ -6,7 +6,7 @@
 -- Only if your version of Neovim doesn't have https://github.com/neovim/neovim/pull/12632 merged
 -- vim._update_package_paths()
 
-return require('packer').startup(function()
+return require('packer').startup(function(use)
   -- Packer manager
   use 'wbthomason/packer.nvim'
 
