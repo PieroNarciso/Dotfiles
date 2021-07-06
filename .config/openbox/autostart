@@ -21,7 +21,7 @@ pgrep -x tint2 > /dev/null || tint2 &
 pgrep -x plank > /dev/null || plank &
 pgrep -x dunst > /dev/null || dunst &
 pgrep -x picom > /dev/null || picom --experimental-backends &
-pgrep -x pasystray > /dev/null || pasystray --volume-max 100 &
+# pgrep -x pasystray > /dev/null || pasystray --volume-max 100 &
 pgrep -x mictray > /dev/null || mictray &
 pgrep -x xfce4-clipman > /dev/null || xfce4-clipman &
 pgrep -x nm-applet > /dev/null || nm-applet &

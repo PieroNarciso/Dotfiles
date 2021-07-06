@@ -254,6 +254,9 @@
     <keybind key="A-F4">
       <action name="Close"/>
     </keybind>
+    <keybind key="W-S-q">
+      <action name="Close"/>
+    </keybind>
     <keybind key="A-Escape">
       <action name="Lower"/>
       <action name="FocusToBottom"/>
@@ -318,11 +321,86 @@
     <!-- Keybindings for running applications -->
     <keybind key="W-Return">
       <action name="Execute">
-        <startupnotify>
-          <enabled>true</enabled>
-          <name>Alacritty</name>
-        </startupnotify>
         <command>alacritty</command>
+      </action>
+    </keybind>
+    <keybind key="W-Shift-m">
+      <action name="Execute">
+        <command>amixer -q set Capture toggle</command>
+      </action>
+    </keybind>
+    <keybind key="XF86AudioRaiseVolume">
+      <action name="Execute">
+        <command>amixer -q sset -M Master 5%+</command>
+      </action>
+      <action name="Execute">
+        <command>/home/piero/.scripts/volume_status_notify.sh</command>
+      </action>
+    </keybind>
+    <keybind key="XF86AudioLowerVolume">
+      <action name="Execute">
+        <command>amixer -q sset -M Master 5%-</command>
+      </action>
+      <action name="Execute">
+        <command>/home/piero/.scripts/volume_status_notify.sh</command>
+      </action>
+    </keybind>
+    <keybind key="XF86AudioMute">
+      <action name="Execute">
+        <command>amixer -q sset Master toggle</command>
+      </action>
+      <action name="Execute">
+        <command>/home/piero/.scripts/volume_status_notify.sh</command>
+      </action>
+    </keybind>
+    <keybind key="XF86AudioPlay">
+      <action name="Execute">
+        <command>playerctl play-pause</command>
+      </action>
+    </keybind>
+    <keybind key="XF86AudioNext">
+      <action name="Execute">
+        <command>playerctl next</command>
+      </action>
+    </keybind>
+    <keybind key="XF86AudioPrev">
+      <action name="Execute">
+        <command>playerctl previous</command>
+      </action>
+    </keybind>
+    <keybind key="XF86AudioStop">
+      <action name="Execute">
+        <command>playerctl stop</command>
+      </action>
+    </keybind>
+    <keybind key="Print">
+      <action name="Execute">
+        <command>/home/piero/.scripts/screenshot.sh</command>
+      </action>
+    </keybind>
+    <keybind key="C-S-Print">
+      <action name="Execute">
+        <command>/home/piero/.scripts/screenshot.sh</command>
+      </action>
+    </keybind>
+    <keybind key="W-period">
+      <action name="Execute">
+        <command>rofi -show emoji -modi emoji</command>
+      </action>
+    </keybind>
+    <keybind key="W-S-Return">
+      <action name="Execute">
+        <command>rofi -show</command>
+      </action>
+    </keybind>
+    <keybind key="W-b">
+      <action name="Execute">
+        <command>firefox</command>
+      </action>
+    </keybind>
+    <keybind key="W-e">
+      <action name="Execute">
+        <command>alacritty -e lf</command>
       </action>
     </keybind>
   </keyboard>
