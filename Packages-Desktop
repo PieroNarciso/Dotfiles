@@ -1,7 +1,6 @@
-adobe-source-sans-pro-fonts
+adobe-source-sans-fonts
 alacritty
 alsa-utils
-anydesk-bin
 appstream-glib
 arc-gtk-theme
 asar
@@ -68,7 +67,7 @@ mictray
 mpv
 ncdu
 neofetch
-neovim-nightly-bin
+neovim
 nerd-fonts-roboto-mono
 network-manager-applet
 numlockx
@@ -76,6 +75,7 @@ nvidia
 nvidia-lts
 obconf
 pacman-contrib
+pandoc
 papirus-icon-theme
 paru-bin
 pasystray
@@ -101,6 +101,7 @@ spaceship-prompt-git
 spotify
 spotify-tui-bin
 steam
+stow
 sweet-gtk-theme-nova-git
 sxiv
 system-config-printer
@@ -114,7 +115,6 @@ ttf-roboto
 uthash
 vala
 vim-plug
-virtualbox
 vscodium-bin
 wget
 xcursor-breeze
