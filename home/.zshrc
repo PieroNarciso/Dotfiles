@@ -221,8 +221,6 @@ bindkey -M vicmd 'j' history-substring-search-down
 ###########################
 ## OTHERS CONFIGURATIONS ##
 ###########################
-# dotfiles setup
-alias dotfiles='/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
 
 # Init NVM
 [[ -f "/usr/share/nvm/init-nvm.sh" ]] \
