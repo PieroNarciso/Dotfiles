@@ -76,7 +76,7 @@ font-5 = Font Awesome 5 Brands:pixelsize=12;1
 
 ; modules-left = bspwm
 modules-center = xwindow
-modules-right = spotify filesystem xkeyboard memory cpu date powermenu
+modules-right = spotify filesystem xkeyboard memory cpu date
 
 tray-position = right
 tray-padding = 2
