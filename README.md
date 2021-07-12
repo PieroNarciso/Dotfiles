@@ -30,6 +30,13 @@ $ cd $HOME/.dotfiles
 $ stow */
 ```
 
+* Copy pulseaudio files `./.pulse/default.pa` to `$HOME/.config/pulse/`
+
+```bash
+$ mkdir -p $HOME/.config/pulse
+$ cp $HOME/.dotfiles/.pulse/ $HOME/.config/pulse/
+```
+
 
 # i3 / BSPWM
 
