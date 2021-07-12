@@ -1,6 +1,7 @@
 [user]
     name = Piero Narciso
     email = pieronarciso988@gmail.com
+    signingkey = E9C0DCDAE250B410
 
 [init]
     defaultBranch = main
@@ -18,13 +19,14 @@
     ff = only
 
 [pager]
-    log = false
-    diff = false
+    log = true
+    diff = true
     show = false
     branch = false
 
 [color]
     ui = auto
+
 [color "status"]
     changed = yellow
     untracked = red
@@ -40,5 +42,6 @@
     pu = push
     re = reset
     logg = log --all --decorate --graph --oneline
+
 [commit]
     gpgsign = true
