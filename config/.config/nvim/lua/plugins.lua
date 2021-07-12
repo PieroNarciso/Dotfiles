@@ -16,14 +16,11 @@ return require('packer').startup(function(use)
   use 'tpope/vim-commentary'
   use { 'prettier/vim-prettier', run = 'npm install' }
   use 'andweeb/presence.nvim'
-  use 'iamcco/markdown-preview.nvim'
+  use { 'iamcco/markdown-preview.nvim', ft = {'cpp'}}
   use 'tpope/vim-fugitive'
 
   -- Competitive programming
-  use {
-    'searleser97/cpbooster.vim',
-    ft = {'cpp'}
-  }
+  use { 'searleser97/cpbooster.vim', ft = {'cpp'} }
 
   -- Integration
   use 'scrooloose/nerdtree'
@@ -51,7 +48,7 @@ return require('packer').startup(function(use)
   use 'HerringtonDarkholme/yats.vim'
   use 'tiagofumo/vim-nerdtree-syntax-highlight'
   use 'norcalli/nvim-colorizer.lua'
-  use 'posva/vim-vue'
+  use { 'posva/vim-vue', ft = {'vue'} }
 
   -- Interface
   use 'vim-airline/vim-airline'
