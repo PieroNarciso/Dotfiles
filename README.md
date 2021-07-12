@@ -13,35 +13,23 @@ $ paru -S --needed - < Packages-Desktop
 
 # Dotfiles Install
 
-* Make an alias in your .zshrc or .bashrc file.
+
+* Clone this repository in `$HOME`
 
 ```bash
-$ alias dotfiles='/usr/bin/git --git-dir=$HOME/.dotfiles/ --work-tree=$HOME'
+$ git clone https://github.com/PieroNarciso/Dotfiles.git $HOME/.dotfiles
 ```
-
-* Ignore the directory of your repository
+* Move to `dotfiles` directory
 
 ```bash
-$ echo ".dotfiles" >> .gitignore
+$ cd $HOME/.dotfiles
 ```
-
-* Clone this repository in a `bare` repository.
+* Use stow to symlink
 
 ```bash
-git clone --bare https://github.com/PieroNarciso/Dotfiles.git $HOME/.dotfiles
+$ stow */
 ```
 
-* Checkout the content from the bare repository to your `$HOME` directory. If you get an error with a list of files. Make a backup of those, remove them and re-run the command.
-
-```bash
-$ dotfiles checkout --force
-```
-
-* Flah showUntrackedFile to `no`.
-
-```bash
-$ dotfiles config --local status.showUntrackedFiles no
-```
 
 # i3 / BSPWM
 
