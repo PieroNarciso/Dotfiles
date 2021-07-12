@@ -19,6 +19,12 @@ return require('packer').startup(function(use)
   use 'iamcco/markdown-preview.nvim'
   use 'tpope/vim-fugitive'
 
+  -- Competitive programming
+  use {
+    'searleser97/cpbooster.vim',
+    ft = {'cpp'}
+  }
+
   -- Integration
   use 'scrooloose/nerdtree'
   use 'xuyuanp/nerdtree-git-plugin'
