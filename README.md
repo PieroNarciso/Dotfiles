@@ -37,6 +37,11 @@ $ mkdir -p $HOME/.config/pulse
 $ cp $HOME/.dotfiles/.pulse/ $HOME/.config/pulse/
 ```
 
+* Profile avatar
+
+```bash
+$ cp $HOME/.dotfiles/.face $HOME/.face
+```
 
 # i3 / BSPWM
 
