@@ -16,7 +16,7 @@ return require('packer').startup(function(use)
   use 'tpope/vim-commentary'
   use { 'prettier/vim-prettier', run = 'npm install' }
   use 'andweeb/presence.nvim'
-  use { 'iamcco/markdown-preview.nvim', ft = {'cpp'}}
+  use { 'iamcco/markdown-preview.nvim', ft = {'md'}}
   use 'tpope/vim-fugitive'
 
   -- Competitive programming
@@ -44,8 +44,16 @@ return require('packer').startup(function(use)
 
   -- Syntax Highlighting
   use { 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' }
-  use 'maxmellon/vim-jsx-pretty'
-  use 'HerringtonDarkholme/yats.vim'
+  use {
+    'maxmellon/vim-jsx-pretty',
+    ft = {'tsx', 'jsx', 'typescriptreact', 'javascriptreact',
+          'javascript.jsx', 'typescript.tsx'
+    }
+  }
+  use {
+    'HerringtonDarkholme/yats.vim',
+    ft = {'typescript', 'typescriptreact', 'typescript.tsx'}
+  }
   use 'tiagofumo/vim-nerdtree-syntax-highlight'
   use 'norcalli/nvim-colorizer.lua'
   use { 'posva/vim-vue', ft = {'vue'} }

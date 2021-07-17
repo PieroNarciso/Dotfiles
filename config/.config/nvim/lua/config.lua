@@ -57,6 +57,8 @@ vim.bo.autoindent = true
 vim.bo.expandtab = false
 vim.bo.smartindent = true
 
+
+-- Ejs
 vim.api.nvim_exec(
 [[
   autocmd BufRead,BufNewFile *.ejs setlocal filetype=html
@@ -71,6 +73,7 @@ vim.api.nvim_exec(
 	autocmd Filetype xml setlocal sw=2 ts=2 sts=2 expandtab
 	autocmd Filetype vue setlocal sw=2 ts=2 sts=2 expandtab
 	autocmd Filetype lua setlocal sw=2 ts=2 sts=2 expandtab
+	autocmd Filetype vim setlocal sw=2 ts=2 sts=2 expandtab
 	autocmd Filetype css setlocal sw=2 ts=2 sts=2 expandtab
 	autocmd Filetype scss setlocal sw=2 ts=2 sts=2 expandtab
 	autocmd Filetype javascript setlocal sw=2 ts=2 sts=2 expandtab
