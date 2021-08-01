@@ -16,6 +16,9 @@ set('v', '>', '>gv', {})
 -- Close current buffer
 set('n', '<Leader>cb', ':bdelete<CR>', {})
 
+-- Select all buffer
+set('n', '<Leader>a', 'ggVG', {})
+
 -- Search mapping: Center next and previous search
 set('n', 'n', 'nzzzv', { noremap = true })
 set('n', 'N', 'Nzzzv', { noremap = true })

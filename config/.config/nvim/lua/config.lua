@@ -30,7 +30,7 @@ vim.o.guicursor = ''
 vim.wo.colorcolumn = '80'
 
 -- Set off set for scrolling
-vim.o.scrolloff = 8
+vim.o.scrolloff = 5
 
 -- Hidden buffers
 vim.o.hidden = true
