@@ -14,6 +14,7 @@ return require('packer').startup(function(use)
   use 'yggdroot/indentline'
   use 'tpope/vim-surround'
   use 'tpope/vim-commentary'
+  use 'JoosepAlviste/nvim-ts-context-commentstring'
   use { 'prettier/vim-prettier', run = 'npm install' }
   use 'andweeb/presence.nvim'
   use { 'iamcco/markdown-preview.nvim', ft = {'md'}}
@@ -44,16 +45,6 @@ return require('packer').startup(function(use)
 
   -- Syntax Highlighting
   use { 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' }
-  use {
-    'maxmellon/vim-jsx-pretty',
-    ft = {'tsx', 'jsx', 'typescriptreact', 'javascriptreact',
-          'javascript.jsx', 'typescript.tsx'
-    }
-  }
-  use {
-    'HerringtonDarkholme/yats.vim',
-    ft = {'typescript', 'typescriptreact', 'typescript.tsx'}
-  }
   use 'tiagofumo/vim-nerdtree-syntax-highlight'
   use 'norcalli/nvim-colorizer.lua'
   use { 'posva/vim-vue', ft = {'vue'} }

@@ -123,6 +123,10 @@ _G.packer_plugins = {
     loaded = true,
     path = "/home/piero/.local/share/nvim/site/pack/packer/start/nvim-treesitter"
   },
+  ["nvim-ts-context-commentstring"] = {
+    loaded = true,
+    path = "/home/piero/.local/share/nvim/site/pack/packer/start/nvim-ts-context-commentstring"
+  },
   ["onedark.nvim"] = {
     loaded = true,
     path = "/home/piero/.local/share/nvim/site/pack/packer/start/onedark.nvim"
@@ -171,11 +175,6 @@ _G.packer_plugins = {
     loaded = true,
     path = "/home/piero/.local/share/nvim/site/pack/packer/start/vim-fugitive"
   },
-  ["vim-jsx-pretty"] = {
-    loaded = false,
-    needs_bufread = true,
-    path = "/home/piero/.local/share/nvim/site/pack/packer/opt/vim-jsx-pretty"
-  },
   ["vim-nerdtree-syntax-highlight"] = {
     loaded = true,
     path = "/home/piero/.local/share/nvim/site/pack/packer/start/vim-nerdtree-syntax-highlight"
@@ -200,11 +199,6 @@ _G.packer_plugins = {
     loaded = false,
     needs_bufread = true,
     path = "/home/piero/.local/share/nvim/site/pack/packer/opt/vim-vue"
-  },
-  ["yats.vim"] = {
-    loaded = false,
-    needs_bufread = true,
-    path = "/home/piero/.local/share/nvim/site/pack/packer/opt/yats.vim"
   }
 }
 
@@ -213,15 +207,8 @@ vim.cmd [[augroup packer_load_aucmds]]
 vim.cmd [[au!]]
   -- Filetype lazy-loads
 time([[Defining lazy-load filetype autocommands]], true)
-vim.cmd [[au FileType jsx ++once lua require("packer.load")({'vim-jsx-pretty'}, { ft = "jsx" }, _G.packer_plugins)]]
 vim.cmd [[au FileType vue ++once lua require("packer.load")({'vim-vue'}, { ft = "vue" }, _G.packer_plugins)]]
-vim.cmd [[au FileType javascriptreact ++once lua require("packer.load")({'vim-jsx-pretty'}, { ft = "javascriptreact" }, _G.packer_plugins)]]
-vim.cmd [[au FileType typescript ++once lua require("packer.load")({'yats.vim'}, { ft = "typescript" }, _G.packer_plugins)]]
-vim.cmd [[au FileType tsx ++once lua require("packer.load")({'vim-jsx-pretty'}, { ft = "tsx" }, _G.packer_plugins)]]
 vim.cmd [[au FileType cpp ++once lua require("packer.load")({'cpbooster.vim'}, { ft = "cpp" }, _G.packer_plugins)]]
-vim.cmd [[au FileType typescriptreact ++once lua require("packer.load")({'vim-jsx-pretty', 'yats.vim'}, { ft = "typescriptreact" }, _G.packer_plugins)]]
-vim.cmd [[au FileType javascript.jsx ++once lua require("packer.load")({'vim-jsx-pretty'}, { ft = "javascript.jsx" }, _G.packer_plugins)]]
-vim.cmd [[au FileType typescript.tsx ++once lua require("packer.load")({'vim-jsx-pretty', 'yats.vim'}, { ft = "typescript.tsx" }, _G.packer_plugins)]]
 vim.cmd [[au FileType md ++once lua require("packer.load")({'markdown-preview.nvim'}, { ft = "md" }, _G.packer_plugins)]]
 time([[Defining lazy-load filetype autocommands]], false)
 vim.cmd("augroup END")
@@ -229,12 +216,6 @@ vim.cmd [[augroup filetypedetect]]
 time([[Sourcing ftdetect script at: /home/piero/.local/share/nvim/site/pack/packer/opt/vim-vue/ftdetect/vue.vim]], true)
 vim.cmd [[source /home/piero/.local/share/nvim/site/pack/packer/opt/vim-vue/ftdetect/vue.vim]]
 time([[Sourcing ftdetect script at: /home/piero/.local/share/nvim/site/pack/packer/opt/vim-vue/ftdetect/vue.vim]], false)
-time([[Sourcing ftdetect script at: /home/piero/.local/share/nvim/site/pack/packer/opt/yats.vim/ftdetect/typescript.vim]], true)
-vim.cmd [[source /home/piero/.local/share/nvim/site/pack/packer/opt/yats.vim/ftdetect/typescript.vim]]
-time([[Sourcing ftdetect script at: /home/piero/.local/share/nvim/site/pack/packer/opt/yats.vim/ftdetect/typescript.vim]], false)
-time([[Sourcing ftdetect script at: /home/piero/.local/share/nvim/site/pack/packer/opt/yats.vim/ftdetect/typescriptreact.vim]], true)
-vim.cmd [[source /home/piero/.local/share/nvim/site/pack/packer/opt/yats.vim/ftdetect/typescriptreact.vim]]
-time([[Sourcing ftdetect script at: /home/piero/.local/share/nvim/site/pack/packer/opt/yats.vim/ftdetect/typescriptreact.vim]], false)
 vim.cmd("augroup END")
 if should_profile then save_profiles() end
 
