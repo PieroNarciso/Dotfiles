@@ -3,6 +3,10 @@ require'nvim-treesitter.configs'.setup {
     enable = true
   },
   indent = {
-    enable = false
+    enable = true,
+    disable = { 'lua' }
+  },
+  context_commentstring = {
+    enable = true
   }
 }
