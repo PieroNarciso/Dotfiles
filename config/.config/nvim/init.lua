@@ -13,6 +13,7 @@ require('nv-compe')
 require('nv-colorizer')
 require('nv-prettier')
 require('nv-telescope')
+require('nv-autopairs')
 
 -- LSP
 require('lsp')

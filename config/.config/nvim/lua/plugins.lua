@@ -19,6 +19,7 @@ return require('packer').startup(function(use)
   use 'andweeb/presence.nvim'
   use { 'iamcco/markdown-preview.nvim', ft = {'md'}}
   use 'tpope/vim-fugitive'
+  use 'windwp/nvim-autopairs'
 
   -- Competitive programming
   use { 'searleser97/cpbooster.vim', ft = {'cpp'} }
