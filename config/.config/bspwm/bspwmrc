@@ -15,6 +15,7 @@ pgrep -x pasystray > /dev/null || pasystray --volume-max 100 &
 pgrep -x mictray > /dev/null || mictray &
 pgrep -x xfce4-clipman > /dev/null || xfce4-clipman &
 pgrep -x nm-applet > /dev/null || nm-applet &
+pgrep -x easyeffects > /dev/null || easyeffects --gapplication-service &
 /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 &
 $HOME/.config/polybar/launchbspwm.sh &
 pgrep -x xss-lock > /dev/null || xss-lock --transfer-sleep-lock -- i3lock --nofork -i $HOME/.local/share/wallpapers/arch-linux-wp-blur.png &
