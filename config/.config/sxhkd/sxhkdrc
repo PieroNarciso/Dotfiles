@@ -174,5 +174,5 @@ XF86AudioStop
 	playerctl stop
 
 super + shift + m
-	amixer -q sset Capture toggle
+	amixer -D pulse -q sset Capture toggle
 	# $HOME/.scripts/mic_status_notify.sh
