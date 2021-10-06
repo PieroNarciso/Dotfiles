@@ -9,5 +9,6 @@
     "vetur.experimental.templateInterpolationService": true,
     "editor.fontFamily": "monospace, 'Droid Sans Mono','Droid Sans Fallback'",
     "workbench.colorTheme": "Gruvbox Dark Hard",
-    "terminal.integrated.fontFamily": "'RobotoMono Nerd Font'"
+    "terminal.integrated.fontFamily": "'RobotoMono Nerd Font'",
+    "C_Cpp.intelliSenseUpdateDelay": 500
 }
