@@ -11,13 +11,12 @@ return require('packer').startup(function(use)
   use 'wbthomason/packer.nvim'
 
   -- Utilities
-  use 'yggdroot/indentline'
+  use 'lukas-reineke/indent-blankline.nvim'
   use 'tpope/vim-surround'
   use 'tpope/vim-commentary'
   use 'JoosepAlviste/nvim-ts-context-commentstring'
   use { 'prettier/vim-prettier', run = 'npm install' }
   use 'andweeb/presence.nvim'
-  use { 'iamcco/markdown-preview.nvim', ft = {'md'}}
   use 'tpope/vim-fugitive'
   use 'windwp/nvim-autopairs'
 
@@ -28,13 +27,12 @@ return require('packer').startup(function(use)
   use 'scrooloose/nerdtree'
   use 'xuyuanp/nerdtree-git-plugin'
   use 'junegunn/fzf.vim'
-  use {
-    'nvim-telescope/telescope.nvim',
-    requires = {{'nvim-lua/popup.nvim'}, {'nvim-lua/plenary.nvim'}}
-  }
+  -- use {
+  --   'nvim-telescope/telescope.nvim',
+  --   requires = {{'nvim-lua/popup.nvim'}, {'nvim-lua/plenary.nvim'}}
+  -- }
 
   -- Completion
-  -- use 'mattn/emmet-vim'
   use 'hrsh7th/nvim-compe'
   use 'rafamadriz/friendly-snippets'
   use 'hrsh7th/vim-vsnip'
@@ -58,6 +56,5 @@ return require('packer').startup(function(use)
 
   -- Colorscheme
   use 'sainnhe/gruvbox-material'
-  use 'navarasu/onedark.nvim'
 
 end)

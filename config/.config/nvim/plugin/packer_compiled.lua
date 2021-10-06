@@ -86,14 +86,9 @@ _G.packer_plugins = {
     loaded = true,
     path = "/home/piero/.local/share/nvim/site/pack/packer/start/gruvbox-material"
   },
-  indentline = {
+  ["indent-blankline.nvim"] = {
     loaded = true,
-    path = "/home/piero/.local/share/nvim/site/pack/packer/start/indentline"
-  },
-  ["markdown-preview.nvim"] = {
-    loaded = false,
-    needs_bufread = false,
-    path = "/home/piero/.local/share/nvim/site/pack/packer/opt/markdown-preview.nvim"
+    path = "/home/piero/.local/share/nvim/site/pack/packer/start/indent-blankline.nvim"
   },
   nerdtree = {
     loaded = true,
@@ -102,6 +97,10 @@ _G.packer_plugins = {
   ["nerdtree-git-plugin"] = {
     loaded = true,
     path = "/home/piero/.local/share/nvim/site/pack/packer/start/nerdtree-git-plugin"
+  },
+  ["nvim-autopairs"] = {
+    loaded = true,
+    path = "/home/piero/.local/share/nvim/site/pack/packer/start/nvim-autopairs"
   },
   ["nvim-colorizer.lua"] = {
     loaded = true,
@@ -127,29 +126,13 @@ _G.packer_plugins = {
     loaded = true,
     path = "/home/piero/.local/share/nvim/site/pack/packer/start/nvim-ts-context-commentstring"
   },
-  ["onedark.nvim"] = {
-    loaded = true,
-    path = "/home/piero/.local/share/nvim/site/pack/packer/start/onedark.nvim"
-  },
   ["packer.nvim"] = {
     loaded = true,
     path = "/home/piero/.local/share/nvim/site/pack/packer/start/packer.nvim"
   },
-  ["plenary.nvim"] = {
-    loaded = true,
-    path = "/home/piero/.local/share/nvim/site/pack/packer/start/plenary.nvim"
-  },
-  ["popup.nvim"] = {
-    loaded = true,
-    path = "/home/piero/.local/share/nvim/site/pack/packer/start/popup.nvim"
-  },
   ["presence.nvim"] = {
     loaded = true,
     path = "/home/piero/.local/share/nvim/site/pack/packer/start/presence.nvim"
-  },
-  ["telescope.nvim"] = {
-    loaded = true,
-    path = "/home/piero/.local/share/nvim/site/pack/packer/start/telescope.nvim"
   },
   ["tmuxline.vim"] = {
     loaded = true,
@@ -209,7 +192,6 @@ vim.cmd [[au!]]
 time([[Defining lazy-load filetype autocommands]], true)
 vim.cmd [[au FileType vue ++once lua require("packer.load")({'vim-vue'}, { ft = "vue" }, _G.packer_plugins)]]
 vim.cmd [[au FileType cpp ++once lua require("packer.load")({'cpbooster.vim'}, { ft = "cpp" }, _G.packer_plugins)]]
-vim.cmd [[au FileType md ++once lua require("packer.load")({'markdown-preview.nvim'}, { ft = "md" }, _G.packer_plugins)]]
 time([[Defining lazy-load filetype autocommands]], false)
 vim.cmd("augroup END")
 vim.cmd [[augroup filetypedetect]]
