@@ -90,6 +90,10 @@ _G.packer_plugins = {
     loaded = true,
     path = "/home/piero/.local/share/nvim/site/pack/packer/start/indent-blankline.nvim"
   },
+  ["lualine.nvim"] = {
+    loaded = true,
+    path = "/home/piero/.local/share/nvim/site/pack/packer/start/lualine.nvim"
+  },
   nerdtree = {
     loaded = true,
     path = "/home/piero/.local/share/nvim/site/pack/packer/start/nerdtree"
@@ -126,33 +130,41 @@ _G.packer_plugins = {
     loaded = true,
     path = "/home/piero/.local/share/nvim/site/pack/packer/start/nvim-ts-context-commentstring"
   },
+  ["nvim-web-devicons"] = {
+    loaded = true,
+    path = "/home/piero/.local/share/nvim/site/pack/packer/start/nvim-web-devicons"
+  },
   ["packer.nvim"] = {
     loaded = true,
     path = "/home/piero/.local/share/nvim/site/pack/packer/start/packer.nvim"
+  },
+  ["plenary.nvim"] = {
+    loaded = true,
+    path = "/home/piero/.local/share/nvim/site/pack/packer/start/plenary.nvim"
+  },
+  ["popup.nvim"] = {
+    loaded = true,
+    path = "/home/piero/.local/share/nvim/site/pack/packer/start/popup.nvim"
   },
   ["presence.nvim"] = {
     loaded = true,
     path = "/home/piero/.local/share/nvim/site/pack/packer/start/presence.nvim"
   },
+  ["tabline.nvim"] = {
+    loaded = true,
+    path = "/home/piero/.local/share/nvim/site/pack/packer/start/tabline.nvim"
+  },
+  ["telescope.nvim"] = {
+    loaded = true,
+    path = "/home/piero/.local/share/nvim/site/pack/packer/start/telescope.nvim"
+  },
   ["tmuxline.vim"] = {
     loaded = true,
     path = "/home/piero/.local/share/nvim/site/pack/packer/start/tmuxline.vim"
   },
-  ["vim-airline"] = {
-    loaded = true,
-    path = "/home/piero/.local/share/nvim/site/pack/packer/start/vim-airline"
-  },
-  ["vim-airline-themes"] = {
-    loaded = true,
-    path = "/home/piero/.local/share/nvim/site/pack/packer/start/vim-airline-themes"
-  },
   ["vim-commentary"] = {
     loaded = true,
     path = "/home/piero/.local/share/nvim/site/pack/packer/start/vim-commentary"
-  },
-  ["vim-devicons"] = {
-    loaded = true,
-    path = "/home/piero/.local/share/nvim/site/pack/packer/start/vim-devicons"
   },
   ["vim-fugitive"] = {
     loaded = true,
@@ -177,11 +189,6 @@ _G.packer_plugins = {
   ["vim-vsnip-integ"] = {
     loaded = true,
     path = "/home/piero/.local/share/nvim/site/pack/packer/start/vim-vsnip-integ"
-  },
-  ["vim-vue"] = {
-    loaded = false,
-    needs_bufread = true,
-    path = "/home/piero/.local/share/nvim/site/pack/packer/opt/vim-vue"
   }
 }
 
@@ -190,14 +197,8 @@ vim.cmd [[augroup packer_load_aucmds]]
 vim.cmd [[au!]]
   -- Filetype lazy-loads
 time([[Defining lazy-load filetype autocommands]], true)
-vim.cmd [[au FileType vue ++once lua require("packer.load")({'vim-vue'}, { ft = "vue" }, _G.packer_plugins)]]
 vim.cmd [[au FileType cpp ++once lua require("packer.load")({'cpbooster.vim'}, { ft = "cpp" }, _G.packer_plugins)]]
 time([[Defining lazy-load filetype autocommands]], false)
-vim.cmd("augroup END")
-vim.cmd [[augroup filetypedetect]]
-time([[Sourcing ftdetect script at: /home/piero/.local/share/nvim/site/pack/packer/opt/vim-vue/ftdetect/vue.vim]], true)
-vim.cmd [[source /home/piero/.local/share/nvim/site/pack/packer/opt/vim-vue/ftdetect/vue.vim]]
-time([[Sourcing ftdetect script at: /home/piero/.local/share/nvim/site/pack/packer/opt/vim-vue/ftdetect/vue.vim]], false)
 vim.cmd("augroup END")
 if should_profile then save_profiles() end
 
