@@ -24,8 +24,8 @@ return require('packer').startup(function(use)
   use { 'searleser97/cpbooster.vim', ft = {'cpp'} }
 
   -- Integration
-  use 'scrooloose/nerdtree'
-  use 'xuyuanp/nerdtree-git-plugin'
+  -- use 'scrooloose/nerdtree'
+  -- use 'xuyuanp/nerdtree-git-plugin'
   use 'junegunn/fzf.vim'
   use {
     'nvim-telescope/telescope.nvim',
@@ -44,7 +44,7 @@ return require('packer').startup(function(use)
 
   -- Syntax Highlighting
   use { 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' }
-  use 'tiagofumo/vim-nerdtree-syntax-highlight'
+  -- use 'tiagofumo/vim-nerdtree-syntax-highlight'
   use 'norcalli/nvim-colorizer.lua'
   -- use { 'posva/vim-vue', ft = {'vue'} }
 
@@ -60,10 +60,17 @@ return require('packer').startup(function(use)
       {'kyazdani42/nvim-web-devicons', opt = true}
     }
   }
-  -- use 'vim-airline/vim-airline'
-  -- use 'vim-airline/vim-airline-themes'
+  use {
+    'lewis6991/gitsigns.nvim',
+    requires = {
+      'nvim-lua/plenary.nvim'
+    },
+  }
+  use {
+      'kyazdani42/nvim-tree.lua',
+      requires = 'kyazdani42/nvim-web-devicons',
+  }
   use 'edkolev/tmuxline.vim'
-  -- use 'ryanoasis/vim-devicons'
 
   -- Colorscheme
   use 'sainnhe/gruvbox-material'

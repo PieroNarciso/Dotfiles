@@ -82,6 +82,10 @@ _G.packer_plugins = {
     loaded = true,
     path = "/home/piero/.local/share/nvim/site/pack/packer/start/fzf.vim"
   },
+  ["gitsigns.nvim"] = {
+    loaded = true,
+    path = "/home/piero/.local/share/nvim/site/pack/packer/start/gitsigns.nvim"
+  },
   ["gruvbox-material"] = {
     loaded = true,
     path = "/home/piero/.local/share/nvim/site/pack/packer/start/gruvbox-material"
@@ -93,14 +97,6 @@ _G.packer_plugins = {
   ["lualine.nvim"] = {
     loaded = true,
     path = "/home/piero/.local/share/nvim/site/pack/packer/start/lualine.nvim"
-  },
-  nerdtree = {
-    loaded = true,
-    path = "/home/piero/.local/share/nvim/site/pack/packer/start/nerdtree"
-  },
-  ["nerdtree-git-plugin"] = {
-    loaded = true,
-    path = "/home/piero/.local/share/nvim/site/pack/packer/start/nerdtree-git-plugin"
   },
   ["nvim-autopairs"] = {
     loaded = true,
@@ -121,6 +117,10 @@ _G.packer_plugins = {
   ["nvim-lspinstall"] = {
     loaded = true,
     path = "/home/piero/.local/share/nvim/site/pack/packer/start/nvim-lspinstall"
+  },
+  ["nvim-tree.lua"] = {
+    loaded = true,
+    path = "/home/piero/.local/share/nvim/site/pack/packer/start/nvim-tree.lua"
   },
   ["nvim-treesitter"] = {
     loaded = true,
@@ -169,10 +169,6 @@ _G.packer_plugins = {
   ["vim-fugitive"] = {
     loaded = true,
     path = "/home/piero/.local/share/nvim/site/pack/packer/start/vim-fugitive"
-  },
-  ["vim-nerdtree-syntax-highlight"] = {
-    loaded = true,
-    path = "/home/piero/.local/share/nvim/site/pack/packer/start/vim-nerdtree-syntax-highlight"
   },
   ["vim-prettier"] = {
     loaded = true,
