@@ -27,10 +27,10 @@ return require('packer').startup(function(use)
   use 'scrooloose/nerdtree'
   use 'xuyuanp/nerdtree-git-plugin'
   use 'junegunn/fzf.vim'
-  -- use {
-  --   'nvim-telescope/telescope.nvim',
-  --   requires = {{'nvim-lua/popup.nvim'}, {'nvim-lua/plenary.nvim'}}
-  -- }
+  use {
+    'nvim-telescope/telescope.nvim',
+    requires = {{'nvim-lua/popup.nvim'}, {'nvim-lua/plenary.nvim'}}
+  }
 
   -- Completion
   use 'hrsh7th/nvim-compe'
@@ -46,13 +46,24 @@ return require('packer').startup(function(use)
   use { 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' }
   use 'tiagofumo/vim-nerdtree-syntax-highlight'
   use 'norcalli/nvim-colorizer.lua'
-  use { 'posva/vim-vue', ft = {'vue'} }
+  -- use { 'posva/vim-vue', ft = {'vue'} }
 
   -- Interface
-  use 'vim-airline/vim-airline'
-  use 'vim-airline/vim-airline-themes'
+  use {
+    'hoob3rt/lualine.nvim',
+    requires = {'kyazdani42/nvim-web-devicons', opt = true}
+  }
+  use {
+    'kdheepak/tabline.nvim',
+    requires = {
+      { 'hoob3rt/lualine.nvim', opt=true },
+      {'kyazdani42/nvim-web-devicons', opt = true}
+    }
+  }
+  -- use 'vim-airline/vim-airline'
+  -- use 'vim-airline/vim-airline-themes'
   use 'edkolev/tmuxline.vim'
-  use 'ryanoasis/vim-devicons'
+  -- use 'ryanoasis/vim-devicons'
 
   -- Colorscheme
   use 'sainnhe/gruvbox-material'
