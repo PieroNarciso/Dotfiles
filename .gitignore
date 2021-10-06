@@ -1,2 +1,5 @@
 /**/*/plugged
 /**/*/autoload/*
+/**/*/VSCodium/*
+!/**/*/VSCodium/User/settings.json
+!/**/*/VSCodium/product.json
