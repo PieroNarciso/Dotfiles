@@ -24,8 +24,6 @@ return require('packer').startup(function(use)
   use { 'searleser97/cpbooster.vim', ft = {'cpp'} }
 
   -- Integration
-  -- use 'scrooloose/nerdtree'
-  -- use 'xuyuanp/nerdtree-git-plugin'
   use 'junegunn/fzf.vim'
   use {
     'nvim-telescope/telescope.nvim',
@@ -44,7 +42,6 @@ return require('packer').startup(function(use)
 
   -- Syntax Highlighting
   use { 'nvim-treesitter/nvim-treesitter', run = ':TSUpdate' }
-  -- use 'tiagofumo/vim-nerdtree-syntax-highlight'
   use 'norcalli/nvim-colorizer.lua'
   -- use { 'posva/vim-vue', ft = {'vue'} }
 
