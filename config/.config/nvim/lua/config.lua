@@ -29,6 +29,9 @@ vim.o.guicursor = ''
 -- Enable color column to 80
 vim.wo.colorcolumn = '80'
 
+-- Enable highlight current cursor line
+vim.o.cursorline = true;
+
 -- Set off set for scrolling
 vim.o.scrolloff = 5
 
