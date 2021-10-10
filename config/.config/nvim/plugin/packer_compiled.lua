@@ -74,6 +74,10 @@ _G.packer_plugins = {
     needs_bufread = false,
     path = "/home/piero/.local/share/nvim/site/pack/packer/opt/cpbooster.vim"
   },
+  ["formatter.nvim"] = {
+    loaded = true,
+    path = "/home/piero/.local/share/nvim/site/pack/packer/start/formatter.nvim"
+  },
   ["friendly-snippets"] = {
     loaded = true,
     path = "/home/piero/.local/share/nvim/site/pack/packer/start/friendly-snippets"
@@ -126,6 +130,10 @@ _G.packer_plugins = {
     loaded = true,
     path = "/home/piero/.local/share/nvim/site/pack/packer/start/nvim-treesitter"
   },
+  ["nvim-ts-autotag"] = {
+    loaded = true,
+    path = "/home/piero/.local/share/nvim/site/pack/packer/start/nvim-ts-autotag"
+  },
   ["nvim-ts-context-commentstring"] = {
     loaded = true,
     path = "/home/piero/.local/share/nvim/site/pack/packer/start/nvim-ts-context-commentstring"
@@ -150,6 +158,11 @@ _G.packer_plugins = {
     loaded = true,
     path = "/home/piero/.local/share/nvim/site/pack/packer/start/presence.nvim"
   },
+  ["surround.nvim"] = {
+    config = { "\27LJ\1\2U\0\0\2\0\4\0\a4\0\0\0%\1\1\0>\0\2\0027\0\2\0003\1\3\0>\0\2\1G\0\1\0\1\0\1\19mappings_style\rsurround\nsetup\rsurround\frequire\0" },
+    loaded = true,
+    path = "/home/piero/.local/share/nvim/site/pack/packer/start/surround.nvim"
+  },
   ["tabline.nvim"] = {
     loaded = true,
     path = "/home/piero/.local/share/nvim/site/pack/packer/start/tabline.nvim"
@@ -158,10 +171,6 @@ _G.packer_plugins = {
     loaded = true,
     path = "/home/piero/.local/share/nvim/site/pack/packer/start/telescope.nvim"
   },
-  ["tmuxline.vim"] = {
-    loaded = true,
-    path = "/home/piero/.local/share/nvim/site/pack/packer/start/tmuxline.vim"
-  },
   ["vim-commentary"] = {
     loaded = true,
     path = "/home/piero/.local/share/nvim/site/pack/packer/start/vim-commentary"
@@ -169,14 +178,6 @@ _G.packer_plugins = {
   ["vim-fugitive"] = {
     loaded = true,
     path = "/home/piero/.local/share/nvim/site/pack/packer/start/vim-fugitive"
-  },
-  ["vim-prettier"] = {
-    loaded = true,
-    path = "/home/piero/.local/share/nvim/site/pack/packer/start/vim-prettier"
-  },
-  ["vim-surround"] = {
-    loaded = true,
-    path = "/home/piero/.local/share/nvim/site/pack/packer/start/vim-surround"
   },
   ["vim-vsnip"] = {
     loaded = true,
@@ -189,6 +190,10 @@ _G.packer_plugins = {
 }
 
 time([[Defining packer_plugins]], false)
+-- Config for: surround.nvim
+time([[Config for surround.nvim]], true)
+try_loadstring("\27LJ\1\2U\0\0\2\0\4\0\a4\0\0\0%\1\1\0>\0\2\0027\0\2\0003\1\3\0>\0\2\1G\0\1\0\1\0\1\19mappings_style\rsurround\nsetup\rsurround\frequire\0", "config", "surround.nvim")
+time([[Config for surround.nvim]], false)
 vim.cmd [[augroup packer_load_aucmds]]
 vim.cmd [[au!]]
   -- Filetype lazy-loads

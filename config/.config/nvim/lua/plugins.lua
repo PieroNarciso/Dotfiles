@@ -12,13 +12,19 @@ return require('packer').startup(function(use)
 
   -- Utilities
   use 'lukas-reineke/indent-blankline.nvim'
-  use 'tpope/vim-surround'
+  use {
+    'blackCauldron7/surround.nvim',
+    config = function()
+      require'surround'.setup { mappings_style = 'surround' }
+    end
+  }
   use 'tpope/vim-commentary'
   use 'JoosepAlviste/nvim-ts-context-commentstring'
-  use { 'prettier/vim-prettier', run = 'npm install' }
   use 'andweeb/presence.nvim'
   use 'tpope/vim-fugitive'
   use 'windwp/nvim-autopairs'
+  use 'windwp/nvim-ts-autotag'
+  use 'mhartington/formatter.nvim'
 
   -- Competitive programming
   use { 'searleser97/cpbooster.vim', ft = {'cpp'} }
@@ -67,7 +73,6 @@ return require('packer').startup(function(use)
       'kyazdani42/nvim-tree.lua',
       requires = 'kyazdani42/nvim-web-devicons',
   }
-  use 'edkolev/tmuxline.vim'
 
   -- Colorscheme
   use 'sainnhe/gruvbox-material'

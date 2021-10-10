@@ -13,9 +13,10 @@ require('nv-tree')
 require('nv-presence')
 require('nv-compe')
 require('nv-colorizer')
-require('nv-prettier')
 require('nv-telescope')
 require('nv-autopairs')
+require('nv-autotag')
+require('nv-formatter')
 
 -- LSP
 require('lsp')
