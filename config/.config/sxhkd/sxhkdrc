@@ -150,11 +150,11 @@ super + {Left,Down,Up,Right}
 
 ##### MEDIA CONTROL #####
 XF86AudioRaiseVolume
-	amixer -q sset -M Master 5%+ && \
+	amixer -D pulse -q sset -M Master 5%+ && \
 	$HOME/.scripts/volume_status_notify.sh
 
 XF86AudioLowerVolume
-	amixer -q sset -M Master 5%- && \
+	amixer -D pulse -q sset -M Master 5%- && \
 	$HOME/.scripts/volume_status_notify.sh
 
 XF86AudioMute
