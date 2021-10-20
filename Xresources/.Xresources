@@ -3,20 +3,45 @@
 *.background: BACKGROUND
 *.opabackground: OPABACKGROUND
 *.foreground: FOREGROUND
-*.black: BLACK
-*.red: RED
-*.green: GREEN
-*.yellow: YELLOW
-*.blue: BLUE
-*.magenta: MAGENTA
-*.cyan: CYAN
-*.white: WHITE
 
+*.black: BLACK
 *.bblack: BBLACK
+
+*.red: RED
 *.bred: BRED
+
+*.green: GREEN
 *.bgreen: BGREEN
+
+*.yellow: YELLOW
 *.byellow: BYELLOW
+
+*.blue: BLUE
 *.bblue: BBLUE
+
+*.magenta: MAGENTA
 *.bmagenta: BMAGENTA
+
+*.cyan: CYAN
 *.bcyan: BCYAN
+
+*.white: WHITE
 *.bwhite: BWHITE
+
+
+*.color0: BLACK
+*.color8: BBLACK
+*.color1: RED
+*.color9: BRED
+*.color2: GREEN
+*.color10: BGREEN
+*.color3: YELLOW
+*.color11: BYELLOW
+*.color4: BLUE
+*.color12: BBLUE
+*.color5: MAGENTA
+*.color13: BMAGENTA
+*.color6: CYAN
+*.color14: BCYAN
+*.color7: WHITE
+*.color15: BWHITE
