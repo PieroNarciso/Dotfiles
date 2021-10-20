@@ -5,20 +5,7 @@ xresource() {
 }
 
 #### AUTOSTART ####
-xsetroot -cursor_name left_ptr &
-pgrep -x nitrogen > /dev/null || nitrogen --restore &
-pgrep -x dunst > /dev/null || dunst &
-pgrep -x blueman-applet > /dev/null || blueman-applet &
-pgrep -x sxhkd > /dev/null || sxhkd &
-pgrep -x picom > /dev/null || picom --experimental-backends &
-pgrep -x pasystray > /dev/null || pasystray --volume-max 100 &
-pgrep -x mictray > /dev/null || mictray &
-pgrep -x xfce4-clipman > /dev/null || xfce4-clipman &
-pgrep -x nm-applet > /dev/null || nm-applet &
-/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 &
-$HOME/.config/polybar/launchbspwm.sh &
-pgrep -x xss-lock > /dev/null || xss-lock --transfer-sleep-lock -- i3lock --nofork -i $HOME/.local/share/wallpapers/arch-linux-wp-blur.png &
-pgrep -x easyeffects > /dev/null || easyeffects --gapplication-service &
+exec $HOME/.scripts/autostart &
 
 #### MONITOR ####
 bspc monitor HDMI-1 -d 1 2 3 4 5 6 7 8 9 10
@@ -29,6 +16,7 @@ bspc config window_gap           8
 bspc config active_border_color  $(xresource bblack)
 bspc config normal_border_color  $(xresource bblack)
 bspc config focused_border_color $(xresource blue)
+# bspc config pointer_motion_interval 7ms
 
 bspc config ignore_ewmh_focus    true
 
