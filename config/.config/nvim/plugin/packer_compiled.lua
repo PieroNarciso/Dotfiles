@@ -72,6 +72,7 @@ _G.packer_plugins = {
   ["cpbooster.vim"] = {
     loaded = false,
     needs_bufread = false,
+    only_cond = false,
     path = "/home/piero/.local/share/nvim/site/pack/packer/opt/cpbooster.vim"
   },
   ["formatter.nvim"] = {
