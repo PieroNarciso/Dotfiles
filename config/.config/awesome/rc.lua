@@ -62,14 +62,14 @@ modkey = "Mod4"
 
 -- Table of layouts to cover with awful.layout.inc, order matters.
 awful.layout.layouts = {
-    -- awful.layout.suit.tile,
+    awful.layout.suit.tile,
     -- awful.layout.suit.tile.left,
     -- awful.layout.suit.tile.bottom,
     -- awful.layout.suit.tile.top,
     -- awful.layout.suit.fair,
     -- awful.layout.suit.fair.horizontal,
     -- awful.layout.suit.spiral,
-    awful.layout.suit.spiral.dwindle,
+    -- awful.layout.suit.spiral.dwindle,
     -- awful.layout.suit.max,
     -- awful.layout.suit.max.fullscreen,
     -- awful.layout.suit.magnifier,
@@ -165,7 +165,7 @@ end
 -- Re-set wallpaper when a screen's geometry changes (e.g. different resolution)
 screen.connect_signal("property::geometry", set_wallpaper)
 
-local TAGS = { "1: main", "2: code", "3: code", "4: code", "5: whitebox", "6: blackbox", "7: box", "8: msg", "9: discord" , "10: spotify" }
+local TAGS = { "1: main", "2: code", "3: code", "4: code", "5: whitebox", "6: blackbox", "7: calendar", "8: msg", "9: discord" , "10: spotify" }
 
 awful.screen.connect_for_each_screen(function(s)
     -- Wallpaper
@@ -187,7 +187,7 @@ awful.screen.connect_for_each_screen(function(s)
     -- Create a taglist widget
     s.mytaglist = awful.widget.taglist {
         screen  = s,
-        filter  = awful.widget.taglist.filter.all,
+        filter  = awful.widget.taglist.filter.noempty,
         buttons = taglist_buttons
     }
 
@@ -276,6 +276,15 @@ globalkeys = gears.table.join(
         end,
         {description = "go back", group = "client"}),
 
+    awful.key({ modkey, "Mod1" }, "h", function () awful.tag.incmwfact(-0.01) end,
+              {description = "resize to left", group = "client"}),
+    awful.key({ modkey, "Mod1" }, "l", function () awful.tag.incmwfact(0.01) end,
+              {description = "resize to right", group = "client"}),
+    -- awful.key({ modkey, "Mod1" }, "j", function () awful.client.incmwfact(0.05) end,
+    --           {description = "resize to bottom", group = "client"}),
+    -- awful.key({ modkey, "Mod1" }, "k", function () awful.client.incmwfact(-0.05) end,
+    --           {description = "resize to top", group = "client"}),
+
     -- Standard program
     awful.key({ modkey,           }, "Return", function () awful.spawn(terminal) end,
               {description = "open a terminal", group = "launcher"}),
@@ -288,9 +297,9 @@ globalkeys = gears.table.join(
               {description = "focus right client", group = "layout"}),
     awful.key({ modkey,           }, "h",     function () awful.client.focus.bydirection('left')          end,
               {description = "focus left client", group = "layout"}),
-    awful.key({ modkey, "Shift"   }, "h",     function () awful.swap.bydirection('left') end,
+    awful.key({ modkey, "Shift"   }, "h",     function () awful.client.swap.bydirection('left') end,
               {description = "swap with left client", group = "layout"}),
-    awful.key({ modkey, "Shift"   }, "l",     function () awful.swap.bydirection('right') end,
+    awful.key({ modkey, "Shift"   }, "l",     function () awful.client.swap.bydirection('right') end,
               {description = "swap with right client", group = "layout"}),
     awful.key({ modkey, "Control" }, "h",     function () awful.tag.incncol( 1, nil, true)    end,
               {description = "increase the number of columns", group = "layout"}),
@@ -315,41 +324,59 @@ globalkeys = gears.table.join(
 
     -- Keybind
     awful.key({ modkey }, "b", function () awful.spawn('firefox') end,
-              { description = "opens web browser", group = "launcher" }),
+              { description = "opens web browser", group = "gui app" }),
     awful.key({ modkey, "Shift" }, "Return", function () awful.spawn('rofi -show drun') end,
-              { description = "opens rofi", group = "launcher" }),
+              { description = "opens rofi", group = "gui app" }),
     awful.key({ modkey }, "e", function () awful.spawn('alacritty -e lf') end,
-              { description = "opens lf file manager", group = "launcher" }),
+              { description = "opens lf file manager", group = "cli app" }),
+    awful.key({ modkey }, "c", function () awful.spawn('alacritty --class calcurse,Calcurse --title Calcurse -e calcurse') end,
+              { description = "opens calcurse calendar", group = "cli app" }),
     awful.key({ modkey }, "period", function () awful.spawn('rofi -show emoji -modi emoji') end,
-              { description = "opens emoji explorer", group = "launcher" }),
+              { description = "opens emoji explorer", group = "gui app" }),
     awful.key({ modkey, "Mod1" }, "k", function () awful.spawn.with_shell('$HOME/.scripts/toggle-picom.sh') end,
               { description = "toggle compositor", group = "launcher" }),
+
+    -- Screenshot
+    awful.key({}, "Print",
+      function () awful.spawn.with_shell(
+	      "maim | xclip -selection clipboard -t image/png"
+        )
+      end,
+      { description = "take screenshot", group = "launcher" }
+    ),
+    awful.key({ "Control", "Shift" }, "Print",
+      function () awful.spawn.with_shell(
+        "maim -s -n -l -c 0.157,0.333,0.466,0.4 | xclip -selection clipboard -t image/png"
+        )
+      end,
+      { description = "take screenshot region", group = "launcher" }
+    ),
 
     -- Media Controls
     awful.key({}, "XF86AudioRaiseVolume", function ()
       awful.spawn.with_shell('amixer -D pulse -q sset -M Master 5%+ && $HOME/.scripts/volume_status_notify.sh') end,
-      { description = "Increase volume"}),
+      { description = "Increase volume", group = "media"}),
     awful.key({}, "XF86AudioLowerVolume", function ()
       awful.spawn.with_shell('amixer -D pulse -q sset -M Master 5%- && $HOME/.scripts/volume_status_notify.sh') end,
-      { description = "Decrease volume"}),
+      { description = "Decrease volume", group = "media"}),
     awful.key({}, "XF86AudioMute", function ()
       awful.spawn.with_shell('amixer -q sset Master toggle && $HOME/.scripts/volume_status_notify.sh') end,
-      { description = "Audio Mute"}),
+      { description = "Audio Mute", group = "media"}),
     awful.key({}, "XF86AudioPlay", function ()
-      awful.spawn('playerctl play-pause') end,
-      { description = "Audio play-pause"}),
+      awful.spawn.with_shell('playerctl play-pause') end,
+      { description = "Audio play-pause", group = "media"}),
     awful.key({}, "XF86AudioNext", function ()
-      awful.spawn('playerctl next') end,
-      { description = "Audio next"}),
+      awful.spawn.with_shell('playerctl next') end,
+      { description = "Audio next", group = "media"}),
     awful.key({}, "XF86AudioPrev", function ()
-      awful.spawn('playerctl previous') end,
-      { description = "Audio previous"}),
+      awful.spawn.with_shell('playerctl previous') end,
+      { description = "Audio previous", group = "media"}),
     awful.key({}, "XF86AudioStop", function ()
-      awful.spawn('playerctl stop') end,
-      { description = "Audio stop"}),
+      awful.spawn.with_shell('playerctl stop') end,
+      { description = "Audio stop", group = "media"}),
     awful.key({ modkey, "Shift" }, "m", function ()
-      awful.spawn('amixer -D pulse -q sset Capture toggle') end,
-      { description = "Toggle microphone"}),
+      awful.spawn.with_shell('amixer -D pulse -q sset Capture toggle') end,
+      { description = "Toggle microphone", group = "media"}),
 
 
     -- Prompt
@@ -366,9 +393,12 @@ globalkeys = gears.table.join(
                   }
               end,
               {description = "lua execute prompt", group = "awesome"}),
-    -- Menubar
-    awful.key({ modkey }, "p", function() menubar.show() end,
-              {description = "show the menubar", group = "launcher"})
+
+    awful.key({ modkey }, "p",
+      function()
+        awful.spawn.with_shell('alacritty --class spotify-tui,SpotifyTui --title SpotifyTui -e spt')
+      end,
+              {description = "launch SpotifyTui", group = "launcher"})
 )
 
 clientkeys = gears.table.join(
@@ -492,14 +522,12 @@ awful.rules.rules = {
                      border_color = beautiful.border_normal,
                      focus = awful.client.focus.filter,
                      raise = true,
+                     maximized = false,
                      keys = clientkeys,
                      buttons = clientbuttons,
                      screen = awful.screen.preferred,
                      placement = awful.placement.no_overlap+awful.placement.no_offscreen
      }
-    },
-    { rule = { class = 'firefox' },
-      properties = { maximized = false }
     },
 
     -- Floating clients.
