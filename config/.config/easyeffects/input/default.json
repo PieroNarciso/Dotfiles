@@ -12,7 +12,7 @@
             "lpf-frequency": 20000.0,
             "lpf-mode": "off",
             "makeup": 0.0,
-            "mode": "Boosting",
+            "mode": "Downward",
             "output-gain": 0.0,
             "ratio": 4.0,
             "release": 100.0,
@@ -60,7 +60,7 @@
             "ratio": 2.0,
             "release": 200.0,
             "stereo-link": "Average",
-            "threshold": -24.0
+            "threshold": -20.0
         },
         "limiter": {
             "alr": false,
@@ -86,12 +86,33 @@
             "deesser",
             "echo_canceller",
             "rnnoise",
+            "stereo_tools",
             "limiter"
         ],
         "rnnoise": {
             "input-gain": 0.0,
             "model-path": "",
             "output-gain": 0.0
+        },
+        "stereo_tools": {
+            "balance-in": 0.0,
+            "balance-out": 0.0,
+            "delay": 0.0,
+            "input-gain": 0.0,
+            "middle-level": 0.0,
+            "middle-panorama": 0.0,
+            "mode": "MS > LR (Mid-Side to Stereo)",
+            "mutel": false,
+            "muter": false,
+            "output-gain": 0.0,
+            "phasel": false,
+            "phaser": false,
+            "sc-level": 1.0,
+            "side-balance": 0.0,
+            "side-level": 0.0,
+            "softclip": false,
+            "stereo-base": 0.0,
+            "stereo-phase": 0.0
         }
     }
 }
