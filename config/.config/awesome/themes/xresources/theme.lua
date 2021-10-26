@@ -14,7 +14,7 @@ local themes_path = gfs.get_themes_dir()
 local theme = dofile(themes_path.."default/theme.lua")
 -- load vector assets' generators for this theme
 
-theme.font          = "sans 8"
+theme.font          = "Font Awesome 5 Free 8"
 
 theme.bg_normal     = xrdb.background
 theme.bg_focus      = xrdb.color12
@@ -43,6 +43,15 @@ theme.border_marked = xrdb.color10
 -- mouse_finder_[color|timeout|animate_timeout|radius|factor]
 -- Example:
 --theme.taglist_bg_focus = "#ff0000"
+
+theme.taglist_bg_occupied = theme.bg_normal
+theme.taglist_fg_occupied = theme.fg_normal
+
+theme.taglist_bg_focus = theme.bg_focus
+theme.taglist_fg_focus = theme.fg_focus
+
+theme.taglist_spacing = dpi(3)
+theme.taglist_font = "Font Awesome 5 Free 10"
 
 theme.tooltip_fg = theme.fg_normal
 theme.tooltip_bg = theme.bg_normal

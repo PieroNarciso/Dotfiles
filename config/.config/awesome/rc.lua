@@ -104,11 +104,17 @@ menubar.utils.terminal = terminal -- Set the terminal for applications that requ
 -- }}}
 
 -- Keyboard map indicator and switcher
-mykeyboardlayout = awful.widget.keyboardlayout()
+mykeyboardlayout = wibox.widget {
+  wibox.widget.textbox(""),
+  awful.widget.keyboardlayout(),
+  layout = wibox.layout.align.horizontal
+}
 
 -- {{{ Wibar
 -- Create a textclock widget
 mytextclock = wibox.widget.textclock()
+local month_calendar = awful.widget.calendar_popup.month()
+month_calendar:attach(mytextclock, "tr", { on_hover = false })
 
 -- Create a wibox for each screen and add it
 local taglist_buttons = gears.table.join(
@@ -165,7 +171,23 @@ end
 -- Re-set wallpaper when a screen's geometry changes (e.g. different resolution)
 screen.connect_signal("property::geometry", set_wallpaper)
 
-local TAGS = { "1: main", "2: code", "3: code", "4: code", "5: whitebox", "6: blackbox", "7: calendar", "8: msg", "9: discord" , "10: spotify" }
+local TAGS = { "1: ", "2: ", "3: ", "4: ", "5: ", "6: ", "7: ", "8: ", "9: " , "10: " }
+
+local vicious = require('vicious')
+local dpi = require("beautiful.xresources").apply_dpi
+
+-- Drive space Widget
+local drivewidget = wibox.widget.textbox()
+vicious.register(drivewidget, vicious.widgets.fs, " ${/home avail_gb} GB", 100)
+
+-- Mem Widget
+local memwidget = wibox.widget.textbox()
+vicious.cache(vicious.widgets.mem)
+vicious.register(memwidget, vicious.widgets.mem, " $1%", 13)
+
+-- CPU Widget
+local cpuwidget = wibox.widget.textbox()
+vicious.register(cpuwidget, vicious.widgets.cpu, " $1%", 7)
 
 awful.screen.connect_for_each_screen(function(s)
     -- Wallpaper
@@ -206,17 +228,25 @@ awful.screen.connect_for_each_screen(function(s)
         layout = wibox.layout.align.horizontal,
         { -- Left widgets
             layout = wibox.layout.fixed.horizontal,
-            mylauncher,
-            s.mytaglist,
-            s.mypromptbox,
+            spacing = dpi(8),
+            -- mylauncher,
+            wibox.container.margin(s.mytaglist, dpi(0), dpi(0)),
+            wibox.container.margin(s.mypromptbox, dpi(0), dpi(0)),
         },
         s.mytasklist, -- Middle widget
         { -- Right widgets
             layout = wibox.layout.fixed.horizontal,
-            mykeyboardlayout,
-            wibox.widget.systray(),
-            mytextclock,
-            s.mylayoutbox,
+            spacing = dpi(8),
+            spacing_widget = {
+              widget = wibox.widget.separator,
+            },
+            wibox.container.margin(drivewidget, dpi(8), dpi(0)),
+            wibox.container.margin(memwidget, dpi(0), dpi(0)),
+            wibox.container.margin(cpuwidget, dpi(0), dpi(0)),
+            wibox.container.margin(mykeyboardlayout, dpi(0), dpi(0)),
+            wibox.container.margin(wibox.widget.systray(), dpi(0), dpi(0)),
+            wibox.container.margin(mytextclock, dpi(0), dpi(0)),
+            s.mylayoutbox
         },
     }
 end)
@@ -574,6 +604,8 @@ awful.rules.rules = {
       properties = { screen = 1, tag = TAGS[9] } },
     { rule = { class = "Steam" },
       properties = { screen = 1, tag = TAGS[4] } },
+    { rule = { class = "Thunderbird" },
+      properties = { screen = 1, tag = TAGS[6] } },
     { rule = { class = "Calcurse" },
       properties = { screen = 1, tag = TAGS[7] } },
     { rule = { class = "TelegramDesktop" },
