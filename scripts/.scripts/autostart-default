@@ -1,0 +1,12 @@
+#!/bin/sh
+
+pgrep -x dunst > /dev/null || dunst &
+pgrep -x blueman-applet > /dev/null || blueman-applet &
+pgrep -x picom > /dev/null || picom --experimental-backends &
+pgrep -x pasystray > /dev/null || pasystray --volume-max 100 &
+pgrep -x mictray > /dev/null || mictray &
+pgrep -x xfce4-clipman > /dev/null || xfce4-clipman &
+pgrep -x nm-applet > /dev/null || nm-applet &
+/usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 &
+pgrep -x xss-lock > /dev/null || xss-lock --transfer-sleep-lock -- i3lock --nofork -i $HOME/.local/share/wallpapers/arch-linux-wp-blur.png &
+pgrep -x easyeffects > /dev/null || easyeffects --gapplication-service &
