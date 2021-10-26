@@ -4,7 +4,7 @@
   "terminal": "alacritty",
   "closeAfterClone": false,
   "showStatusPageOnSubmit": false,
-  "preferredLang": "cpp",
+  "preferredLang": "python",
   "languages": {
     "cpp": {
       "template": "/home/piero/.config/cpbooster/template.cpp",

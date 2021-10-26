@@ -45,3 +45,5 @@
 *.color14: BCYAN
 *.color7: WHITE
 *.color15: BWHITE
+
+Xft.dpi: 96
