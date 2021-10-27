@@ -161,8 +161,8 @@ end
 -- Re-set wallpaper when a screen's geometry changes (e.g. different resolution)
 screen.connect_signal("property::geometry", set_wallpaper)
 
-local TAGS = { "1: ", "2: ", "3: ", "4: ", "5: ", "6: ", "7: ", "8: ", "9: " , "10: " }
-
+local TAGS = { "", "", "", "", "", "", "", "", "" , "" }
+-- local TAGS = { "1: ", "2: ", "3: ", "4: ", "5: ", "6: ", "7: ", "8: ", "9: " , "10: " }
 local vicious = require('vicious')
 local xresources = require("beautiful.xresources")
 local dpi = xresources.apply_dpi
@@ -265,6 +265,15 @@ local textclockwidget = {
   widget = wibox.container.margin,
 }
 
+-- Systray widget
+local systray = wibox.widget.systray()
+systray:set_base_size(dpi(18))
+local systraywidget = {
+  systray,
+  bottom = dpi(2),
+  widget = wibox.container.margin,
+}
+
 awful.screen.connect_for_each_screen(function(s)
     -- Wallpaper
     set_wallpaper(s)
@@ -285,8 +294,53 @@ awful.screen.connect_for_each_screen(function(s)
     -- Create a taglist widget
     s.mytaglist = awful.widget.taglist {
         screen  = s,
-        filter  = awful.widget.taglist.filter.noempty,
-        buttons = taglist_buttons
+        filter  = awful.widget.taglist.filter.all,
+        buttons = taglist_buttons,
+        widget_template = {
+          {
+            {
+              {
+                {
+                  {
+                    {
+                      id = 'index_role',
+                      widget = wibox.widget.textbox
+                    },
+                    margins = dpi(3),
+                    widget = wibox.container.margin
+                  },
+                  bg = colors.bblack,
+                  shape = gears.shape.circle,
+                  widget = wibox.container.background
+                },
+                {
+                  {
+                    id = 'text_role',
+                    widget = wibox.widget.textbox,
+                  },
+                  left = dpi(6),
+                  widget = wibox.container.margin
+                },
+                widget = wibox.layout.align.horizontal,
+              },
+              bottom  = dpi(2),
+              color = colors.bblack,
+              widget = wibox.container.margin,
+            },
+            left = dpi(4),
+            right = dpi(4),
+            widget = wibox.container.margin,
+          },
+          id = 'background_role',
+          widget = wibox.container.background,
+          -- Index label
+          create_callback = function (self, c3, index)
+            self:get_children_by_id('index_role')[1].markup = '<b>'..index..'</b>'
+          end,
+          update_callback = function (self, c3, index)
+            self:get_children_by_id('index_role')[1].markup = '<b>'..index..'</b>'
+          end
+        }
     }
 
     -- Create a tasklist widget
@@ -304,7 +358,6 @@ awful.screen.connect_for_each_screen(function(s)
         layout = wibox.layout.align.horizontal,
         { -- Left widgets
             layout = wibox.layout.fixed.horizontal,
-            spacing = dpi(8),
             -- mylauncher,
             wibox.container.margin(s.mytaglist, dpi(0), dpi(0)),
             wibox.container.margin(s.mypromptbox, dpi(0), dpi(0)),
@@ -321,11 +374,7 @@ awful.screen.connect_for_each_screen(function(s)
             memwidget,
             cpuwidget,
             keyboardlayoutwidget,
-            {
-              wibox.widget.systray(),
-              bottom = dpi(2),
-              widget = wibox.container.margin,
-            },
+            systraywidget,
             textclockwidget,
             s.mylayoutbox
         },
