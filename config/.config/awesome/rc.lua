@@ -161,8 +161,8 @@ end
 -- Re-set wallpaper when a screen's geometry changes (e.g. different resolution)
 screen.connect_signal("property::geometry", set_wallpaper)
 
-local TAGS = { "", "", "", "", "", "", "", "", "" , "" }
--- local TAGS = { "1: ", "2: ", "3: ", "4: ", "5: ", "6: ", "7: ", "8: ", "9: " , "10: " }
+-- local TAGS = { "", "", "", "", "", "", "", "", "" , "" }
+local TAGS = { "1: ", "2: ", "3: ", "4: ", "5: ", "6: ", "7: ", "8: ", "9: " , "10: " }
 local vicious = require('vicious')
 local xresources = require("beautiful.xresources")
 local dpi = xresources.apply_dpi
@@ -294,7 +294,7 @@ awful.screen.connect_for_each_screen(function(s)
     -- Create a taglist widget
     s.mytaglist = awful.widget.taglist {
         screen  = s,
-        filter  = awful.widget.taglist.filter.all,
+        filter  = awful.widget.taglist.filter.noempty,
         buttons = taglist_buttons,
         widget_template = {
           {
@@ -302,23 +302,10 @@ awful.screen.connect_for_each_screen(function(s)
               {
                 {
                   {
-                    {
-                      id = 'index_role',
-                      widget = wibox.widget.textbox
-                    },
-                    margins = dpi(3),
-                    widget = wibox.container.margin
-                  },
-                  bg = colors.bblack,
-                  shape = gears.shape.circle,
-                  widget = wibox.container.background
-                },
-                {
-                  {
                     id = 'text_role',
                     widget = wibox.widget.textbox,
                   },
-                  left = dpi(6),
+                  left = dpi(0),
                   widget = wibox.container.margin
                 },
                 widget = wibox.layout.align.horizontal,
@@ -327,19 +314,13 @@ awful.screen.connect_for_each_screen(function(s)
               color = colors.bblack,
               widget = wibox.container.margin,
             },
-            left = dpi(4),
-            right = dpi(4),
+            left = dpi(5),
+            right = dpi(5),
             widget = wibox.container.margin,
           },
           id = 'background_role',
           widget = wibox.container.background,
           -- Index label
-          create_callback = function (self, c3, index)
-            self:get_children_by_id('index_role')[1].markup = '<b>'..index..'</b>'
-          end,
-          update_callback = function (self, c3, index)
-            self:get_children_by_id('index_role')[1].markup = '<b>'..index..'</b>'
-          end
         }
     }
 
