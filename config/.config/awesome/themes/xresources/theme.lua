@@ -39,7 +39,7 @@ local colors = {
 theme.font          = "Font Awesome 5 Free 8"
 
 theme.bg_normal     = colors.background
-theme.bg_focus      = colors.cyan
+theme.bg_focus      = colors.bcyan
 theme.bg_urgent     = colors.bred
 theme.bg_minimize   = colors.bblack
 theme.bg_systray    = colors.background
@@ -69,8 +69,8 @@ theme.border_marked = colors.bgreen
 theme.taglist_bg_occupied = theme.bg_normal
 theme.taglist_fg_occupied = theme.fg_normal
 
-theme.taglist_bg_focus = colors.bblack
-theme.taglist_fg_focus = colors.foreground
+theme.taglist_bg_focus = theme.bg_focus
+theme.taglist_fg_focus = theme.fg_focus
 
 theme.taglist_spacing = dpi(0)
 theme.taglist_font = "Font Awesome 5 Free 10"
