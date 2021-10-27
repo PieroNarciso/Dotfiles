@@ -12,26 +12,48 @@ local themes_path = gfs.get_themes_dir()
 
 -- inherit default theme
 local theme = dofile(themes_path.."default/theme.lua")
+
+local colors = {
+  background = xrdb.color0,
+  foreground = xrdb.color15,
+  black = xrdb.color0,
+  bblack = xrdb.color8,
+  red = xrdb.color1,
+  bred = xrdb.color9,
+  green = xrdb.color2,
+  bgreen = xrdb.color10,
+  yellow = xrdb.color3,
+  byellow = xrdb.color11,
+  blue = xrdb.color4,
+  bblue = xrdb.color12,
+  mangenta = xrdb.color5,
+  bmangenta = xrdb.color13,
+  cyan = xrdb.color6,
+  bcyan = xrdb.color14,
+  white = xrdb.color7,
+  bwhite = xrdb.color15,
+}
+
 -- load vector assets' generators for this theme
 
 theme.font          = "Font Awesome 5 Free 8"
 
-theme.bg_normal     = xrdb.color0
-theme.bg_focus      = xrdb.color12
-theme.bg_urgent     = xrdb.color9
-theme.bg_minimize   = xrdb.color8
-theme.bg_systray    = theme.bg_normal
+theme.bg_normal     = colors.background
+theme.bg_focus      = colors.cyan
+theme.bg_urgent     = colors.bred
+theme.bg_minimize   = colors.bblack
+theme.bg_systray    = colors.background
 
-theme.fg_normal     = xrdb.foreground
+theme.fg_normal     = colors.foreground
 theme.fg_focus      = theme.bg_normal
 theme.fg_urgent     = theme.bg_normal
 theme.fg_minimize   = theme.bg_normal
 
 theme.useless_gap   = dpi(3)
 theme.border_width  = dpi(2)
-theme.border_normal = xrdb.color8
-theme.border_focus  = xrdb.color4
-theme.border_marked = xrdb.color10
+theme.border_normal = colors.bblack
+theme.border_focus  = colors.blue
+theme.border_marked = colors.bgreen
 
 -- There are other variable sets
 -- overriding the default one when
@@ -47,14 +69,17 @@ theme.border_marked = xrdb.color10
 theme.taglist_bg_occupied = theme.bg_normal
 theme.taglist_fg_occupied = theme.fg_normal
 
-theme.taglist_bg_focus = theme.bg_focus
-theme.taglist_fg_focus = theme.fg_focus
+theme.taglist_bg_focus = colors.bblack
+theme.taglist_fg_focus = colors.foreground
 
-theme.taglist_spacing = dpi(3)
+theme.taglist_spacing = dpi(0)
 theme.taglist_font = "Font Awesome 5 Free 10"
 
 theme.tooltip_fg = theme.fg_normal
 theme.tooltip_bg = theme.bg_normal
+
+-- Systray
+theme.systray_icon_spacing = dpi(3)
 
 -- Variables set for theming the menu:
 -- menu_[bg|fg]_[normal|focus]
