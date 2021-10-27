@@ -103,18 +103,8 @@ mylauncher = awful.widget.launcher({ image = beautiful.awesome_icon,
 menubar.utils.terminal = terminal -- Set the terminal for applications that require it
 -- }}}
 
--- Keyboard map indicator and switcher
-mykeyboardlayout = wibox.widget {
-  wibox.widget.textbox(""),
-  awful.widget.keyboardlayout(),
-  layout = wibox.layout.align.horizontal
-}
 
 -- {{{ Wibar
--- Create a textclock widget
-mytextclock = wibox.widget.textclock()
-local month_calendar = awful.widget.calendar_popup.month()
-month_calendar:attach(mytextclock, "tr", { on_hover = false })
 
 -- Create a wibox for each screen and add it
 local taglist_buttons = gears.table.join(
@@ -174,20 +164,106 @@ screen.connect_signal("property::geometry", set_wallpaper)
 local TAGS = { "1: ", "2: ", "3: ", "4: ", "5: ", "6: ", "7: ", "8: ", "9: " , "10: " }
 
 local vicious = require('vicious')
-local dpi = require("beautiful.xresources").apply_dpi
+local xresources = require("beautiful.xresources")
+local dpi = xresources.apply_dpi
+local xrdb = xresources.get_current_theme()
+
+local colors = {
+  black = xrdb.color0,
+  bblack = xrdb.color8,
+  red = xrdb.color1,
+  bred = xrdb.color9,
+  green = xrdb.color2,
+  bgreen = xrdb.color10,
+  yellow = xrdb.color3,
+  byellow = xrdb.color11,
+  blue = xrdb.color4,
+  bblue = xrdb.color12,
+  mangenta = xrdb.color5,
+  bmangenta = xrdb.color13,
+  cyan = xrdb.color6,
+  bcyan = xrdb.color14,
+  white = xrdb.color7,
+  bwhite = xrdb.color15,
+}
+
+
 
 -- Drive space Widget
-local drivewidget = wibox.widget.textbox()
-vicious.register(drivewidget, vicious.widgets.fs, " ${/home avail_gb} GB", 100)
+local drivewidgettext = wibox.widget.textbox()
+vicious.register(drivewidgettext, vicious.widgets.fs, " ${/home avail_gb} GB", 100)
+local drivewidget = wibox.widget {
+  {
+    widget = wibox.container.background,
+    fg = colors.byellow,
+    drivewidgettext
+  },
+  bottom = dpi(2),
+  color = colors.byellow,
+  widget = wibox.container.margin,
+}
 
 -- Mem Widget
-local memwidget = wibox.widget.textbox()
+local memwidgettext = wibox.widget.textbox()
 vicious.cache(vicious.widgets.mem)
-vicious.register(memwidget, vicious.widgets.mem, " $1%", 13)
+vicious.register(memwidgettext, vicious.widgets.mem,
+  ' $1%',
+13)
+local memwidget = {
+  {
+    widget = wibox.container.background,
+    fg = colors.bblue,
+    memwidgettext,
+  },
+  color = colors.bblue,
+  bottom = dpi(2),
+  widget = wibox.container.margin,
+}
 
 -- CPU Widget
-local cpuwidget = wibox.widget.textbox()
-vicious.register(cpuwidget, vicious.widgets.cpu, " $1%", 7)
+local cpuwidgettext = wibox.widget.textbox()
+vicious.register(cpuwidgettext, vicious.widgets.cpu, " $1%", 7)
+local cpuwidget = {
+  {
+    widget = wibox.container.background,
+    fg = colors.bmangenta,
+    cpuwidgettext,
+  },
+  color = colors.bmangenta,
+  bottom = dpi(2),
+  widget = wibox.container.margin,
+}
+
+-- Keyboard map indicator and switcher
+local keyboardlayoutwidget = wibox.widget {
+  {
+    {
+      wibox.widget.textbox(" "),
+      awful.widget.keyboardlayout(),
+      layout = wibox.layout.align.horizontal,
+    },
+    widget = wibox.container.background,
+    fg = colors.bcyan
+  },
+  color = colors.bcyan,
+  bottom = dpi(2),
+  widget = wibox.container.margin,
+}
+
+-- Create a textclock widget
+local textclocktext = wibox.widget.textclock()
+local month_calendar = awful.widget.calendar_popup.month()
+month_calendar:attach(textclocktext, "tr", { on_hover = false })
+local textclockwidget = {
+  {
+    widget = wibox.container.background,
+    fg = colors.bgreen,
+    textclocktext,
+  },
+  color = colors.bgreen,
+  bottom = dpi(2),
+  widget = wibox.container.margin,
+}
 
 awful.screen.connect_for_each_screen(function(s)
     -- Wallpaper
@@ -236,16 +312,21 @@ awful.screen.connect_for_each_screen(function(s)
         s.mytasklist, -- Middle widget
         { -- Right widgets
             layout = wibox.layout.fixed.horizontal,
-            spacing = dpi(8),
-            spacing_widget = {
-              widget = wibox.widget.separator,
+            spacing = dpi(10),
+            {
+              drivewidget,
+              left = dpi(10),
+              layout = wibox.container.margin,
             },
-            wibox.container.margin(drivewidget, dpi(8), dpi(0)),
-            wibox.container.margin(memwidget, dpi(0), dpi(0)),
-            wibox.container.margin(cpuwidget, dpi(0), dpi(0)),
-            wibox.container.margin(mykeyboardlayout, dpi(0), dpi(0)),
-            wibox.container.margin(wibox.widget.systray(), dpi(0), dpi(0)),
-            wibox.container.margin(mytextclock, dpi(0), dpi(0)),
+            memwidget,
+            cpuwidget,
+            keyboardlayoutwidget,
+            {
+              wibox.widget.systray(),
+              bottom = dpi(2),
+              widget = wibox.container.margin,
+            },
+            textclockwidget,
             s.mylayoutbox
         },
     }

@@ -1,9 +1,7 @@
 !!! GRUVBOX THEME
 #define BACKGROUND #282828
-#define background #282828
 #define OPABACKGROUND #4D282828
 #define FOREGROUND #ebdbb2
-#define foreground #ebdbb2
 
 #define BLACK #282828
 #define RED   #cc241d
