@@ -1,6 +1,5 @@
 adobe-source-sans-fonts
 alacritty
-alsa-utils
 arc-gtk-theme
 audacity
 autoconf
@@ -53,12 +52,12 @@ lightdm-webkit-theme-litarvan
 linux-headers
 linux-lts-headers
 lxappearance-gtk3
-mailspring
 maim
 make
 man-db
 man-pages
 menumaker
+meson
 mictray
 mpv
 ncdu
@@ -86,7 +85,6 @@ polybar
 postman-bin
 pyenv
 python-pipenv
-python-sgmllib
 qt5-doc
 qt5ct
 ranger
@@ -104,6 +102,7 @@ stow
 sxiv
 system-config-printer
 telegram-desktop
+thunderbird
 timeshift
 tint2
 trash-cli
