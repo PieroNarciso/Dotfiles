@@ -704,6 +704,7 @@ awful.rules.rules = {
         -- and the name shown there might not match defined rules here.
         name = {
           "Event Tester",  -- xev.
+          ".*Emulator.*",  -- Android Emulator
         },
         role = {
           "AlarmWindow",  -- Thunderbird's calendar.
