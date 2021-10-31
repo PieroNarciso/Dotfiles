@@ -417,6 +417,13 @@ globalkeys = gears.table.join(
         end,
         {description = "go back", group = "client"}),
 
+    awful.key({ "Mod1",           }, "Tab",
+        function ()
+          awful.client.cycle(true)
+          awful.client.focus.byidx(0, awful.client.getmaster())
+        end,
+        {description = "cycle clients", group = "client"}),
+
     awful.key({ modkey, "Mod1" }, "h", function () awful.tag.incmwfact(-0.01) end,
               {description = "resize to left", group = "client"}),
     awful.key({ modkey, "Mod1" }, "l", function () awful.tag.incmwfact(0.01) end,
