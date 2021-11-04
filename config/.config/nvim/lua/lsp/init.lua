@@ -46,49 +46,36 @@ local on_attach = function(client, bufnr)
   end
 end
 
-local function setup_servers()
-  require'lspinstall'.setup()
-  local servers = require'lspinstall'.installed_servers()
+local lsp_installer = require('nvim-lsp-installer')
+
+lsp_installer.on_server_ready(function(server)
   local config = {}
-  for _, server in pairs(servers) do
-    if server == 'typescript' then
-      config = require'lsp.tsserver'
-    elseif server == 'vue' then
-      config = require'lsp.vue'
-    elseif server == 'python' then
-      config = require'lsp.python'
-    elseif server == 'html' then
-      config = require'lsp.html'
-    elseif server == 'css' then
-      config = require'lsp.css'
-    elseif server == 'lua' then
-      config = require'lsp.lua'
-    elseif server == 'dockerfile' then
-      config = require'lsp.docker'
-    elseif server == 'tailwindcss' then
-      config = require'lsp.tailwindcss'
-    elseif server == 'vim' then
-      config = require'lsp.vim'
-    elseif server == 'yaml' then
-      config = require'lsp.yaml'
-    elseif server == 'diagnosticls' then
-      config = require'lsp.diagnosticls'
-    elseif server == 'deno' then
-      config = require'lsp.deno'
-    elseif server == 'cpp' then
-      config = require'lsp.cpp'
-    end
-    config.on_attach = on_attach
-    if not config.root_dir then
-      config.root_dir = function () return vim.fn.getcwd() end
-    end
-    require'lspconfig'[server].setup(config)
+  if server == 'typescript' then
+    config = require'lsp.tsserver'
+  elseif server.name == 'vue' then
+    config = require'lsp.vue'
+  elseif server.name == 'python' then
+    config = require'lsp.python'
+  elseif server.name == 'html' then
+    config = require'lsp.html'
+  elseif server.name == 'css' then
+    config = require'lsp.css'
+  elseif server.name == 'lua' then
+    config = require'lsp.lua'
+  elseif server.name == 'dockerfile' then
+    config = require'lsp.docker'
+  elseif server.name == 'tailwindcss' then
+    config = require'lsp.tailwindcss'
+  elseif server.name == 'vim' then
+    config = require'lsp.vim'
+  elseif server.name == 'yaml' then
+    config = require'lsp.yaml'
+  elseif server.name == 'diagnosticls' then
+    config = require'lsp.diagnosticls'
+  elseif server.name == 'deno' then
+    config = require'lsp.deno'
+  elseif server.name == 'cpp' then
+    config = require'lsp.cpp'
   end
-end
-
-setup_servers()
-
-require'lspinstall'.post_install_hook = function ()
-  setup_servers()
-  vim.cmd('bufdo e')
-end
+  server:setup(config)
+end)
