@@ -10,3 +10,4 @@ pgrep -x nm-applet > /dev/null || nm-applet &
 /usr/lib/polkit-gnome/polkit-gnome-authentication-agent-1 &
 pgrep -x xss-lock > /dev/null || xss-lock --transfer-sleep-lock -- i3lock --nofork -i $HOME/.local/share/wallpapers/arch-linux-wp-blur.png &
 pgrep -x easyeffects > /dev/null || easyeffects --gapplication-service &
+numlockx &
