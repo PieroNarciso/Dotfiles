@@ -50,29 +50,29 @@ local lsp_installer = require('nvim-lsp-installer')
 
 lsp_installer.on_server_ready(function(server)
   local config = {}
-  if server == 'typescript' then
+  if server.name == 'tsserver' then
     config = require'lsp.tsserver'
-  elseif server.name == 'vue' then
+  elseif server.name == 'vuels' then
     config = require'lsp.vue'
-  elseif server.name == 'python' then
+  elseif server.name == 'pyright' then
     config = require'lsp.python'
   elseif server.name == 'html' then
     config = require'lsp.html'
-  elseif server.name == 'css' then
+  elseif server.name == 'cssls' then
     config = require'lsp.css'
-  elseif server.name == 'lua' then
+  elseif server.name == 'sumneko_lua' then
     config = require'lsp.lua'
-  elseif server.name == 'dockerfile' then
+  elseif server.name == 'dockerls' then
     config = require'lsp.docker'
   elseif server.name == 'tailwindcss' then
     config = require'lsp.tailwindcss'
-  elseif server.name == 'vim' then
+  elseif server.name == 'vimls' then
     config = require'lsp.vim'
-  elseif server.name == 'yaml' then
+  elseif server.name == 'yamlls' then
     config = require'lsp.yaml'
   elseif server.name == 'diagnosticls' then
     config = require'lsp.diagnosticls'
-  elseif server.name == 'deno' then
+  elseif server.name == 'denols' then
     config = require'lsp.deno'
   elseif server.name == 'cpp' then
     config = require'lsp.cpp'
