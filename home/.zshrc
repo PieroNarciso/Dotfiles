@@ -240,3 +240,9 @@ bindkey -M vicmd 'j' history-substring-search-down
 if [ -f "/usr/bin/rg" ] ; then
     export FZF_DEFAULT_COMMAND='rg --hidden --files --glob "!.git"';
 fi
+
+# Set pyenv
+if command -v pyenv 1>/dev/null 2>&1; then
+    eval "$(pyenv init -)"
+fi
+
