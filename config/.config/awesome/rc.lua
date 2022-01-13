@@ -492,9 +492,9 @@ globalkeys = gears.table.join(
       end,
       { description = "take screenshot", group = "launcher" }
     ),
-    awful.key({ "Control", "Shift" }, "Print",
+    awful.key({ "Control", "Shift" }, "p",
       function () awful.spawn.with_shell(
-        "maim -s -n -l -c 0.157,0.333,0.466,0.4 | xclip -selection clipboard -t image/png"
+        "~/.scripts/screenshot.sh"
         )
       end,
       { description = "take screenshot region", group = "launcher" }
