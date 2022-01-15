@@ -48,12 +48,16 @@ end
 
 local lsp_installer = require('nvim-lsp-installer')
 
+require'lspconfig'.solargraph.setup{}
+
 lsp_installer.on_server_ready(function(server)
   local config = {}
   if server.name == 'tsserver' then
     config = require'lsp.tsserver'
   elseif server.name == 'vuels' then
     config = require'lsp.vue'
+  -- elseif server.name == 'solargraph' then
+  --   config = require'lsp.ruby'
   elseif server.name == 'pyright' then
     config = require'lsp.python'
   elseif server.name == 'html' then
