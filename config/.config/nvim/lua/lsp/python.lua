@@ -1,3 +1,3 @@
 return {
-  filetypes = { 'python '}
+  filetypes = { 'python'}
 }
