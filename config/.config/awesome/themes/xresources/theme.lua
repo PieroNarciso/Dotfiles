@@ -39,7 +39,7 @@ local colors = {
 theme.font          = "Font Awesome 5 Free 8"
 
 theme.bg_normal     = colors.background
-theme.bg_focus      = colors.bcyan
+theme.bg_focus      = colors.bblue
 theme.bg_urgent     = colors.bred
 theme.bg_minimize   = colors.bblack
 theme.bg_systray    = colors.background
