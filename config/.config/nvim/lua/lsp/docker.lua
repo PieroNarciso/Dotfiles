@@ -1,3 +1,0 @@
-return {
-  filetypes = { 'Dockerfile', 'dockerfile' }
-}
