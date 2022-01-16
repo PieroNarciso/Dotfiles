@@ -80,6 +80,7 @@ vim.api.nvim_exec(
 	autocmd Filetype css setlocal sw=2 ts=2 sts=2 expandtab
 	autocmd Filetype scss setlocal sw=2 ts=2 sts=2 expandtab
 	autocmd Filetype javascript setlocal sw=2 ts=2 sts=2 expandtab
+	autocmd Filetype svelte setlocal sw=2 ts=2 sts=2 expandtab
 	autocmd Filetype javascriptreact setlocal sw=2 ts=2 sts=2 expandtab
 	autocmd Filetype javascript.jsx setlocal sw=2 ts=2 sts=2 expandtab
 	autocmd Filetype typescript setlocal sw=2 ts=2 sts=2 expandtab
