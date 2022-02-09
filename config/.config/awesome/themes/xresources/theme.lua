@@ -35,8 +35,7 @@ local colors = {
 }
 
 -- load vector assets' generators for this theme
-
-theme.font          = "Font Awesome 5 Free 8"
+theme.font          = "DejaVu Sans 8"
 
 theme.bg_normal     = colors.background
 theme.bg_focus      = colors.bblue
@@ -73,7 +72,7 @@ theme.taglist_bg_focus = theme.bg_focus
 theme.taglist_fg_focus = theme.fg_focus
 
 theme.taglist_spacing = dpi(0)
-theme.taglist_font = "Font Awesome 5 Free 10"
+theme.taglist_font = "Font Awesome 6 Free 9"
 
 theme.tooltip_fg = theme.fg_normal
 theme.tooltip_bg = theme.bg_normal
