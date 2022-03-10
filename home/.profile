@@ -10,9 +10,19 @@ if [ -d "$HOME/.android/sdk/cmdline-tools" ]; then
     export PATH="$CMD_TOOLS_ANDROID_PATH:$PATH"
 fi
 
+if command -v ruby 1>/dev/null 2>&1; then
+    export GEM_HOME="$(ruby -e 'puts Gem.user_dir')"
+    export PATH="$PATH:$GEM_HOME/bin"
+fi
+
 if [ -d "$HOME/.android/sdk/emulator" ]; then
     EMULATOR_PATH="$HOME/.android/sdk/emulator"
     export PATH="$EMULATOR_PATH:$PATH"
+fi
+
+if [ -d "$HOME/go/bin" ]; then
+    GO_PATH="$HOME/go/bin"
+    export PATH="$PATH:$GO_PATH"
 fi
 
 if command -v pyenv 1>/dev/null 2>&1; then
