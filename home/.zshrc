@@ -246,3 +246,10 @@ if command -v pyenv 1>/dev/null 2>&1; then
     eval "$(pyenv init -)"
 fi
 
+[ -f "$HOME/.rvm/scripts/rvm" ] \
+    && source $HOME/.rvm/scripts/rvm
+
+if command -v ruby 1>/dev/null 2>&1; then
+    export GEM_HOME="$(ruby -e 'puts Gem.user_dir')"
+    export PATH="$GEM_HOME/bin:$PATH"
+fi

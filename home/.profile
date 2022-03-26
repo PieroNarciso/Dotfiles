@@ -1,18 +1,13 @@
 export QT_QPA_PLATFORMTHEME=qt5ct
 
 PATH="$HOME/.node_modules/bin:$PATH"
-export npm_config_prefix=~/.node_modules
+# export npm_config_prefix=~/.node_modules
 export BAT_THEME=gruvbox-dark
 export TDESKTOP_USE_GTK_FILE_DIALOG=1
 
 if [ -d "$HOME/.android/sdk/cmdline-tools" ]; then
     CMD_TOOLS_ANDROID_PATH="$HOME/.android/sdk/cmdline-tools/5.0/bin"
     export PATH="$CMD_TOOLS_ANDROID_PATH:$PATH"
-fi
-
-if command -v ruby 1>/dev/null 2>&1; then
-    export GEM_HOME="$(ruby -e 'puts Gem.user_dir')"
-    export PATH="$PATH:$GEM_HOME/bin"
 fi
 
 if [ -d "$HOME/.android/sdk/emulator" ]; then
