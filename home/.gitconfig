@@ -3,7 +3,7 @@
     email = pieronarciso988@gmail.com
     signingkey = 53F38E8BB4B6CC3A
 
-[includeIf "gitdir:~/Code/Bsale/*"]
+[includeIf "gitdir:~/Code/Bsale/**/*"]
     path = ~/.gitconfig-bsale
 
 [init]
