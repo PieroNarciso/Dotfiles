@@ -64,7 +64,7 @@ modkey = "Mod4"
 awful.layout.layouts = {
     awful.layout.suit.tile,
     -- awful.layout.suit.tile.left,
-    -- awful.layout.suit.tile.bottom,
+    awful.layout.suit.tile.bottom,
     -- awful.layout.suit.tile.top,
     -- awful.layout.suit.fair,
     -- awful.layout.suit.fair.horizontal,
@@ -402,10 +402,16 @@ globalkeys = gears.table.join(
               {description = "swap with bottom client", group = "client"}),
     awful.key({ modkey, "Shift"   }, "k", function () awful.client.swap.bydirection('up')    end,
               {description = "swap with upper client", group = "client"}),
-    awful.key({ modkey, "Control" }, "j", function () awful.screen.focus_relative( 1) end,
-              {description = "focus the next screen", group = "screen"}),
-    awful.key({ modkey, "Control" }, "k", function () awful.screen.focus_relative(-1) end,
-              {description = "focus the previous screen", group = "screen"}),
+    awful.key({ modkey, "Control" }, "h", function () awful.screen.focus_bydirection('left') end,
+              {description = "focus left screen", group = "screen"}),
+    awful.key({ modkey, "Control" }, "l", function () awful.screen.focus_bydirection('right') end,
+              {description = "focus right screen", group = "screen"}),
+    awful.key({ modkey, "Control" }, "j", function () awful.screen.focus_bydirection('down') end,
+              {description = "focus up screen", group = "screen"}),
+    awful.key({ modkey, "Control" }, "k", function () awful.screen.focus_bydirection('up') end,
+              {description = "focus down screen", group = "screen"}),
+
+
     awful.key({ modkey,           }, "u", awful.client.urgent.jumpto,
               {description = "jump to urgent client", group = "client"}),
     awful.key({ modkey,           }, "Tab",
@@ -471,7 +477,7 @@ globalkeys = gears.table.join(
               {description = "restore minimized", group = "client"}),
 
     -- Keybind
-    awful.key({ modkey }, "b", function () awful.spawn('brave') end,
+    awful.key({ modkey }, "b", function () awful.spawn('chromium') end,
               { description = "opens web browser", group = "gui app" }),
     awful.key({ modkey, "Shift" }, "Return", function () awful.spawn('rofi -show drun') end,
               { description = "opens rofi", group = "gui app" }),
