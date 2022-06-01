@@ -144,7 +144,7 @@ theme.taglist_squares_unsel = theme_assets.taglist_squares_unsel(
     taglist_square_size, theme.fg_normal
 )
 
-theme.wallpaper = string.format('%s/.local/share/wallpapers/city.png', os.getenv('HOME'))
+theme.wallpaper = string.format('%s/.local/share/wallpapers/greenish.png', os.getenv('HOME'))
 
 return theme
 
