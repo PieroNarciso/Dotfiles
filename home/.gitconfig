@@ -1,7 +1,10 @@
 [user]
     name = Piero Narciso
     email = pieronarciso988@gmail.com
-    signingkey = E9C0DCDAE250B410
+    signingkey = 53F38E8BB4B6CC3A
+
+[includeIf "gitdir:~/Code/Bsale/*"]
+    path = ~/.gitconfig-bsale
 
 [init]
     defaultBranch = main
