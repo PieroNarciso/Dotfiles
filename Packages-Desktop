@@ -2,11 +2,14 @@ adobe-source-sans-fonts
 alacritty
 alsa-utils
 amd-ucode
+apache
+arandr
 arc-gtk-theme
 audacity
 autoconf
 automake
 awesome
+aws-cli
 base
 bat
 binutils
@@ -24,7 +27,6 @@ cmake
 cmatrix
 cups
 dash
-dbeaver
 deno
 discord
 dnsmasq
@@ -53,7 +55,6 @@ github-cli
 gnome-calculator
 go
 godot
-google-cloud-sdk
 gparted
 gpick
 grub
@@ -68,7 +69,7 @@ i3lock
 inkscape
 inotify-tools
 iptables-nft
-jdk-openjdk
+jre-openjdk
 kubectl
 kvantum
 lf-bin
@@ -104,11 +105,11 @@ maim
 make
 man-db
 man-pages
-mariadb
 menumaker
 meson
 mictray
 minikube
+mongodb-compass
 mpv
 nano
 nautilus
@@ -152,14 +153,13 @@ polybar
 postman-bin
 pyenv
 python-pipenv
-qemu
-qemu-arch-extra
+qemu-desktop
+qemu-emulators-full
 qt5-doc
 qt5ct
 ranger
 reflector
 ripgrep
-robo3t-bin
 rofi-emoji
 ruby
 ruby-build
@@ -198,7 +198,6 @@ vicious
 vim
 vim-plug
 virt-manager
-visual-studio-code-bin
 vkd3d
 vscodium-bin
 wget
