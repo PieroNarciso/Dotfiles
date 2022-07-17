@@ -500,7 +500,8 @@ globalkeys = gears.table.join(
     ),
     awful.key({ "Control", "Shift" }, "p",
       function () awful.spawn.with_shell(
-        "~/.scripts/screenshot.sh"
+        -- "~/.scripts/screenshot.sh"
+        "flameshot gui"
         )
       end,
       { description = "take screenshot region", group = "launcher" }
