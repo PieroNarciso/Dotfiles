@@ -11,5 +11,6 @@
     "terminal.integrated.fontFamily": "'RobotoMono Nerd Font'",
     "C_Cpp.intelliSenseUpdateDelay": 500,
     "editor.acceptSuggestionOnEnter": "off",
-    "editor.tabSize": 2
+    "editor.tabSize": 2,
+    "svelte.enable-ts-plugin": true
 }
