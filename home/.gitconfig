@@ -3,9 +3,6 @@
     email = pieronarciso988@gmail.com
     signingkey = 53F38E8BB4B6CC3A
 
-[includeIf "gitdir:~/Code/Bsale/**/*"]
-    path = ~/.gitconfig-bsale
-
 [init]
     defaultBranch = main
 
@@ -26,6 +23,9 @@
     diff = true
     show = false
     branch = false
+
+[worktree]
+    guessRemote = true
 
 [color]
     ui = auto
@@ -48,3 +48,6 @@
 
 [commit]
     gpgsign = true
+
+[includeIf "gitdir:~/Code/Bsale/**/*"]
+    path = ~/.gitconfig-bsale
