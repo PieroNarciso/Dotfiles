@@ -3,8 +3,8 @@ msg_id="991049"
 icon_audio_activate="notification-audio-volume-high"
 icon_audio_muted="notification-audio-volume-muted"
 
-volume="$(amixer -D pulse get Master | tail -1 | awk '{print $5}' | sed 's/[^0-9]*//g')"
-mute="$(amixer -D pulse get Master | tail -1 | awk '{print $6}' | sed 's/[^a-z]*//g')"
+volume="$(amixer get Master | tail -1 | awk '{print $5}' | sed 's/[^0-9]*//g')"
+mute="$(amixer get Master | tail -1 | awk '{print $6}' | sed 's/[^a-z]*//g')"
 
 if [ $volume = 0 ] || [ $mute = "off" ]; then
     # Show the sound muted notification
