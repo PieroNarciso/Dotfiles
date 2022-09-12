@@ -191,7 +191,7 @@ local colors = {
 
 -- Drive space Widget
 local drivewidgettext = wibox.widget.textbox()
-vicious.register(drivewidgettext, vicious.widgets.fs, " ${/home avail_gb} GB", 100)
+vicious.register(drivewidgettext, vicious.widgets.fs, " ${/ avail_gb} GB", 100)
 local drivewidget = wibox.widget {
   {
     widget = wibox.container.background,
@@ -200,6 +200,20 @@ local drivewidget = wibox.widget {
   },
   bottom = dpi(2),
   color = colors.byellow,
+  widget = wibox.container.margin,
+}
+
+-- Battery widget indicator
+local batwidgettext = wibox.widget.textbox()
+vicious.register(batwidgettext, vicious.widgets.bat, " $2%", 61, "BATT")
+local batwidget = {
+  {
+    widget = wibox.container.background,
+    fg = colors.bmangenta,
+    batwidgettext,
+  },
+  color = colors.bmangenta,
+  bottom = dpi(2),
   widget = wibox.container.margin,
 }
 
@@ -355,6 +369,7 @@ awful.screen.connect_for_each_screen(function(s)
             memwidget,
             cpuwidget,
             keyboardlayoutwidget,
+            batwidget,
             systraywidget,
             textclockwidget,
             s.mylayoutbox
@@ -477,7 +492,7 @@ globalkeys = gears.table.join(
               {description = "restore minimized", group = "client"}),
 
     -- Keybind
-    awful.key({ modkey }, "b", function () awful.spawn('chromium') end,
+    awful.key({ modkey }, "b", function () awful.spawn('firefox') end,
               { description = "opens web browser", group = "gui app" }),
     awful.key({ modkey, "Shift" }, "Return", function () awful.spawn('rofi -show drun') end,
               { description = "opens rofi", group = "gui app" }),
@@ -509,10 +524,10 @@ globalkeys = gears.table.join(
 
     -- Media Controls
     awful.key({}, "XF86AudioRaiseVolume", function ()
-      awful.spawn.with_shell('amixer -D pulse -q sset -M Master 5%+ && $HOME/.scripts/volume_status_notify.sh') end,
+      awful.spawn.with_shell('amixer set Master 5%+ && $HOME/.scripts/volume_status_notify.sh') end,
       { description = "Increase volume", group = "media"}),
     awful.key({}, "XF86AudioLowerVolume", function ()
-      awful.spawn.with_shell('amixer -D pulse -q sset -M Master 5%- && $HOME/.scripts/volume_status_notify.sh') end,
+      awful.spawn.with_shell('amixer set Master 5%- && $HOME/.scripts/volume_status_notify.sh') end,
       { description = "Decrease volume", group = "media"}),
     awful.key({}, "XF86AudioMute", function ()
       awful.spawn.with_shell('amixer -q sset Master toggle && $HOME/.scripts/volume_status_notify.sh') end,
@@ -809,4 +824,4 @@ client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_n
 beautiful.useless_gap = 3
 
 -- Autostart
-awful.spawn.with_shell('~/.scripts/autostart-default')
+-- awful.spawn.with_shell('~/.scripts/autostart-default')
