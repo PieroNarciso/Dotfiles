@@ -479,7 +479,7 @@ globalkeys = gears.table.join(
     -- Keybind
     awful.key({ modkey }, "b", function () awful.spawn('chromium') end,
               { description = "opens web browser", group = "gui app" }),
-    awful.key({ modkey, "Shift" }, "Return", function () awful.spawn('rofi -show drun') end,
+    awful.key({ modkey, "Control" }, "Return", function () awful.spawn('rofi -show drun') end,
               { description = "opens rofi", group = "gui app" }),
     awful.key({ modkey }, "e", function () awful.spawn('alacritty -e lf') end,
               { description = "opens lf file manager", group = "cli app" }),
@@ -487,7 +487,7 @@ globalkeys = gears.table.join(
               { description = "opens calcurse calendar", group = "cli app" }),
     awful.key({ modkey }, "period", function () awful.spawn('rofi -show emoji -modi emoji') end,
               { description = "opens emoji explorer", group = "gui app" }),
-    awful.key({ modkey, "Mod1" }, "k", function () awful.spawn.with_shell('$HOME/.scripts/toggle-picom.sh') end,
+    awful.key({ modkey, "Control" }, "k", function () awful.spawn.with_shell('$HOME/.scripts/toggle-picom.sh') end,
               { description = "toggle compositor", group = "launcher" }),
 
     -- Screenshot
@@ -615,18 +615,18 @@ for i = 1, 10 do
                         end
                   end,
                   {description = "view tag #"..i, group = "tag"}),
-        -- Toggle tag display.
-        awful.key({ modkey, "Control" }, "#" .. i + 9,
-                  function ()
-                      local screen = awful.screen.focused()
-                      local tag = screen.tags[i]
-                      if tag then
-                         awful.tag.viewtoggle(tag)
-                      end
-                  end,
-                  {description = "toggle tag #" .. i, group = "tag"}),
+        -- -- Toggle tag display.
+        -- awful.key({ modkey, "Control" }, "#" .. i + 9,
+        --           function ()
+        --               local screen = awful.screen.focused()
+        --               local tag = screen.tags[i]
+        --               if tag then
+        --                  awful.tag.viewtoggle(tag)
+        --               end
+        --           end,
+        --           {description = "toggle tag #" .. i, group = "tag"}),
         -- Move client to tag.
-        awful.key({ modkey, "Shift" }, "#" .. i + 9,
+        awful.key({ modkey, "Control" }, "#" .. i + 9,
                   function ()
                       if client.focus then
                           local tag = client.focus.screen.tags[i]
