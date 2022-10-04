@@ -477,7 +477,7 @@ globalkeys = gears.table.join(
               {description = "restore minimized", group = "client"}),
 
     -- Keybind
-    awful.key({ modkey }, "b", function () awful.spawn('chromium') end,
+    awful.key({ modkey }, "b", function () awful.spawn('firefox') end,
               { description = "opens web browser", group = "gui app" }),
     awful.key({ modkey, "Control" }, "Return", function () awful.spawn('rofi -show drun') end,
               { description = "opens rofi", group = "gui app" }),
