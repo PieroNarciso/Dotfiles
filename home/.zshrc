@@ -125,54 +125,6 @@ export LESS_TERMCAP_se=$'\E[0m'        # reset reverse video
 export LESS_TERMCAP_us=$'\E[1;32m'     # begin underline
 export LESS_TERMCAP_ue=$'\E[0m'        # reset underline
 
-
-###################
-## PROMPT CONFIG ##
-###################
-autoload -Uz promptinit
-promptinit
-prompt spaceship
-
-SPACESHIP_PROMPT_ADD_NEWLINE=false
-SPACESHIP_PROMPT_SEPARATE_LINE=false
-SPACESHIP_CHAR_SUFFIX=" "
-SPACESHIP_CHAR_SYMBOL=❯
-SPACESHIP_DIR_TRUNC=2
-SPACESHIP_DIR_TRUNC_PREFIX='~/../'
-SPACESHIP_DIR_TRUNC_REPO=false
-# Packages
-SPACESHIP_PACKAGE_SHOW=false
-SPACESHIP_NODE_SHOW=false
-SPACESHIP_RUBY_SHOW=false
-SPACESHIP_ELM_SHOW=false
-SPACESHIP_ELIXIR_SHOW=false
-SPACESHIP_XCODE_SHOW_LOCAL=false
-SPACESHIP_SWIFT_SHOW_LOCAL=false
-SPACESHIP_GOLANG_SHOW=false
-SPACESHIP_PHP_SHOW=false
-SPACESHIP_RUST_SHOW=false
-SPACESHIP_HASKELL_SHOW=false
-SPACESHIP_JULIA_SHOW=false
-SPACESHIP_DOCKER_SHOW=false
-SPACESHIP_DOCKER_CONTEXT_SHOW=false
-SPACESHIP_AWS_SHOW=false
-SPACESHIP_GCLOUD_SHOW=false
-SPACESHIP_VENV_SHOW=true
-SPACESHIP_VENV_GENERIC_NAMES=()
-SPACESHIP_CONDA_SHOW=true
-SPACESHIP_PYENV_SHOW=false
-SPACESHIP_DOTNET_SHOW=false
-SPACESHIP_EMBER_SHOW=false
-SPACESHIP_KUBECTL_SHOW=false
-SPACESHIP_KUBECTL_VERSION_SHOW=false
-SPACESHIP_KUBECONTEXT_SHOW=false
-SPACESHIP_TERRAFORM_SHOW=false
-SPACESHIP_EXEC_TIME_SHOW=true
-SPACESHIP_BATTERY_SHOW=false
-SPACESHIP_VI_MODE_SHOW=false
-SPACESHIP_EXIT_CODE_SHOW=true
-
-
 #####################
 ## PLUGINS SECTION ##
 #####################
@@ -246,6 +198,10 @@ if command -v pyenv 1>/dev/null 2>&1; then
     eval "$(pyenv init -)"
 fi
 
+# Set rbenv for ruby version manager
+[ -f "$HOME/.rbenv/bin/rbenv" ] \
+    && eval "$(~/.rbenv/bin/rbenv init - zsh)"
+
 [ -f "$HOME/.rvm/scripts/rvm" ] \
     && source $HOME/.rvm/scripts/rvm
 
@@ -253,3 +209,5 @@ if command -v ruby 1>/dev/null 2>&1; then
     export GEM_HOME="$(ruby -e 'puts Gem.user_dir')"
     export PATH="$GEM_HOME/bin:$PATH"
 fi
+
+eval "$(starship init zsh)"
