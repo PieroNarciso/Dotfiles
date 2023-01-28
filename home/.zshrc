@@ -198,6 +198,11 @@ if command -v pyenv 1>/dev/null 2>&1; then
     eval "$(pyenv init -)"
 fi
 
+# pnpm
+export PNPM_HOME="/home/piero/.local/share/pnpm"
+export PATH="$PNPM_HOME:$PATH"
+# pnpm end
+
 # Set rbenv for ruby version manager
 [ -f "$HOME/.rbenv/bin/rbenv" ] \
     && eval "$(~/.rbenv/bin/rbenv init - zsh)"
@@ -211,3 +216,4 @@ if command -v ruby 1>/dev/null 2>&1; then
 fi
 
 eval "$(starship init zsh)"
+
