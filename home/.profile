@@ -2,7 +2,7 @@ export QT_QPA_PLATFORMTHEME=qt5ct
 export GTK_THEME=Arc:dark
 
 PATH="$HOME/.node_modules/bin:$PATH"
-# export npm_config_prefix=~/.node_modules
+export npm_config_prefix=~/.node_modules
 export BAT_THEME=gruvbox-dark
 export TDESKTOP_USE_GTK_FILE_DIALOG=1
 
