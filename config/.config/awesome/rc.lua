@@ -191,7 +191,7 @@ local colors = {
 
 -- Drive space Widget
 local drivewidgettext = wibox.widget.textbox()
-vicious.register(drivewidgettext, vicious.widgets.fs, " ${/ avail_gb} GB", 100)
+vicious.register(drivewidgettext, vicious.widgets.fs, " ${/home avail_gb} GB", 100)
 local drivewidget = wibox.widget {
   {
     widget = wibox.container.background,
@@ -492,7 +492,7 @@ globalkeys = gears.table.join(
               {description = "restore minimized", group = "client"}),
 
     -- Keybind
-    awful.key({ modkey }, "b", function () awful.spawn('firefox') end,
+    awful.key({ modkey }, "b", function () awful.spawn('chromium') end,
               { description = "opens web browser", group = "gui app" }),
     awful.key({ modkey, "Control" }, "Return", function () awful.spawn('rofi -show drun') end,
               { description = "opens rofi", group = "gui app" }),
@@ -824,4 +824,4 @@ client.connect_signal("unfocus", function(c) c.border_color = beautiful.border_n
 beautiful.useless_gap = 3
 
 -- Autostart
--- awful.spawn.with_shell('~/.scripts/autostart-default')
+awful.spawn.with_shell('~/.scripts/autostart-default')
