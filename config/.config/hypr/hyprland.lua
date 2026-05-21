@@ -52,7 +52,7 @@ end)
 hl.env("XCURSOR_SIZE", "24")
 hl.env("QT_QPA_PLATFORMTHEME", "qt5ct") -- change to qt6ct if you have that
 hl.env("BAT_THEME", "gruvbox-dark")
-hl.env("GTK_THEME", "Arc:dark")
+hl.env("GTK_THEME", "Gruvbox-B-MB-Dark-Medium")
 hl.env("TDESKTOP_USE_GTK_FILE_DIALOG", "1")
 
 -----------------------
@@ -184,3 +184,16 @@ end
 -- Move/resize windows with mainMod + LMB/RMB drag
 hl.bind(mainMod .. " + mouse:272", hl.dsp.window.drag(),   { mouse = true })
 hl.bind(mainMod .. " + mouse:273", hl.dsp.window.resize(), { mouse = true })
+
+--------------------
+---- WINDOW RULES --
+--------------------
+-- GTK file picker (xdg-desktop-portal-gtk) under Hyprland: GTK's client-side
+-- decoration shadow is a transparent surface margin that the compositor blurs,
+-- giving a fuzzy halo/border around the dialog. Kill blur + shadow on it.
+hl.window_rule({
+    name      = "filechooser-no-blur-halo",
+    match     = { class = "(?i)xdg-desktop-portal-gtk" },
+    no_blur   = true,
+    no_shadow = true,
+})
