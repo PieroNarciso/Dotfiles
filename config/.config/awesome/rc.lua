@@ -191,7 +191,7 @@ local colors = {
 
 -- Drive space Widget
 local drivewidgettext = wibox.widget.textbox()
-vicious.register(drivewidgettext, vicious.widgets.fs, " ${/home avail_gb} GB", 100)
+vicious.register(drivewidgettext, vicious.widgets.fs, " ${/ avail_gb} GB", 100)
 local drivewidget = wibox.widget {
   {
     widget = wibox.container.background,

@@ -137,3 +137,13 @@ ex ()
     echo "'$1' is not a valid file"
   fi
 }
+
+# Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
+export PATH="$PATH:$HOME/.rvm/bin"
+
+[[ -s "/home/piero/.gvm/scripts/gvm" ]] && source "/home/piero/.gvm/scripts/gvm"
+
+# Added by LM Studio CLI (lms)
+export PATH="$PATH:/home/piero/.lmstudio/bin"
+# End of LM Studio CLI section
+

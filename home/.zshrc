@@ -200,7 +200,10 @@ fi
 
 # pnpm
 export PNPM_HOME="/home/piero/.local/share/pnpm"
-export PATH="$PNPM_HOME:$PATH"
+case ":$PATH:" in
+  *":$PNPM_HOME/bin:"*) ;;
+  *) export PATH="$PNPM_HOME/bin:$PATH" ;;
+esac
 # pnpm end
 
 # Set rbenv for ruby version manager
@@ -217,9 +220,53 @@ fi
 
 eval "$(starship init zsh)"
 
+# Set GPG TTY
+export GPG_TTY=$(tty)
 
 export NVM_DIR="$HOME/.nvm"
 [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"  # This loads nvm
 [ -s "$NVM_DIR/bash_completion" ] && \. "$NVM_DIR/bash_completion"  # This loads nvm bash_completion
 
 [[ -s "/home/piero/.gvm/scripts/gvm" ]] && source "/home/piero/.gvm/scripts/gvm"
+
+if [ -d "$HOME/Android/Sdk/cmdline-tools" ]; then
+    CMD_TOOLS_ANDROID_PATH="$HOME/Android/Sdk/cmdline-tools/latest/bin"
+    export PATH="$CMD_TOOLS_ANDROID_PATH:$PATH"
+fi
+
+if [ -d "$HOME/Android/Sdk/emulator" ]; then
+    EMULATOR_PATH="$HOME/Android/Sdk/emulator"
+    export PATH="$EMULATOR_PATH:$PATH"
+fi
+
+if [ -d "$HOME/go/bin" ]; then
+    GO_PATH="$HOME/go/bin"
+    export PATH="$PATH:$GO_PATH"
+fi
+
+if command -v pyenv 1>/dev/null 2>&1; then
+    export PYENV_ROOT="$HOME/.pyenv"
+    export PATH="$PYENV_ROOT/bin:$PATH"
+    eval "$(pyenv init --path)"
+fi
+
+if [ -d "$HOME/.local/bin" ] ; then
+    PATH="$HOME/.local/bin:$PATH"
+fi
+
+if [ -d "$HOME/.cargo/bin" ] ; then
+    PATH="$HOME/.cargo/bin:$PATH"
+fi
+
+# encore
+#
+export ENCORE_INSTALL="/home/piero/.encore"
+export PATH="$ENCORE_INSTALL/bin:$PATH"
+
+# Add RVM to PATH for scripting. Make sure this is the last PATH variable change.
+export PATH="$PATH:$HOME/.rvm/bin"
+
+# Added by LM Studio CLI (lms)
+export PATH="$PATH:/home/piero/.lmstudio/bin"
+# End of LM Studio CLI section
+
