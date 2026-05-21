@@ -104,7 +104,9 @@ hl.config({
     },
 
     misc = {
-        force_default_wallpaper = 0,
+        force_default_wallpaper  = 0,
+        disable_hyprland_logo    = true, -- no corner logo
+        disable_splash_rendering = true, -- no random quip text over wallpaper
     },
 
     animations = {
