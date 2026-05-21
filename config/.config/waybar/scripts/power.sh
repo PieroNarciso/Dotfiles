@@ -13,7 +13,7 @@ chosen=$(printf '%s\n' \
 
 case "$chosen" in
     *Lock)     hyprlock ;;
-    *Logout)   hyprctl dispatch exit ;;
+    *Logout)   hyprctl dispatch 'hl.dsp.exit()' ;;
     *Suspend)  systemctl suspend ;;
     *Reboot)   systemctl reboot ;;
     *Shutdown) systemctl poweroff ;;
