@@ -27,11 +27,11 @@ cursor = "CellForeground"
 text = "CellBackground"
 
 [font]
-size = 12.0
+size = 13.0
 
 [font.normal]
 family = "Hack Nerd Font"
 
 [window]
 decorations = "full"
-opacity = 0.8
+opacity = 1
