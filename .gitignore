@@ -3,3 +3,10 @@
 /**/*/VSCodium/*
 !/**/*/VSCodium/User/settings.json
 !/**/*/VSCodium/product.json
+/**/*/share/nvim/*
+
+# Superpowers brainstorm session artifacts (pid/log/local paths) — never commit
+.superpowers/
+
+# Runtime log from monitor workspace script
+scripts/.scripts/monitor.log

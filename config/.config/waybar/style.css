@@ -1,0 +1,113 @@
+/* Gruvbox floating-islands theme
+ * Palette: bg0 #282828  bg1 #3c3836  bg2 #504945  bg3 #665c54
+ *          fg #ebdbb2  gray #a89984  yellow #fabd2f  orange #fe8019
+ *          green #b8bb26  aqua #8ec07c  blue #83a598  purple #d3869b  red #fb4934
+ */
+
+* {
+    font-family: "FiraCode Nerd Font", "FontAwesome", monospace;
+    font-size: 13px;
+    font-weight: 600;
+    min-height: 0;
+}
+
+/* Transparent bar — modules become the floating islands */
+window#waybar {
+    background: transparent;
+    color: #ebdbb2;
+}
+
+tooltip {
+    background: #282828;
+    border: 1px solid #504945;
+    border-radius: 8px;
+}
+tooltip label { color: #ebdbb2; }
+
+/* ---- island base: every top-level module / group is its own pill ---- */
+#workspaces,
+#window,
+#custom-media,
+#io,
+#stats,
+#clock,
+#tray,
+#custom-power {
+    background: #3c3836;
+    border-radius: 10px;
+    margin: 6px 4px 0 4px;
+    padding: 2px 12px;
+}
+.modules-left > widget:first-child > #workspaces { margin-left: 8px; }
+#custom-power { margin-right: 8px; padding: 2px 14px; }
+
+/* ---- workspaces ---- */
+#workspaces { padding: 2px 6px; }
+#workspaces button {
+    color: #a89984;
+    background: transparent;
+    border-radius: 8px;
+    padding: 0 6px;
+    margin: 2px 1px;
+    transition: all 0.2s ease;
+}
+#workspaces button:hover {
+    background: #504945;
+    color: #ebdbb2;
+    box-shadow: none;
+    text-shadow: none;
+}
+#workspaces button.active {
+    color: #282828;
+    background: #fabd2f;
+}
+#workspaces button.urgent {
+    color: #282828;
+    background: #fb4934;
+}
+
+/* ---- window title ---- */
+#window {
+    color: #8ec07c;
+    font-weight: 500;
+}
+/* hide the title island when empty */
+window#waybar.empty #window,
+window#waybar.solo #window {
+    background: transparent;
+}
+
+/* ---- media ---- */
+#custom-media { color: #d3869b; }
+
+/* ---- grouped modules inside an island share the island bg ---- */
+#io, #stats { padding: 2px 6px; }
+#io #pulseaudio,
+#io #network,
+#stats #cpu,
+#stats #memory,
+#stats #temperature {
+    background: transparent;
+    padding: 0 8px;
+}
+
+#pulseaudio { color: #fabd2f; }
+#pulseaudio.muted { color: #665c54; }
+#network { color: #83a598; }
+#network.disconnected { color: #fb4934; }
+
+#cpu { color: #b8bb26; }
+#memory { color: #8ec07c; }
+#temperature { color: #fe8019; }
+#temperature.critical { color: #fb4934; }
+
+/* ---- clock ---- */
+#clock { color: #fabd2f; }
+
+/* ---- tray ---- */
+#tray > .passive { -gtk-icon-effect: dim; }
+#tray > .needs-attention { -gtk-icon-effect: highlight; }
+
+/* ---- power ---- */
+#custom-power { color: #fb4934; }
+#custom-power:hover { color: #ebdbb2; background: #fb4934; }
