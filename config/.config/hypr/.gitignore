@@ -1,0 +1,3 @@
+# hyprsplit is a cloned lua library (its own git repo) — not tracked here.
+# Re-clone on a new machine: git clone https://github.com/shezdy/hyprsplit.git
+hyprsplit/
