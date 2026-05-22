@@ -3,7 +3,7 @@ configuration {
 /*	width: 50;*/
 /*	lines: 15;*/
 /*	columns: 1;*/
-	font: "monospace 13";
+	font: "FiraCode Nerd Font 13";
 /*	bw: 1;*/
 /*	location: 0;*/
 /*	padding: 5;*/
@@ -147,4 +147,4 @@ configuration {
 /*	me-accept-entry: "MouseDPrimary";*/
 /*	me-accept-custom: "Control+MouseDPrimary";*/
 }
-@theme "./themes/gruvbox-dark-soft.rasi"
+@theme "./themes/gruvbox-medium.rasi"
