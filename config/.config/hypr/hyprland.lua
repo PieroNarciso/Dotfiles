@@ -146,6 +146,7 @@ hl.bind(mainMod .. " + SHIFT + Q",        hl.dsp.window.close())
 hl.bind(mainMod .. " + E",                hl.dsp.exec_cmd(fileManager))
 hl.bind(mainMod .. " + T",                hl.dsp.window.float({ action = "toggle" }))
 hl.bind(mainMod .. " + CONTROL + Return", hl.dsp.exec_cmd("rofi -show drun"))
+hl.bind(mainMod .. " + period",           hl.dsp.exec_cmd("rofi -show emoji -modi emoji")) -- emoji picker (rofi-emoji); Enter=insert needs wtype, Alt+c=copy
 hl.bind(mainMod .. " + B",                hl.dsp.exec_cmd("brave"))
 hl.bind(mainMod .. " + X",                hl.dsp.exec_cmd("~/.config/waybar/scripts/power.sh"))
 hl.bind(mainMod .. " + P",                hl.dsp.window.pseudo())
