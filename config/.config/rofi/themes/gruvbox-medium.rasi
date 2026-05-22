@@ -1,0 +1,117 @@
+/* ==========================================================================
+   gruvbox-medium.rasi — Rofi theme matching waybar + hyprland
+
+   Gruvbox MEDIUM (bg0 #282828, same as the waybar bar), yellow->orange accent
+   mirroring the hyprland active border gradient (#fabd2f -> #fe8019).
+   Modern centered card: rounded corners, search bar, icon list.
+   Font: FiraCode Nerd Font (same as waybar).
+
+   Palette: bg0 #282828  bg1 #3c3836  bg2 #504945  bg3 #665c54
+            fg  #ebdbb2  gray #a89984  yellow #fabd2f  orange #fe8019  red #fb4934
+   ========================================================================== */
+
+* {
+    bg0:    #282828;
+    bg1:    #3c3836;
+    bg2:    #504945;
+    bg3:    #665c54;
+    fg:     #ebdbb2;
+    gray:   #a89984;
+    yellow: #fabd2f;
+    orange: #fe8019;
+    red:    #fb4934;
+
+    background-color: transparent;
+    text-color:       @fg;
+
+    margin:  0;
+    padding: 0;
+    spacing: 0;
+}
+
+window {
+    location:         center;
+    width:            620px;
+    border:           2px;            /* matches hypr border_size = 2 */
+    border-color:     @yellow;
+    border-radius:    10px;
+    background-color: rgba(40, 40, 40, 96%);  /* #282828, slight alpha for hypr blur */
+}
+
+mainbox {
+    padding: 12px;
+    spacing: 10px;
+}
+
+inputbar {
+    background-color: @bg1;
+    border-radius:    8px;
+    padding:          10px 14px;
+    spacing:          10px;
+    children:         [ prompt, entry ];
+}
+
+prompt {
+    text-color: @yellow;
+}
+
+entry {
+    text-color:        @fg;
+    placeholder:       "Search";
+    placeholder-color: @gray;
+    cursor:            text;
+}
+
+listview {
+    lines:        8;
+    columns:      1;
+    scrollbar:    true;
+    fixed-height: false;
+    spacing:      4px;
+    padding:      4px 0 0 0;
+}
+
+scrollbar {
+    handle-color: @bg3;
+    handle-width: 6px;
+    border:       0;
+}
+
+element {
+    padding:       8px 12px;
+    spacing:       10px;
+    border-radius: 8px;
+    text-color:    @fg;
+}
+
+element-icon {
+    size:   24px;
+    cursor: inherit;
+}
+
+element-text {
+    text-color:     inherit;
+    cursor:         inherit;
+    vertical-align: 0.5;
+}
+
+element normal.normal    { background-color: transparent; text-color: @fg; }
+element alternate.normal { background-color: transparent; text-color: @fg; }
+element selected.normal  { background-color: @orange;     text-color: @bg0; }
+
+element normal.active    { text-color: @yellow; }
+element selected.active  { background-color: @yellow; text-color: @bg0; }
+
+element normal.urgent    { text-color: @red; }
+element selected.urgent  { background-color: @red; text-color: @bg0; }
+
+message {
+    padding:          8px;
+    border-radius:    8px;
+    background-color: @bg1;
+}
+
+textbox {
+    text-color: @fg;
+    highlight:  bold #fabd2f;
+}
