@@ -2,9 +2,11 @@
 
 load test_helper
 
-setup() {
-    source "$INSTALL_DIR/lib/log.sh"
-}
+# Deliberately NOT sourcing lib/log.sh here. It defines run(), which would
+# shadow bats' own `run` helper for every test in this file and leave $output
+# and $status unset — the assertions would then pass or fail for reasons that
+# have nothing to do with the code. Each test sources the library inside the
+# `bash -c` subshell it is testing instead.
 
 @test "log_info writes to stderr, not stdout" {
     run bash -c "source '$INSTALL_DIR/lib/log.sh'; log_info hello 2>/dev/null"
