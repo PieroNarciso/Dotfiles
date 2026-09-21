@@ -1,10 +1,12 @@
 #!/usr/bin/env bash
+# shellcheck source-path=SCRIPTDIR
 # Stage 1 of the Arch laptop setup: everything after the first login.
 # See docs/superpowers/specs/2026-09-21-arch-laptop-bootstrap-design.md
 set -euo pipefail
 
 INSTALL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly INSTALL_DIR
+# shellcheck source=lib/log.sh
 # shellcheck source=lib/log.sh
 source "$INSTALL_DIR/lib/log.sh"
 
@@ -248,11 +250,15 @@ MANUAL
 main() {
     parse_args "$@"
     # shellcheck source=lib/hw.sh
+    # shellcheck source=lib/hw.sh
     source "$INSTALL_DIR/lib/hw.sh"
+    # shellcheck source=lib/boot.sh
     # shellcheck source=lib/boot.sh
     source "$INSTALL_DIR/lib/boot.sh"
     # shellcheck source=lib/pkg.sh
+    # shellcheck source=lib/pkg.sh
     source "$INSTALL_DIR/lib/pkg.sh"
+    # shellcheck source=lib/dotfiles.sh
     # shellcheck source=lib/dotfiles.sh
     source "$INSTALL_DIR/lib/dotfiles.sh"
 

@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+# shellcheck source-path=SCRIPTDIR
 # Two-way diff between explicitly installed packages and the group files.
 # Exits non-zero when either side has entries the other lacks.
 set -euo pipefail
@@ -7,7 +8,9 @@ INSTALL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # The audit compares against EXPLICITLY installed packages, not every dep.
 PKG_QUERY_CMD="${PKG_QUERY_CMD:-pacman -Qqe}"
 # shellcheck source=lib/log.sh
+# shellcheck source=lib/log.sh
 source "$INSTALL_DIR/lib/log.sh"
+# shellcheck source=lib/pkg.sh
 # shellcheck source=lib/pkg.sh
 source "$INSTALL_DIR/lib/pkg.sh"
 
@@ -31,6 +34,7 @@ if [ -f "$PKG_AUDIT_DIR/.audit-ignore" ]; then
         | { grep -v '^$' || true; } | sort -u > "$ignore"
 fi
 
+# shellcheck disable=SC2016  # $1 is the xargs argument, expanded by the inner sh
 find "$PKG_AUDIT_DIR" -name '*.txt' -print0 \
     | xargs -0 -I{} sh -c 'sed -e "s/#.*//" -e "s/[[:space:]]//g" "$1"' _ {} \
     | { grep -v '^$' || true; } | sort -u > "$listed"
@@ -38,18 +42,20 @@ find "$PKG_AUDIT_DIR" -name '*.txt' -print0 \
 $PKG_QUERY_CMD 2>/dev/null | sort -u > "$live"
 
 unlisted="$(comm -13 "$listed" "$live" | comm -23 - "$ignore")"
-missing="$(comm -23 "$listed" "$live")"
+missing_pkgs="$(comm -23 "$listed" "$live")"
 status=0
 
 if [ -n "$unlisted" ]; then
     log_warn "installed but unlisted in any group file:"
+    # shellcheck disable=SC2086  # unquoted on purpose: one package per line
     printf '  %s\n' $unlisted >&2
     status=1
 fi
 
-if [ -n "$missing" ]; then
+if [ -n "$missing_pkgs" ]; then
     log_warn "listed in a group file but missing from this machine:"
-    printf '  %s\n' $missing >&2
+    # shellcheck disable=SC2086  # unquoted on purpose: one package per line
+    printf '  %s\n' $missing_pkgs >&2
     status=1
 fi
 
