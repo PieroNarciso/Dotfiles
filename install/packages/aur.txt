@@ -1,0 +1,5 @@
+# AUR packages installed with paru on every machine.
+brave-bin
+zen-browser-bin
+visual-studio-code-bin
+xwaylandvideobridge

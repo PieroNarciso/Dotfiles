@@ -1,0 +1,8 @@
+# NVIDIA. nvidia-open-dkms is the current package name; a DKMS module needs
+# headers for every installed kernel, hence linux-headers (linux-lts-headers
+# is already in core.txt).
+nvidia-open-dkms
+nvidia-utils
+lib32-nvidia-utils
+nvidia-settings
+linux-headers

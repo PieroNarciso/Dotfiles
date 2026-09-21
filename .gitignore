@@ -10,3 +10,6 @@
 
 # Runtime log from monitor workspace script
 scripts/.scripts/monitor.log
+
+# archinstall credentials — never commit real passwords
+install/archinstall/creds.json

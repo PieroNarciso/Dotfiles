@@ -1,0 +1,5 @@
+kdenlive
+guvcview
+v4l2loopback-dkms
+perl-image-exiftool
+tidal-hifi-git

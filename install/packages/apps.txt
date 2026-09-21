@@ -1,0 +1,20 @@
+# Graphical applications.
+firefox
+chromium
+nemo
+nemo-fileroller
+gparted
+vlc
+obsidian
+discord
+libreoffice-fresh
+syncthing
+flatpak
+flameshot
+gcolor3
+qalculate-gtk
+blueman
+network-manager-applet
+proton-vpn-gtk-app
+rqbit-desktop
+speech-dispatcher

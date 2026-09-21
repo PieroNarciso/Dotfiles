@@ -2,6 +2,28 @@
 
 load test_helper
 
+# Inline teardown at the end of a test body never runs when an assertion
+# fails, so every failing test used to leak its temp directory. bats runs
+# this hook either way.
+teardown() { teardown_tmpdir; }
+
+# Every test that reaches a phase gets an isolated $HOME, a pacman.conf
+# fixture and an empty loader-entries directory, so nothing ever touches this
+# developer's real dotfiles, real /etc/pacman.conf, real /boot, or the real
+# package/service state. BOOTSTRAP_SKIP_NETCHECK keeps the suite runnable
+# offline.
+setup_fixture() {
+    setup_tmpdir
+    FAKE_HOME="$TEST_TMPDIR/home"
+    mkdir -p "$FAKE_HOME"
+    FAKE_ENTRIES="$TEST_TMPDIR/entries"
+    mkdir -p "$FAKE_ENTRIES"
+    FAKE_PACMAN_CONF="$TEST_TMPDIR/pacman.conf"
+    printf '[multilib]\nInclude = /etc/pacman.d/mirrorlist\nColor\nParallelDownloads = 5\n' > "$FAKE_PACMAN_CONF"
+    FIXTURE_ENV="HOME='$FAKE_HOME' BOOTSTRAP_PACMAN_CONF='$FAKE_PACMAN_CONF'"
+    FIXTURE_ENV="$FIXTURE_ENV BOOTCTL_ENTRIES_DIR='$FAKE_ENTRIES' BOOTSTRAP_SKIP_NETCHECK=1"
+}
+
 @test "--help exits 0 and documents the flags" {
     run bash "$INSTALL_DIR/bootstrap.sh" --help
     [ "$status" -eq 0 ]
@@ -16,18 +38,148 @@ load test_helper
 }
 
 @test "--groups sets the group list" {
-    run bash "$INSTALL_DIR/bootstrap.sh" --dry-run --groups core,dev
+    setup_fixture
+    run bash -c "$FIXTURE_ENV bash '$INSTALL_DIR/bootstrap.sh' --dry-run --skip-dotfiles --groups core,dev 2>&1"
     [[ "$output" == *"core,dev"* ]]
 }
 
 @test "default group list is core,dev,desktop,fonts,apps,laptop" {
-    run bash "$INSTALL_DIR/bootstrap.sh" --dry-run
+    setup_fixture
+    run bash -c "$FIXTURE_ENV bash '$INSTALL_DIR/bootstrap.sh' --dry-run --skip-dotfiles 2>&1"
     [[ "$output" == *"core,dev,desktop,fonts,apps,laptop"* ]]
 }
 
 @test "--dry-run changes nothing on disk" {
-    before="$(find "$HOME" -maxdepth 1 -newermt '-1 second' | wc -l)"
-    run bash "$INSTALL_DIR/bootstrap.sh" --dry-run
+    setup_fixture
+    before="$(find "$FAKE_HOME" -mindepth 1 | wc -l)"
+    entries_before="$(find "$FAKE_ENTRIES" -mindepth 1 | wc -l)"
+    run bash -c "$FIXTURE_ENV bash '$INSTALL_DIR/bootstrap.sh' --dry-run 2>&1"
     [ "$status" -eq 0 ]
-    [ "$before" -eq "$(find "$HOME" -maxdepth 1 -newermt '-1 second' | wc -l)" ]
+    [ "$before" -eq "$(find "$FAKE_HOME" -mindepth 1 | wc -l)" ]
+    [ "$entries_before" -eq "$(find "$FAKE_ENTRIES" -mindepth 1 | wc -l)" ]
+}
+
+@test "preflight fails when not on Arch" {
+    setup_fixture
+    run bash -c "$FIXTURE_ENV BOOTSTRAP_ARCH_RELEASE='/nonexistent' bash '$INSTALL_DIR/bootstrap.sh' --dry-run 2>&1"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"Arch"* ]]
+}
+
+@test "preflight refuses to run as root" {
+    setup_fixture
+    run bash -c "$FIXTURE_ENV BOOTSTRAP_FAKE_EUID=0 bash '$INSTALL_DIR/bootstrap.sh' --dry-run 2>&1"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"root"* ]]
+}
+
+@test "BOOTSTRAP_SKIP_NETCHECK=1 skips the network probe" {
+    setup_fixture
+    # A curl that always fails stands in for being offline.
+    mkdir -p "$TEST_TMPDIR/bin"
+    printf '#!/usr/bin/env bash\nexit 1\n' > "$TEST_TMPDIR/bin/curl"
+    chmod +x "$TEST_TMPDIR/bin/curl"
+    run bash -c "PATH='$TEST_TMPDIR/bin:$PATH' $FIXTURE_ENV bash '$INSTALL_DIR/bootstrap.sh' --dry-run --skip-dotfiles 2>&1"
+    [ "$status" -eq 0 ]
+    [[ "$output" != *"no network connectivity"* ]]
+}
+
+@test "the seam is off by default, so a real run still probes" {
+    setup_fixture
+    mkdir -p "$TEST_TMPDIR/bin"
+    printf '#!/usr/bin/env bash\nexit 1\n' > "$TEST_TMPDIR/bin/curl"
+    chmod +x "$TEST_TMPDIR/bin/curl"
+    run bash -c "PATH='$TEST_TMPDIR/bin:$PATH' HOME='$FAKE_HOME' BOOTSTRAP_PACMAN_CONF='$FAKE_PACMAN_CONF' BOOTCTL_ENTRIES_DIR='$FAKE_ENTRIES' bash '$INSTALL_DIR/bootstrap.sh' --dry-run --skip-dotfiles 2>&1"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"no network connectivity"* ]]
+}
+
+@test "dry-run names every phase it would run, and nothing else" {
+    setup_fixture
+    run bash -c "$FIXTURE_ENV bash '$INSTALL_DIR/bootstrap.sh' --dry-run 2>&1"
+    [ "$status" -eq 0 ]
+    # log_step also announces per-file package work ("core.txt: installing 3
+    # of 40") and the clone/stow steps; the phase banners are the bare names.
+    phases="$(printf '%s\n' "$output" | sed -n 's/^::  //p' \
+        | grep -v ':' | grep -vE '^(cloning|updating|stowing)')"
+    # Equality, not a subset: a phase dropped from main() has to fail this.
+    [ "$phases" = "preflight
+pacman.conf
+microcode
+paru
+packages
+dotfiles
+shell
+services
+version managers
+report" ]
+}
+
+@test "pacman.conf phase enables multilib when it is commented out" {
+    setup_fixture
+    printf '#[multilib]\n#Include = /etc/pacman.d/mirrorlist\n' > "$FAKE_PACMAN_CONF"
+    before="$(cat "$FAKE_PACMAN_CONF")"
+    run bash -c "$FIXTURE_ENV bash '$INSTALL_DIR/bootstrap.sh' --dry-run --skip-dotfiles 2>&1"
+    [ "$status" -eq 0 ]
+    # The branch that actually enables multilib must have been taken (not the
+    # "already enabled" no-op branch), evidenced by the exact sed it would run.
+    [[ "$output" == *'DRY-RUN: sed -i s/^#\[multilib\]/[multilib]/; /^\[multilib\]/{n;s/^#Include/Include/}'*"$FAKE_PACMAN_CONF"* ]]
+    [[ "$output" != *"multilib already enabled"* ]]
+    # DRY_RUN must still mean nothing on disk actually changed.
+    [ "$(cat "$FAKE_PACMAN_CONF")" = "$before" ]
+    # Prove the sed itself is correct by running it for real against a
+    # disposable copy (never through bootstrap.sh, no sudo involved).
+    cp "$FAKE_PACMAN_CONF" "$TEST_TMPDIR/applied.conf"
+    sed -i 's/^#\[multilib\]/[multilib]/; /^\[multilib\]/{n;s/^#Include/Include/}' "$TEST_TMPDIR/applied.conf"
+    grep -qx '\[multilib\]' "$TEST_TMPDIR/applied.conf"
+    grep -qx 'Include = /etc/pacman.d/mirrorlist' "$TEST_TMPDIR/applied.conf"
+}
+
+@test "pacman.conf phase is a no-op when multilib is already enabled" {
+    setup_fixture
+    before="$(cat "$FAKE_PACMAN_CONF")"
+    run bash -c "$FIXTURE_ENV bash '$INSTALL_DIR/bootstrap.sh' --dry-run --skip-dotfiles 2>&1"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"multilib already enabled"* ]]
+    [[ "$output" != *"sed -i"* ]]
+    # Byte-identical: DRY_RUN guarantees it, and there was nothing to change anyway.
+    [ "$(cat "$FAKE_PACMAN_CONF")" = "$before" ]
+}
+
+@test "an unknown group name is rejected before anything is installed" {
+    setup_fixture
+    run bash -c "$FIXTURE_ENV bash '$INSTALL_DIR/bootstrap.sh' --dry-run --groups nosuchgroup 2>&1"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"nosuchgroup"* ]]
+    [[ "$output" != *"DRY-RUN:"* ]]
+}
+
+@test "--skip-dotfiles omits the dotfiles phase" {
+    setup_fixture
+    run bash -c "$FIXTURE_ENV bash '$INSTALL_DIR/bootstrap.sh' --dry-run --skip-dotfiles 2>&1"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"skipping dotfiles"* ]]
+    [[ "$output" != *"::  dotfiles"* ]]
+}
+
+@test "aur.txt follows the apps group instead of running unconditionally" {
+    setup_fixture
+    run bash -c "$FIXTURE_ENV bash '$INSTALL_DIR/bootstrap.sh' --dry-run --skip-dotfiles --groups apps 2>&1"
+    [ "$status" -eq 0 ]
+    [[ "$output" != *"skipping aur.txt"* ]]
+    [[ "$output" == *"aur.txt"* ]]
+    run bash -c "$FIXTURE_ENV bash '$INSTALL_DIR/bootstrap.sh' --dry-run --skip-dotfiles --groups server 2>&1"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"apps not selected; skipping aur.txt"* ]]
+    # A server run must not offer to install the desktop browsers.
+    [[ "$output" != *"brave-bin"* ]]
+}
+
+@test "the report's optional-group list matches packages/optional/ exactly" {
+    setup_fixture
+    run bash -c "$FIXTURE_ENV bash '$INSTALL_DIR/bootstrap.sh' --dry-run --skip-dotfiles 2>&1"
+    [ "$status" -eq 0 ]
+    listed="$(printf '%s\n' "$output" | sed -n 's#^ *install/bootstrap.sh --groups ##p')"
+    expected="$(cd "$INSTALL_DIR/packages/optional" && ls ./*.txt | sed -e 's#^\./##' -e 's/\.txt$//' | paste -sd,)"
+    [ "$listed" = "$expected" ]
 }

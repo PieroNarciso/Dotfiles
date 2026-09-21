@@ -1,0 +1,5 @@
+# Intel graphics.
+vulkan-intel
+lib32-vulkan-intel
+intel-media-driver
+libva-intel-driver

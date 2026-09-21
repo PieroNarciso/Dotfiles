@@ -1,0 +1,9 @@
+# Audio production. Desktop only unless the laptop grows a use for it.
+ardour
+guitarix
+calf
+mda.lv2
+reaper
+helvum
+lib32-pipewire
+lib32-pipewire-jack

@@ -1,0 +1,30 @@
+{
+  "archinstall-language": "English",
+  "bootloader": "Systemd-boot",
+  "hostname": "laptop",
+  "kernels": ["linux", "linux-lts"],
+  "locale_config": {
+    "kb_layout": "us",
+    "sys_enc": "UTF-8",
+    "sys_lang": "en_US.UTF-8"
+  },
+  "network_config": { "type": "nm" },
+  "ntp": true,
+  "packages": ["git", "stow", "zsh", "sudo", "openssh", "vim"],
+  "parallel downloads": 5,
+  "profile_config": {
+    "gfx_driver": null,
+    "greeter": null,
+    "profile": { "main": "Minimal" }
+  },
+  "swap": true,
+  "timezone": "America/Lima",
+  "disk_config": {
+    "config_type": "default_layout",
+    "device_modifications": []
+  },
+  "disk_encryption": {
+    "encryption_type": "luks",
+    "partitions": []
+  }
+}

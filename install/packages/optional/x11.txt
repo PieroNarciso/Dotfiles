@@ -1,0 +1,14 @@
+# Legacy X11 session kept on the desktop. The laptop runs Hyprland only.
+xorg-server
+xorg-xinit
+xorg-xrandr
+xterm
+arandr
+awesome
+vicious
+i3lock
+slock
+xss-lock
+xfce4-clipman-plugin
+xdotool
+feh

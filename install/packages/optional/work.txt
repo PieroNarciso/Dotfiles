@@ -1,0 +1,2 @@
+wazuh-agent
+wazuh-agent-debug
