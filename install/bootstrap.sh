@@ -81,10 +81,16 @@ phase_microcode() {
     fi
     if [ -z "$(pkg_missing "$ucode")" ]; then
         log_info "$ucode already installed"
-        return 0
+    else
+        run sudo pacman -S --needed --noconfirm "$ucode"
+        run sudo bootctl update || log_warn "bootctl update failed; check the boot entry by hand"
     fi
-    run sudo pacman -S --needed --noconfirm "$ucode"
-    run sudo bootctl update || log_warn "bootctl update failed; check the boot entry by hand"
+    # Installing the package only drops the image into /boot. The microcode is
+    # loaded only when a loader entry names it, and `bootctl update` refreshes
+    # the systemd-boot binary without ever touching the entries — so this runs
+    # on the already-installed path too: a machine that has the package and no
+    # initrd line is exactly the broken case worth fixing.
+    boot_add_microcode_initrd "$ucode.img" "$BACKUP_DIR/loader-entries"
 }
 
 phase_pacman_conf() {
@@ -229,6 +235,8 @@ main() {
     parse_args "$@"
     # shellcheck source=lib/hw.sh
     source "$INSTALL_DIR/lib/hw.sh"
+    # shellcheck source=lib/boot.sh
+    source "$INSTALL_DIR/lib/boot.sh"
     # shellcheck source=lib/pkg.sh
     source "$INSTALL_DIR/lib/pkg.sh"
     # shellcheck source=lib/dotfiles.sh
