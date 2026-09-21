@@ -112,6 +112,10 @@ hl.config({
     animations = {
         enabled = true,
     },
+
+    xwayland = {
+        force_zero_scaling = true, -- fix Wine/yabridge (Neural DSP) blank/no-redraw plugin GUIs
+    },
 })
 
 -----------------
