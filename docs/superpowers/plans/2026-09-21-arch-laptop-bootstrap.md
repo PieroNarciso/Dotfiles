@@ -787,8 +787,10 @@ bluez
 bluez-utils
 acpi
 upower
-libinput-gestures
 ```
+
+`libinput-gestures` is deliberately absent: it is AUR-only, and Hyprland
+handles touchpad gestures natively in its own config.
 
 - [ ] **Step 8: Write the GPU group files**
 
@@ -818,11 +820,14 @@ libva-intel-driver
 `gpu-nvidia.txt`:
 
 ```
-# NVIDIA proprietary stack. Pairs with the linux and linux-lts kernels in core.
-nvidia-dkms
+# NVIDIA. nvidia-open-dkms is the current package name; a DKMS module needs
+# headers for every installed kernel, hence linux-headers (linux-lts-headers
+# is already in core.txt).
+nvidia-open-dkms
 nvidia-utils
 lib32-nvidia-utils
 nvidia-settings
+linux-headers
 ```
 
 - [ ] **Step 9: Write aur.txt**
@@ -1205,8 +1210,8 @@ Expected: 3 tests passing.
 
 Run: `bash install/pkg-audit.sh`
 Expected: it lists as *missing* only the laptop-only and other-GPU packages
-(`tlp`, `thermald`, `brightnessctl`, `acpi`, `upower`, `libinput-gestures`,
-`zram-generator`, `tlp-rdw`, the `gpu-intel` and `gpu-nvidia` entries), and lists
+(`tlp`, `tlp-rdw`, `thermald`, `brightnessctl`, `acpi`, `upower`,
+`zram-generator`, and the `gpu-intel` and `gpu-nvidia` entries), and lists
 as *unlisted* nothing at all. Any other name in the *unlisted* column is a
 package Task 4 forgot — add it to the right group and re-run until that column
 is empty.
@@ -1418,7 +1423,7 @@ order.
 
 **Interfaces:**
 - Consumes: `log_*`, `run`, `die`, `pkg_install_file`, `aur_install_file`, `pkg_missing`, `hw_*`, `df_*`
-- Produces: phase functions `phase_preflight`, `phase_microcode`, `phase_paru`, `phase_packages`, `phase_dotfiles`, `phase_shell`, `phase_services`, `phase_version_managers`, `phase_report`
+- Produces: phase functions `phase_preflight`, `phase_pacman_conf`, `phase_microcode`, `phase_paru`, `phase_packages`, `phase_dotfiles`, `phase_shell`, `phase_services`, `phase_version_managers`, `phase_report`
 
 - [ ] **Step 1: Write the failing tests**
 
@@ -1443,6 +1448,14 @@ Append to `install/tests/bootstrap.bats`:
     for phase in preflight microcode paru packages dotfiles shell services report; do
         [[ "$output" == *"$phase"* ]]
     done
+}
+
+@test "pacman.conf phase enables multilib when it is commented out" {
+    setup_tmpdir
+    printf '#[multilib]\n#Include = /etc/pacman.d/mirrorlist\n' > "$TEST_TMPDIR/pacman.conf"
+    run bash -c "BOOTSTRAP_PACMAN_CONF='$TEST_TMPDIR/pacman.conf' bash '$INSTALL_DIR/bootstrap.sh' --dry-run 2>&1"
+    [[ "$output" == *"multilib"* ]]
+    teardown_tmpdir
 }
 
 @test "an unknown group name is rejected before anything is installed" {
@@ -1503,6 +1516,25 @@ phase_microcode() {
     fi
     run sudo pacman -S --needed --noconfirm "$ucode"
     run sudo bootctl update || log_warn "bootctl update failed; check the boot entry by hand"
+}
+
+phase_pacman_conf() {
+    log_step "pacman.conf"
+    local conf="${BOOTSTRAP_PACMAN_CONF:-/etc/pacman.conf}"
+    local sudo_cmd="sudo"
+    # Tests point BOOTSTRAP_PACMAN_CONF at a writable fixture; no sudo there.
+    [ "$conf" = "/etc/pacman.conf" ] || sudo_cmd=""
+    if grep -q '^\[multilib\]' "$conf"; then
+        log_info "multilib already enabled"
+    else
+        # lib32-* packages (vulkan, pipewire, nvidia-utils) live in multilib,
+        # and archinstall does not enable it.
+        log_info "enabling multilib in $conf"
+        run $sudo_cmd sed -i 's/^#\[multilib\]/[multilib]/; /^\[multilib\]/{n;s/^#Include/Include/}' "$conf"
+        run $sudo_cmd pacman -Sy
+    fi
+    grep -q '^Color' "$conf" || run $sudo_cmd sed -i 's/^#Color/Color/' "$conf"
+    grep -q '^ParallelDownloads' "$conf" || run $sudo_cmd sed -i 's/^#ParallelDownloads.*/ParallelDownloads = 5/' "$conf"
 }
 
 phase_paru() {
@@ -1620,6 +1652,7 @@ main() {
 
     log_info "groups: $GROUPS"
     phase_preflight
+    phase_pacman_conf
     phase_microcode
     phase_paru
     phase_packages
