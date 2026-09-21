@@ -1,0 +1,16 @@
+# Fonts, including the nerd fonts the waybar and terminal configs assume.
+adobe-source-sans-fonts
+noto-fonts-emoji
+ttf-dejavu
+ttf-droid
+ttf-fira-mono
+ttf-firacode-nerd
+ttf-hack
+ttf-hack-nerd
+ttf-liberation
+ttf-nerd-fonts-symbols
+ttf-noto-nerd
+ttf-opensans
+ttf-roboto
+ttf-sourcecodepro-nerd
+woff2-font-awesome

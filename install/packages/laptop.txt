@@ -1,0 +1,10 @@
+# Power, thermal, input and radio. Only useful on a machine with a battery.
+tlp
+tlp-rdw
+thermald
+brightnessctl
+zram-generator
+bluez
+bluez-utils
+acpi
+upower

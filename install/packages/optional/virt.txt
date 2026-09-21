@@ -1,0 +1,7 @@
+qemu-base
+qemu-full
+qemu-vhost-user-gpu
+libvirt
+virt-manager
+dnsmasq
+freerdp

@@ -1,0 +1,8 @@
+# AMD graphics and compute.
+xf86-video-amdgpu
+xf86-video-ati
+vulkan-radeon
+lib32-vulkan-radeon
+rocm-hip-sdk
+rocm-opencl-sdk
+clblast
