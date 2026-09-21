@@ -159,7 +159,11 @@ phase_dotfiles() {
 phase_shell() {
     log_step "shell"
     local want="/usr/bin/zsh"
-    local current; current="$(getent passwd "$USER" | cut -d: -f7)"
+    # An unguarded assignment here would kill the whole bootstrap under set -e
+    # if the user is not resolvable through NSS.
+    local current=""
+    current="$(getent passwd "$USER" | cut -d: -f7)" \
+        || { log_warn "cannot read the passwd entry for $USER; skipping chsh"; return 0; }
     if [ "$current" = "$want" ]; then log_info "login shell already zsh"; return 0; fi
     [ -x "$want" ] || { log_warn "zsh not installed; skipping chsh"; return 0; }
     grep -qxF "$want" /etc/shells || { log_warn "$want is not listed in /etc/shells; skipping chsh"; return 0; }
