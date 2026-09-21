@@ -12,10 +12,17 @@ df_clone_or_pull() {
     fi
 }
 
-# Every top-level directory of a stow repo is a stow package.
+# Every top-level directory holding at least one dotfile is a stow package.
+# A directory with no dot-entry is repo tooling (install/, docs/) and must
+# never be stowed into $HOME.
 _df_packages() {
-    local repo="$1"
-    find "$repo" -maxdepth 1 -mindepth 1 -type d -not -name '.*' -printf '%f\n' | sort
+    local repo="$1" d
+    for d in "$repo"/*/; do
+        d="${d%/}"
+        [ -d "$d" ] || continue
+        compgen -G "$d/.*" > /dev/null || continue
+        basename "$d"
+    done | sort
 }
 
 # Move aside anything stow would refuse to overwrite.
@@ -46,7 +53,7 @@ df_backup_conflicts() {
             log_warn "backing up existing $dst"
             run mkdir -p "$(dirname "$dest")"
             run mv "$dst" "$dest"
-        done < <(find "$repo/$pkg" -type f)
+        done < <(find "$repo/$pkg" \( -type f -o -type l \))
     done
 }
 

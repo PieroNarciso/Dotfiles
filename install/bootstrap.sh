@@ -58,13 +58,17 @@ phase_preflight() {
     [ -f "${BOOTSTRAP_ARCH_RELEASE:-/etc/arch-release}" ] || die "this is not Arch Linux"
     [ "${BOOTSTRAP_FAKE_EUID:-$EUID}" -ne 0 ] || die "do not run as root; it uses sudo where needed"
     command -v sudo >/dev/null || die "sudo is not installed"
-    ping -c1 -W3 archlinux.org >/dev/null 2>&1 || die "no network connectivity"
-    # Validate the group names before touching the system.
+    # Validate the group names before touching the system, and before the
+    # network probe — an unknown group offline should fail with the group
+    # error, not a misleading network error.
     local g
-    for g in ${PKG_GROUPS//,/ }; do
+    local -a groups
+    IFS=',' read -ra groups <<< "$PKG_GROUPS"
+    for g in "${groups[@]}"; do
         [ -f "$INSTALL_DIR/packages/$g.txt" ] || [ -f "$INSTALL_DIR/packages/optional/$g.txt" ] \
             || die "unknown package group: $g"
     done
+    curl -fsS --max-time 5 https://archlinux.org/ -o /dev/null || die "no network connectivity"
     [ "$DRY_RUN" = "1" ] || sudo -v
 }
 
@@ -96,7 +100,7 @@ phase_pacman_conf() {
         # and archinstall does not enable it.
         log_info "enabling multilib in $conf"
         run $sudo_cmd sed -i 's/^#\[multilib\]/[multilib]/; /^\[multilib\]/{n;s/^#Include/Include/}' "$conf"
-        run $sudo_cmd pacman -Sy
+        run $sudo_cmd pacman -Syu --noconfirm
     fi
     grep -q '^Color' "$conf" || run $sudo_cmd sed -i 's/^#Color/Color/' "$conf"
     grep -q '^ParallelDownloads' "$conf" || run $sudo_cmd sed -i 's/^#ParallelDownloads.*/ParallelDownloads = 5/' "$conf"
@@ -105,6 +109,10 @@ phase_pacman_conf() {
 phase_paru() {
     log_step "paru"
     if command -v paru >/dev/null; then log_info "paru already present"; return 0; fi
+    if [ "${DRY_RUN:-0}" = "1" ]; then
+        log_info "DRY-RUN: would install base-devel, clone paru from the AUR and makepkg -si"
+        return 0
+    fi
     run sudo pacman -S --needed --noconfirm base-devel git
     local tmp; tmp="$(mktemp -d)"
     run git clone https://aur.archlinux.org/paru.git "$tmp/paru"
@@ -118,7 +126,9 @@ phase_packages() {
     # alike. Several optional groups (mobile, work, media) contain AUR-only
     # packages, so a pacman-only path would fail every one of them.
     local g file
-    for g in ${PKG_GROUPS//,/ }; do
+    local -a groups
+    IFS=',' read -ra groups <<< "$PKG_GROUPS"
+    for g in "${groups[@]}"; do
         file="$INSTALL_DIR/packages/$g.txt"
         [ -f "$file" ] || file="$INSTALL_DIR/packages/optional/$g.txt"
         aur_install_file "$file"
@@ -149,8 +159,10 @@ phase_dotfiles() {
 phase_shell() {
     log_step "shell"
     local want="/usr/bin/zsh"
-    if [ "${SHELL:-}" = "$want" ]; then log_info "login shell already zsh"; return 0; fi
+    local current; current="$(getent passwd "$USER" | cut -d: -f7)"
+    if [ "$current" = "$want" ]; then log_info "login shell already zsh"; return 0; fi
     [ -x "$want" ] || { log_warn "zsh not installed; skipping chsh"; return 0; }
+    grep -qxF "$want" /etc/shells || { log_warn "$want is not listed in /etc/shells; skipping chsh"; return 0; }
     run chsh -s "$want"
 }
 

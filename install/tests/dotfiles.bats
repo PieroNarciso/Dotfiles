@@ -118,6 +118,33 @@ teardown() { teardown_tmpdir; }
     [ -f "$TEST_TMPDIR/clone/f" ]
 }
 
+@test "df_backup_conflicts backs up a conflict whose repo-side source is itself a symlink" {
+    # A symlink tracked inside the stow package (e.g. a dotfile that is itself
+    # a symlink in git) must still be walked as a source, not skipped by a
+    # find that only matches -type f.
+    ln -s "$REPO/home/.zshrc" "$REPO/config/.config/linked-in-repo"
+    mkdir -p "$FAKE_HOME/.config"
+    echo "pre-existing, not ours" > "$FAKE_HOME/.config/linked-in-repo"
+    run bash -c "source '$INSTALL_DIR/lib/log.sh'; source '$INSTALL_DIR/lib/dotfiles.sh'; \
+        df_backup_conflicts '$REPO' '$FAKE_HOME' '$TEST_TMPDIR/backup'"
+    [ "$status" -eq 0 ]
+    [ ! -e "$FAKE_HOME/.config/linked-in-repo" ]
+    [ "$(cat "$TEST_TMPDIR/backup/.config/linked-in-repo")" = "pre-existing, not ours" ]
+}
+
+@test "_df_packages ignores top-level directories with no dotfile in them" {
+    mkdir -p "$REPO/docs/superpowers" "$REPO/install/lib"
+    echo "not a dotfile" > "$REPO/docs/superpowers/plan.md"
+    echo "not a dotfile" > "$REPO/install/lib/log.sh"
+    run bash -c "source '$INSTALL_DIR/lib/log.sh'; source '$INSTALL_DIR/lib/dotfiles.sh'; \
+        _df_packages '$REPO'"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"config"* ]]
+    [[ "$output" == *"home"* ]]
+    [[ "$output" != *"docs"* ]]
+    [[ "$output" != *"install"* ]]
+}
+
 @test "df_clone_or_pull pulls when the destination already exists" {
     src="$TEST_TMPDIR/src"; mkdir -p "$src"
     git -C "$src" init -q; echo hi > "$src/f"; git -C "$src" add f
