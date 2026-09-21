@@ -9,8 +9,9 @@ steps in order.
 - [ ] **Step 2: Boot the Arch ISO on the laptop, connect to wifi with `iwctl`.**
 - [ ] **Step 3: Run stage 0 with `laptop-luks.json`. Check the disk against `lsblk` before confirming.**
   Before you do, run `archinstall --version` on the ISO and write the number
-  into `install/archinstall/README.md`, then commit it — the version is not
-  pinned there yet.
+  down — on paper or in your phone. The repo is not cloned yet at this point
+  and you are on a ramdisk, so you cannot record it here; Step 11 puts it in
+  `install/archinstall/README.md`, where the version is not pinned yet.
 - [ ] **Step 4: Destroy the credentials file before rebooting.** `creds.json`
   holds the LUKS passphrase and both account passwords in plaintext. It lives
   on the ISO's ramdisk, so it dies when the machine reboots — but confirm
@@ -67,4 +68,9 @@ steps in order.
     not the signal to look for).
   - **NVIDIA** (`gpu-nvidia.txt`): `nvidia-open-dkms` installed.
 - [ ] **Step 10: Work through the manual steps the report printed** (SSH keys, SSH remotes, GPG, `~/.aws`, `gh auth login`). `phase_report` in `install/bootstrap.sh` prints the full list at the end of the run — work through everything it names.
-- [ ] **Step 11: Run `install/pkg-audit.sh` on the laptop.** Expected: the *unlisted* column is empty. Anything there is a package you installed by hand during setup — add it to a group file and commit, so the next machine gets it.
+- [ ] **Step 11: Reconcile the repo with what you actually installed.** Run
+  `install/pkg-audit.sh` on the laptop. Expected: the *unlisted* column is
+  empty. Anything there is a package you installed by hand during setup — add
+  it to a group file so the next machine gets it. Write the archinstall
+  version you noted in Step 3 into `install/archinstall/README.md`, replacing
+  the "Version not pinned" paragraph. Commit both changes together.
