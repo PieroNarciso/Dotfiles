@@ -48,6 +48,8 @@ git clone https://github.com/PieroNarciso/Dotfiles.git ~/.dotfiles
 ~/.dotfiles/install/bootstrap.sh
 ```
 
+See [`install/LAPTOP-CHECKLIST.md`](../LAPTOP-CHECKLIST.md) for the full, ordered checklist from booting the ISO through the post-install verification steps.
+
 ## Known limitations
 
 - `/boot` is unencrypted, because systemd-boot reads the kernel and initramfs
