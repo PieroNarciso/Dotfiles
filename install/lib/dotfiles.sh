@@ -30,11 +30,22 @@ df_backup_conflicts() {
             if [ -L "$dst" ] && [[ "$(readlink -f "$dst")" == "$repo"* ]]; then
                 continue
             fi
-            [ -e "$dst" ] || continue
-            [ -L "$dst" ] && continue
+            # Anything else that exists must move, INCLUDING a symlink that
+            # points somewhere else: stow refuses to adopt a target it does
+            # not own and aborts the whole package, which under set -e kills
+            # the bootstrap at the dotfiles phase. -e is false for a broken
+            # symlink, so test -L as well or those get left behind too.
+            [ -e "$dst" ] || [ -L "$dst" ] || continue
+            # Never clobber an earlier backup of the same relative path.
+            local dest="$backup/$rel"
+            local i=1
+            while [ -e "$dest" ] || [ -L "$dest" ]; do
+                dest="$backup/$rel.$i"
+                i=$((i + 1))
+            done
             log_warn "backing up existing $dst"
-            run mkdir -p "$(dirname "$backup/$rel")"
-            run mv "$dst" "$backup/$rel"
+            run mkdir -p "$(dirname "$dest")"
+            run mv "$dst" "$dest"
         done < <(find "$repo/$pkg" -type f)
     done
 }

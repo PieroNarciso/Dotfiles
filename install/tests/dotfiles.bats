@@ -44,6 +44,54 @@ teardown() { teardown_tmpdir; }
     [ "$(cat "$TEST_TMPDIR/backup/.zshrc")" = "precious" ]
 }
 
+@test "df_backup_conflicts moves a foreign symlink so stow can then succeed" {
+    echo "not from repo" > "$TEST_TMPDIR/elsewhere"
+    ln -s "$TEST_TMPDIR/elsewhere" "$FAKE_HOME/.zshrc"
+    run bash -c "source '$INSTALL_DIR/lib/log.sh'; source '$INSTALL_DIR/lib/dotfiles.sh'; \
+        df_backup_conflicts '$REPO' '$FAKE_HOME' '$TEST_TMPDIR/backup'"
+    [ "$status" -eq 0 ]
+    [ ! -e "$FAKE_HOME/.zshrc" ] && [ ! -L "$FAKE_HOME/.zshrc" ]
+    [ -L "$TEST_TMPDIR/backup/.zshrc" ]
+    [ "$(readlink "$TEST_TMPDIR/backup/.zshrc")" = "$TEST_TMPDIR/elsewhere" ]
+    run bash -c "source '$INSTALL_DIR/lib/log.sh'; source '$INSTALL_DIR/lib/dotfiles.sh'; \
+        df_stow_repo '$REPO' '$FAKE_HOME'"
+    [ "$status" -eq 0 ]
+    [ -L "$FAKE_HOME/.zshrc" ]
+    [ "$(cat "$FAKE_HOME/.zshrc")" = "from repo" ]
+}
+
+@test "df_backup_conflicts moves a broken symlink rather than leaving it behind" {
+    ln -s "$TEST_TMPDIR/does-not-exist" "$FAKE_HOME/.zshrc"
+    run bash -c "source '$INSTALL_DIR/lib/log.sh'; source '$INSTALL_DIR/lib/dotfiles.sh'; \
+        df_backup_conflicts '$REPO' '$FAKE_HOME' '$TEST_TMPDIR/backup'"
+    [ "$status" -eq 0 ]
+    [ ! -e "$FAKE_HOME/.zshrc" ] && [ ! -L "$FAKE_HOME/.zshrc" ]
+    [ -L "$TEST_TMPDIR/backup/.zshrc" ]
+    [ "$(readlink "$TEST_TMPDIR/backup/.zshrc")" = "$TEST_TMPDIR/does-not-exist" ]
+}
+
+@test "df_backup_conflicts still leaves a symlink pointing into the repo alone" {
+    ln -s "$REPO/home/.zshrc" "$FAKE_HOME/.zshrc"
+    run bash -c "source '$INSTALL_DIR/lib/log.sh'; source '$INSTALL_DIR/lib/dotfiles.sh'; \
+        df_backup_conflicts '$REPO' '$FAKE_HOME' '$TEST_TMPDIR/backup'"
+    [ "$status" -eq 0 ]
+    [ -L "$FAKE_HOME/.zshrc" ]
+    [ "$(readlink "$FAKE_HOME/.zshrc")" = "$REPO/home/.zshrc" ]
+    [ ! -e "$TEST_TMPDIR/backup/.zshrc" ] && [ ! -L "$TEST_TMPDIR/backup/.zshrc" ]
+}
+
+@test "df_backup_conflicts gives a repeated backup of the same path a numeric suffix" {
+    echo "first" > "$FAKE_HOME/.zshrc"
+    bash -c "source '$INSTALL_DIR/lib/log.sh'; source '$INSTALL_DIR/lib/dotfiles.sh'; \
+        df_backup_conflicts '$REPO' '$FAKE_HOME' '$TEST_TMPDIR/backup'"
+    echo "second" > "$FAKE_HOME/.zshrc"
+    run bash -c "source '$INSTALL_DIR/lib/log.sh'; source '$INSTALL_DIR/lib/dotfiles.sh'; \
+        df_backup_conflicts '$REPO' '$FAKE_HOME' '$TEST_TMPDIR/backup'"
+    [ "$status" -eq 0 ]
+    [ "$(cat "$TEST_TMPDIR/backup/.zshrc")" = "first" ]
+    [ "$(cat "$TEST_TMPDIR/backup/.zshrc.1")" = "second" ]
+}
+
 @test "df_stow_repo links every package into the target home" {
     run bash -c "source '$INSTALL_DIR/lib/log.sh'; source '$INSTALL_DIR/lib/dotfiles.sh'; \
         df_stow_repo '$REPO' '$FAKE_HOME'"
