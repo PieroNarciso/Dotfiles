@@ -10,7 +10,9 @@ source "$INSTALL_DIR/lib/log.sh"
 
 DRY_RUN=0
 SKIP_DOTFILES=0
-GROUPS="core,dev,desktop,fonts,apps,laptop"
+# NOTE: not GROUPS — that is a bash special variable and assignments to it
+# are silently ignored.
+PKG_GROUPS="core,dev,desktop,fonts,apps,laptop"
 
 usage() {
     cat <<'USAGE'
@@ -36,7 +38,7 @@ parse_args() {
             --skip-dotfiles) SKIP_DOTFILES=1 ;;
             --groups)
                 [ $# -ge 2 ] || die "--groups needs a value"
-                GROUPS="$2"; shift ;;
+                PKG_GROUPS="$2"; shift ;;
             -h|--help)       usage; exit 0 ;;
             *)               usage >&2; die "unknown option: $1" ;;
         esac
@@ -47,7 +49,7 @@ parse_args() {
 
 main() {
     parse_args "$@"
-    log_info "groups: $GROUPS"
+    log_info "groups: $PKG_GROUPS"
     log_info "dry-run: $DRY_RUN, skip-dotfiles: $SKIP_DOTFILES"
 }
 
