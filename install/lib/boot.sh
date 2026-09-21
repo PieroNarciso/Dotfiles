@@ -9,10 +9,12 @@ BOOTCTL_ENTRIES_DIR="${BOOTCTL_ENTRIES_DIR:-/boot/loader/entries}"
 # run's backup directory; falls back to a sibling file and says so.
 _boot_backup_entry() {
     local entry="$1" backup="$2" ts="$3" sudo_cmd="${4:-}"
-    # shellcheck disable=SC2086  # $sudo_cmd is empty or the single word "sudo"
+    # The backup directory lives under $HOME and must stay owned by the user;
+    # loader entries are world-readable, so copying out of /boot needs no sudo.
+    # Only the sibling fallback below writes into /boot and takes $sudo_cmd.
     if [ -n "$backup" ] \
-        && run $sudo_cmd mkdir -p "$backup" \
-        && run $sudo_cmd cp -a "$entry" "$backup/$(basename "$entry")"; then
+        && run mkdir -p "$backup" \
+        && run cp -a "$entry" "$backup/$(basename "$entry")"; then
         return 0
     fi
     [ -z "$backup" ] || log_warn "cannot back up into $backup; using $entry.bak-$ts instead"
@@ -46,6 +48,12 @@ boot_add_microcode_initrd() {
     local -a entries=()
     local f
     for f in "$dir"/*.conf; do
+        # A symlinked entry would be rewritten in place by sed -i, replacing the
+        # link with a plain file and leaving the real entry untouched. Skip it.
+        if [ -L "$f" ]; then
+            log_warn "$(basename "$f") is a symlink; skipped — $manual"
+            continue
+        fi
         [ -f "$f" ] && entries+=("$f")
     done
     if [ "${#entries[@]}" -eq 0 ]; then
