@@ -10,6 +10,9 @@ setup_tmpdir() {
     export TEST_TMPDIR
 }
 
+# Safe to call from a bats teardown() in a file where some tests never make a
+# temp directory: a bare [ -n ] would return 1 and fail the teardown.
 teardown_tmpdir() {
     [ -n "${TEST_TMPDIR:-}" ] && rm -rf "$TEST_TMPDIR"
+    return 0
 }
