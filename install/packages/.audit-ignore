@@ -1,0 +1,7 @@
+# Installed by a bootstrap phase, not by a package group.
+amd-ucode        # phase_microcode picks intel-ucode or amd-ucode by CPU
+intel-ucode      # likewise
+paru             # phase_paru bootstraps it from the AUR
+
+# Deliberately dropped: legacy dependency, install by hand if something needs it.
+openssl-1.0
