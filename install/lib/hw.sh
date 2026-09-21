@@ -26,9 +26,11 @@ hw_microcode_package() {
 hw_gpu_vendor() {
     local out
     out="$("$HW_LSPCI" 2>/dev/null | grep -iE 'vga|3d controller' || true)"
-    if   echo "$out" | grep -qi nvidia;            then echo nvidia
-    elif echo "$out" | grep -qiE 'amd|ati|radeon'; then echo amd
-    elif echo "$out" | grep -qi intel;             then echo intel
+    # -w matters: without word boundaries, 'ati' matches inside "VGA
+    # compatible controller", so every GPU would be detected as AMD.
+    if   echo "$out" | grep -qi nvidia;             then echo nvidia
+    elif echo "$out" | grep -qiEw 'amd|ati|radeon'; then echo amd
+    elif echo "$out" | grep -qi intel;              then echo intel
     else echo unknown
     fi
 }
