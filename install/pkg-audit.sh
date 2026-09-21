@@ -13,20 +13,27 @@ source "$INSTALL_DIR/lib/pkg.sh"
 
 PKG_AUDIT_DIR="${PKG_AUDIT_DIR:-$INSTALL_DIR/packages}"
 
+# Register the cleanup BEFORE creating anything: if the second or third
+# mktemp fails, set -e aborts at that statement and a trap registered after
+# it would never run, leaking the files already created.
+listed=""; live=""; ignore=""
+trap 'rm -f "$listed" "$live" "$ignore"' EXIT
 listed="$(mktemp)"; live="$(mktemp)"
 
 # Packages deliberately outside every group (installed by a phase, or
 # dropped on purpose). Without this the audit exits 1 on every run here
 # and stops being read — the exact rot it exists to prevent.
-ignore="$(mktemp)"; trap 'rm -f "$listed" "$live" "$ignore"' EXIT
+ignore="$(mktemp)"
 if [ -f "$PKG_AUDIT_DIR/.audit-ignore" ]; then
+    # `grep -v` exits 1 when everything is filtered out, and pipefail would
+    # promote that to the script's status and kill the run silently.
     sed -e 's/#.*//' -e 's/[[:space:]]//g' "$PKG_AUDIT_DIR/.audit-ignore" \
-        | grep -v '^$' | sort -u > "$ignore"
+        | { grep -v '^$' || true; } | sort -u > "$ignore"
 fi
 
 find "$PKG_AUDIT_DIR" -name '*.txt' -print0 \
     | xargs -0 -I{} sh -c 'sed -e "s/#.*//" -e "s/[[:space:]]//g" "$1"' _ {} \
-    | grep -v '^$' | sort -u > "$listed"
+    | { grep -v '^$' || true; } | sort -u > "$listed"
 
 $PKG_QUERY_CMD 2>/dev/null | sort -u > "$live"
 
