@@ -5,23 +5,59 @@ stage 0 (`install/archinstall/`) lays down the base system, stage 1
 (`install/bootstrap.sh`) does everything after first login. Work through the
 steps in order.
 
-- [ ] **Step 1: Record the LUKS passphrase in your password manager before starting.** There is no recovery.
-- [ ] **Step 2: Boot the Arch ISO on the laptop, connect to wifi with `iwctl`.**
-- [ ] **Step 3: Run stage 0 with `laptop-luks.json`. Check the disk against `lsblk` before confirming.**
+- [ ] **Step 1: Gate — the VM validation run must pass before stage 0 touches the laptop.**
+  This is not a suggestion: the design makes it a hard gate ("Stage 0 is not
+  run on laptop hardware until the VM run passes",
+  `docs/superpowers/specs/2026-09-21-arch-laptop-bootstrap-design.md`). Install
+  the same configs end to end in a UEFI VM on a machine you already have —
+  systemd-boot needs UEFI, so a BIOS VM proves nothing:
+
+  ```bash
+  virt-install --name arch-bootstrap-vm --memory 4096 --vcpus 2 \
+    --disk size=40 --cdrom ~/Downloads/archlinux-x86_64.iso --boot uefi
+  ```
+
+  The run passes when stage 0 finishes, the VM reboots unaided into the
+  installed system, and `install/bootstrap.sh --dry-run` followed by a real
+  run both exit 0. Anything that fails there fails on the laptop too, where
+  the disk is not disposable. Do not start Step 2 until it passes.
+- [ ] **Step 2: Record the LUKS passphrase in your password manager before starting.** There is no recovery.
+- [ ] **Step 3: Boot the Arch ISO on the laptop, connect to wifi with `iwctl`.**
+- [ ] **Step 4: Run stage 0 with `laptop-luks.json`. Check the disk against `lsblk` before confirming.**
   Before you do, run `archinstall --version` on the ISO and write the number
   down — on paper or in your phone. The repo is not cloned yet at this point
-  and you are on a ramdisk, so you cannot record it here; Step 11 puts it in
+  and you are on a ramdisk, so you cannot record it here; Step 13 puts it in
   `install/archinstall/README.md`, where the version is not pinned yet.
-- [ ] **Step 4: Destroy the credentials file before rebooting.** `creds.json`
-  holds the LUKS passphrase and both account passwords in plaintext. It lives
-  on the ISO's ramdisk, so it dies when the machine reboots — but confirm
-  that yourself rather than trusting it: check `ls /mnt/creds.json` before
-  rebooting and make sure nothing put a copy on the installed disk.
+- [ ] **Step 5: Destroy every copy of the credentials before rebooting.**
+  `creds.json` holds the LUKS passphrase and both account passwords in
+  plaintext. It lives on the ISO's ramdisk, so it dies when the machine
+  reboots — but archinstall also copies its session artefacts, the
+  credentials it was handed included, into the *installed* system under
+  `/mnt/var/log/archinstall/`, and that survives the reboot. The passphrase is
+  what protects the disk, so a copy stored on that disk defeats the encryption
+  entirely. Before you reboot:
+
+  ```bash
+  ls -la /mnt/var/log/archinstall/
+  grep -rl 'password\|passphrase' /mnt/var/log/archinstall/ 2>/dev/null
+  ```
+
+  `shred -u` everything that matches, or take the log directory wholesale —
+  nothing after the install needs it:
+
+  ```bash
+  find /mnt/var/log/archinstall -type f -exec shred -u {} + \
+    && rm -rf /mnt/var/log/archinstall
+  ```
+
+  Then check the ramdisk path as a second belt, because it costs nothing:
+  `ls /mnt/creds.json`.
+
   `install/archinstall/creds.json` is gitignored so it cannot be committed by
   accident, but that is a safety net, not a reason to keep the file around —
   if a `creds.json` is ever created inside the repo checkout, `shred -u` it
   instead of deleting it normally.
-- [ ] **Step 5: Reboot, log in, clone the dotfiles repo.** The reboot after
+- [ ] **Step 6: Reboot, log in, clone the dotfiles repo.** The reboot after
   stage 0 leaves a bare system — nothing has cloned the repo yet, so do it
   before running anything else:
 
@@ -29,12 +65,29 @@ steps in order.
   git clone https://github.com/PieroNarciso/Dotfiles.git ~/.dotfiles
   ```
 
-- [ ] **Step 6: Run `~/.dotfiles/install/bootstrap.sh --dry-run`, read it, then run it for real.**
+- [ ] **Step 7: Verify the disk actually came out encrypted.** Do this before
+  running anything else. `laptop-luks.json` ships
+  `disk_encryption.partitions: []` alongside `device_modifications: []`: the
+  encryption target is back-filled by the interactive selection during stage 0,
+  so nothing in this repo can prove it was applied. The failure mode is a
+  laptop you believe is encrypted and is not.
+
+  ```bash
+  lsblk -f
+  sudo cryptsetup status root   # 'root' is the mapper name — use yours from lsblk
+  ```
+
+  Expected: the root device's FSTYPE is `crypto_LUKS`, and `cryptsetup status`
+  reports an active LUKS2 device. **If root is not `crypto_LUKS` the install
+  was not encrypted. The only fix is to reinstall — a disk cannot be encrypted
+  in place.** Stop here and redo stage 0 rather than carrying on onto an
+  unencrypted laptop.
+- [ ] **Step 8: Run `~/.dotfiles/install/bootstrap.sh --dry-run`, read it, then run it for real.**
   Stage 1 moves any pre-existing dotfile that conflicts with the repo into a
   timestamped `~/.dotfiles-backup-*` directory instead of deleting it — if
   something looks missing after the first run, check there first.
-- [ ] **Step 7: Back up the LUKS header to another machine** (`cryptsetup luksHeaderBackup`).
-- [ ] **Step 8: Verify the laptop-only phases actually fired:**
+- [ ] **Step 9: Back up the LUKS header to another machine** (`cryptsetup luksHeaderBackup`).
+- [ ] **Step 10: Verify the laptop-only phases actually fired:**
 
   ```bash
   systemctl is-enabled tlp thermald
@@ -48,7 +101,7 @@ steps in order.
   battery, Intel or AMD alike, but on an AMD laptop it has nothing to manage.
   An AMD laptop showing `thermald` enabled but otherwise idle is expected,
   not a failure.
-- [ ] **Step 9: Verify GPU detection picked the right driver group.** This
+- [ ] **Step 11: Verify GPU detection picked the right driver group.** This
   laptop is likely Intel or AMD, where the desktop this toolkit was built on
   is AMD — confirm the installer's guess matches the real hardware:
 
@@ -67,10 +120,10 @@ steps in order.
     package — `xf86-video-ati` is the older KMS-less driver, also listed but
     not the signal to look for).
   - **NVIDIA** (`gpu-nvidia.txt`): `nvidia-open-dkms` installed.
-- [ ] **Step 10: Work through the manual steps the report printed** (SSH keys, SSH remotes, GPG, `~/.aws`, `gh auth login`). `phase_report` in `install/bootstrap.sh` prints the full list at the end of the run — work through everything it names.
-- [ ] **Step 11: Reconcile the repo with what you actually installed.** Run
+- [ ] **Step 12: Work through the manual steps the report printed** (SSH keys, SSH remotes, GPG, `~/.aws`, `gh auth login`). `phase_report` in `install/bootstrap.sh` prints the full list at the end of the run — work through everything it names.
+- [ ] **Step 13: Reconcile the repo with what you actually installed.** Run
   `install/pkg-audit.sh` on the laptop. Expected: the *unlisted* column is
   empty. Anything there is a package you installed by hand during setup — add
   it to a group file so the next machine gets it. Write the archinstall
-  version you noted in Step 3 into `install/archinstall/README.md`, replacing
+  version you noted in Step 4 into `install/archinstall/README.md`, replacing
   the "Version not pinned" paragraph. Commit both changes together.

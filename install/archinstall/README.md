@@ -6,6 +6,10 @@ of that release; keys change between versions.
 
 ## Before you start
 
+**Gate: the VM validation run must pass before stage 0 is run on laptop
+hardware.** Install these same configs end to end in a UEFI VM first — see
+Step 1 of [`install/LAPTOP-CHECKLIST.md`](../LAPTOP-CHECKLIST.md).
+
 Pick the config:
 
 - `laptop.json` — plain ext4 root. Use on machines that never leave the house.
@@ -22,6 +26,20 @@ sudo cryptsetup luksHeaderBackup /dev/nvme0n1p2 --header-backup-file luks-header
 
 Keep that file somewhere other than the laptop. Anyone holding it plus the
 passphrase can decrypt the disk.
+
+**Verify the encryption after the first boot, before anything else.**
+`laptop-luks.json` ships `disk_encryption.partitions: []`, so the encryption
+target comes from the interactive selection during the install and nothing in
+this repo can prove it was applied:
+
+```bash
+lsblk -f
+sudo cryptsetup status root   # 'root' is the mapper name — use yours from lsblk
+```
+
+The root device's FSTYPE must be `crypto_LUKS` and `cryptsetup status` must
+report an active LUKS2 device. If it is not, the install was not encrypted and
+the only fix is to reinstall — a disk cannot be encrypted in place.
 
 ## Running it
 
