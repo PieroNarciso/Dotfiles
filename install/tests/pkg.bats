@@ -37,26 +37,26 @@ FAKE
     [ "$output" = "" ]
 }
 
-@test "pkg_install_file is a no-op in dry-run and prints the pacman command" {
+@test "aur_install_file is a no-op in dry-run and prints the paru command" {
     printf 'neovim\n' > "$TEST_TMPDIR/list.txt"
     cat > "$TEST_TMPDIR/query" <<'FAKE'
 #!/usr/bin/env bash
 printf 'zsh\n'
 FAKE
     chmod +x "$TEST_TMPDIR/query"
-    run bash -c "source '$INSTALL_DIR/lib/log.sh'; source '$INSTALL_DIR/lib/pkg.sh'; DRY_RUN=1 PKG_QUERY_CMD='$TEST_TMPDIR/query' pkg_install_file '$TEST_TMPDIR/list.txt' 2>&1"
+    run bash -c "source '$INSTALL_DIR/lib/log.sh'; source '$INSTALL_DIR/lib/pkg.sh'; DRY_RUN=1 PKG_QUERY_CMD='$TEST_TMPDIR/query' aur_install_file '$TEST_TMPDIR/list.txt' 2>&1"
     [[ "$output" == *"DRY-RUN"* ]]
     [[ "$output" == *"neovim"* ]]
 }
 
-@test "pkg_install_file skips the install entirely when nothing is missing" {
+@test "aur_install_file skips the install entirely when nothing is missing" {
     printf 'zsh\n' > "$TEST_TMPDIR/list.txt"
     cat > "$TEST_TMPDIR/query" <<'FAKE'
 #!/usr/bin/env bash
 printf 'zsh\n'
 FAKE
     chmod +x "$TEST_TMPDIR/query"
-    run bash -c "source '$INSTALL_DIR/lib/log.sh'; source '$INSTALL_DIR/lib/pkg.sh'; DRY_RUN=1 PKG_QUERY_CMD='$TEST_TMPDIR/query' pkg_install_file '$TEST_TMPDIR/list.txt' 2>&1"
+    run bash -c "source '$INSTALL_DIR/lib/log.sh'; source '$INSTALL_DIR/lib/pkg.sh'; DRY_RUN=1 PKG_QUERY_CMD='$TEST_TMPDIR/query' aur_install_file '$TEST_TMPDIR/list.txt' 2>&1"
     [[ "$output" != *"DRY-RUN"* ]]
     [[ "$output" == *"up to date"* ]]
 }

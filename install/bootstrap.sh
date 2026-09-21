@@ -30,8 +30,8 @@ Options:
   --dry-run            Print every action without changing anything.
   --groups <list>      Comma-separated package groups to install.
                        Default: core,dev,desktop,fonts,apps,laptop
-                       Optional: audio-prod, gaming, virt, media, x11,
-                                 server, work, mobile
+                       Optional: audio-prod, gaming, media, mobile, server,
+                                 virt, work, x11
   --skip-dotfiles      Do not clone or stow the dotfile repos.
   -h, --help           Show this help.
 USAGE
@@ -68,7 +68,14 @@ phase_preflight() {
         [ -f "$INSTALL_DIR/packages/$g.txt" ] || [ -f "$INSTALL_DIR/packages/optional/$g.txt" ] \
             || die "unknown package group: $g"
     done
-    curl -fsS --max-time 5 https://archlinux.org/ -o /dev/null || die "no network connectivity"
+    # The probe is the one preflight check with no override, which is why the
+    # script-level tests all needed live network. Default off: a real run still
+    # probes.
+    if [ "${BOOTSTRAP_SKIP_NETCHECK:-0}" = "1" ]; then
+        log_info "BOOTSTRAP_SKIP_NETCHECK=1: skipping the network probe"
+    else
+        curl -fsS --max-time 5 https://archlinux.org/ -o /dev/null || die "no network connectivity"
+    fi
     [ "$DRY_RUN" = "1" ] || sudo -v
 }
 
@@ -146,7 +153,14 @@ phase_packages() {
     else
         log_warn "unrecognised GPU; install the driver by hand"
     fi
-    aur_install_file "$INSTALL_DIR/packages/aur.txt"
+    # aur.txt is desktop applications — browsers and an editor. Running it
+    # unconditionally meant `--groups server` still pulled in Brave, Code and
+    # zen-browser, so it follows the apps group.
+    if [[ ",$PKG_GROUPS," == *",apps,"* ]]; then
+        aur_install_file "$INSTALL_DIR/packages/aur.txt"
+    else
+        log_info "apps not selected; skipping aur.txt"
+    fi
 }
 
 phase_dotfiles() {
@@ -226,7 +240,7 @@ Remaining manual steps — none of these can be automated safely:
   4. Authenticate the CLIs: gh auth login, aws configure, gcloud init.
   5. Open neovim once and let the plugin manager install everything.
   6. Install any optional group you skipped:
-       install/bootstrap.sh --groups audio-prod,gaming,virt,media,x11,work,mobile
+       install/bootstrap.sh --groups audio-prod,gaming,media,mobile,server,virt,work,x11
 
 MANUAL
 }

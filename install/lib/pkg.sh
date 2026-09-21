@@ -43,5 +43,6 @@ _pkg_install_with() {
     return 0
 }
 
-pkg_install_file() { _pkg_install_with "sudo pacman -S" "$1"; }
+# Everything installs through paru, which resolves repo and AUR packages
+# alike, so there is no pacman-only entry point.
 aur_install_file() { _pkg_install_with "paru -S" "$1"; }
