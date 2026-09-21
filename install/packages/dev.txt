@@ -35,3 +35,7 @@ zint
 barcode
 qmk
 zed
+# Tooling for this repo itself: the bats suite under install/tests/ and the
+# shell linter both stages are checked with.
+bats
+shellcheck
