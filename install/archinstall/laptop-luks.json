@@ -22,9 +22,5 @@
   "disk_config": {
     "config_type": "default_layout",
     "device_modifications": []
-  },
-  "disk_encryption": {
-    "encryption_type": "luks",
-    "partitions": []
   }
 }

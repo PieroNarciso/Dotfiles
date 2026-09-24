@@ -23,27 +23,38 @@ steps in order.
   the disk is not disposable. Do not start Step 2 until it passes.
 - [ ] **Step 2: Record the LUKS passphrase in your password manager before starting.** There is no recovery.
 - [ ] **Step 3: Boot the Arch ISO on the laptop, connect to wifi with `iwctl`.**
-- [ ] **Step 4: Run stage 0 with `laptop-luks.json`. Check the disk against `lsblk` before confirming.**
+- [ ] **Step 4: Run stage 0.** Read the target disk off `lsblk`, generate the
+  disk config against it, retype the device path when the generator asks to
+  confirm, then hand the result to archinstall:
+
+  ```bash
+  lsblk
+  python make-disk-config.py --device /dev/nvme0n1 --encrypt \
+      --base laptop-luks.json -o install-config.json
+  archinstall --config install-config.json --creds creds.json --silent
+  ```
+
   Before you do, run `archinstall --version` on the ISO and write the number
   down — on paper or in your phone. The repo is not cloned yet at this point
-  and you are on a ramdisk, so you cannot record it here; Step 13 puts it in
-  `install/archinstall/README.md`, where the version is not pinned yet.
-- [ ] **Step 5: Destroy every copy of the credentials before rebooting.**
+  and you are on a ramdisk, so you cannot record it here; Step 13 compares it
+  against the version pinned in `install/archinstall/README.md`.
+- [ ] **Step 5: Verify no credentials leaked into the installed system before rebooting.**
   `creds.json` holds the LUKS passphrase and both account passwords in
   plaintext. It lives on the ISO's ramdisk, so it dies when the machine
-  reboots — but archinstall also copies its session artefacts, the
-  credentials it was handed included, into the *installed* system under
-  `/mnt/var/log/archinstall/`, and that survives the reboot. The passphrase is
-  what protects the disk, so a copy stored on that disk defeats the encryption
-  entirely. Before you reboot:
+  reboots. archinstall 4.4 copies only `install.log` — no credentials — into
+  the *installed* system under `/mnt/var/log/archinstall/`, but that is worth
+  checking rather than trusting silently, since the passphrase is what
+  protects the disk and a copy stored on that disk would defeat the
+  encryption entirely. Before you reboot:
 
   ```bash
   ls -la /mnt/var/log/archinstall/
   grep -rl 'password\|passphrase' /mnt/var/log/archinstall/ 2>/dev/null
   ```
 
-  `shred -u` everything that matches, or take the log directory wholesale —
-  nothing after the install needs it:
+  Expected: the `grep` finds nothing. If a future archinstall release ever
+  does copy a credential here, `shred -u` the matching files, or take the log
+  directory wholesale — nothing after the install needs it:
 
   ```bash
   find /mnt/var/log/archinstall -type f -exec shred -u {} + \
@@ -66,11 +77,12 @@ steps in order.
   ```
 
 - [ ] **Step 7: Verify the disk actually came out encrypted.** Do this before
-  running anything else. `laptop-luks.json` ships
-  `disk_encryption.partitions: []` alongside `device_modifications: []`: the
-  encryption target is back-filled by the interactive selection during stage 0,
-  so nothing in this repo can prove it was applied. The failure mode is a
-  laptop you believe is encrypted and is not.
+  running anything else. Step 4 ran `make-disk-config.py` against the device
+  read off `lsblk`, made you retype it to confirm, and only then handed
+  archinstall a config that declares LUKS2 encryption against the root
+  partition it just laid out. This step confirms that declaration actually
+  took effect — the failure mode is a laptop you believe is encrypted and is
+  not.
 
   ```bash
   lsblk -f
@@ -124,6 +136,7 @@ steps in order.
 - [ ] **Step 13: Reconcile the repo with what you actually installed.** Run
   `install/pkg-audit.sh` on the laptop. Expected: the *unlisted* column is
   empty. Anything there is a package you installed by hand during setup — add
-  it to a group file so the next machine gets it. Write the archinstall
-  version you noted in Step 4 into `install/archinstall/README.md`, replacing
-  the "Version not pinned" paragraph. Commit both changes together.
+  it to a group file so the next machine gets it. Compare the archinstall
+  version you noted in Step 4 against the version pinned in
+  `install/archinstall/README.md`; if it differs, update the pinned version
+  there. Commit both changes together.

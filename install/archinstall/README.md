@@ -1,8 +1,8 @@
 # Stage 0 — installing Arch from the ISO
 
-Version not pinned. Run `archinstall --version` on the ISO before you start and
-write the number here. If a config fails to load, compare it against the schema
-of that release; keys change between versions.
+Verified against **archinstall 4.4** (Arch ISO 2026.09.01). Run
+`archinstall --version` on your ISO; if it differs, re-verify the config keys
+against that release before trusting them.
 
 ## Before you start
 
@@ -27,10 +27,11 @@ sudo cryptsetup luksHeaderBackup /dev/nvme0n1p2 --header-backup-file luks-header
 Keep that file somewhere other than the laptop. Anyone holding it plus the
 passphrase can decrypt the disk.
 
-**Verify the encryption after the first boot, before anything else.**
-`laptop-luks.json` ships `disk_encryption.partitions: []`, so the encryption
-target comes from the interactive selection during the install and nothing in
-this repo can prove it was applied:
+**Verify the encryption after the first boot, before anything else.** The
+config declares the encryption up front — the generator writes
+`disk_encryption.partitions` against the root partition it just laid out — so
+this step confirms the declaration was actually applied, not that it happened
+at all:
 
 ```bash
 lsblk -f
@@ -49,14 +50,21 @@ Boot the Arch ISO, connect to the network (`iwctl` for wifi), then:
 pacman -Sy archinstall
 curl -LO https://raw.githubusercontent.com/PieroNarciso/Dotfiles/main/install/archinstall/laptop-luks.json
 curl -LO https://raw.githubusercontent.com/PieroNarciso/Dotfiles/main/install/archinstall/creds.json.example
+curl -LO https://raw.githubusercontent.com/PieroNarciso/Dotfiles/main/install/archinstall/make-disk-config.py
 mv creds.json.example creds.json
-# edit creds.json: set the user password, root password and encryption passphrase
-archinstall --config laptop-luks.json --creds creds.json
+# edit creds.json: set the user password, root password and encryption_password
+
+lsblk    # find the target disk and read it twice
+python make-disk-config.py --device /dev/nvme0n1 --encrypt \
+    --base laptop-luks.json -o install-config.json
+
+archinstall --config install-config.json --creds creds.json --silent
 ```
 
-archinstall prompts for the target disk. **Check it against `lsblk` before
-confirming — the wrong answer erases the wrong disk.** No device path is stored
-in these configs for exactly this reason.
+The generator prints the layout and makes you retype the device path before it
+writes anything. **That prompt is the only thing standing between you and
+erasing the wrong disk** — check it against `lsblk` rather than reflexively
+retyping.
 
 Reboot when it finishes, log in as your user, then run stage 1:
 
@@ -76,3 +84,7 @@ See [`install/LAPTOP-CHECKLIST.md`](../LAPTOP-CHECKLIST.md) for the full, ordere
   enrollment with a PIN is the answer to that, and it is not set up here.
 - Swap is zram, so **hibernate does not work**. Adding it means a swap
   partition inside the LUKS container plus a `resume` hook in the initramfs.
+- The generator uses archinstall's own default single-disk layout (1G FAT32
+  ESP at `/boot`, ext4 root over the rest, no separate `/home`). Change it by
+  editing the generated JSON before running archinstall, not by editing the
+  base config.
