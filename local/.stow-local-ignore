@@ -3,10 +3,12 @@
 # netrw history. mason and packer write ABSOLUTE symlinks into it
 # (/home/piero/.local/share/nvim/mason/packages/...), and stow refuses an
 # absolute symlink outright -- "source is an absolute symlink ... All
-# operations aborted" -- which on a fresh machine aborted the whole stow
-# invocation and, before df_stow_repo was guarded, the whole bootstrap run.
+# operations aborted" -- which aborts the whole stow invocation.
 #
-# None of it is worth carrying between machines: nvim's plugin manager
-# rebuilds all of it on first launch, which phase_report already tells the
-# operator to do. Wallpapers, the other half of this package, still stow.
+# None of it is worth carrying between machines, and none of it is in git:
+# .gitignore already excludes it, so a fresh clone never has it. This file
+# matters on a machine whose working tree does (this desktop, re-running
+# bootstrap). packer clones itself on first launch -- nvim-config's
+# plugins.lua -- and installs the rest. Wallpapers, the other half of this
+# package, still stow.
 ^/\.local/share/nvim$

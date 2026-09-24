@@ -2,7 +2,16 @@
 
 load test_helper
 
-setup() { setup_tmpdir; }
+# Every test gets a fixture ESP holding the image. Without it, a test that
+# did not call setup_entries fell back to the real /boot -- readable on the
+# desktop (dmask=0022, amd-ucode installed), so they passed here and would
+# fail on the laptop's mode-700 ESP or an Intel machine.
+setup() {
+    setup_tmpdir
+    export BOOTCTL_ESP="$TEST_TMPDIR/esp"
+    mkdir -p "$BOOTCTL_ESP"
+    : > "$BOOTCTL_ESP/amd-ucode.img"
+}
 teardown() { teardown_tmpdir; }
 
 # Three entries, covering every shape the function has to handle: one ordinary
@@ -177,6 +186,8 @@ STUB
     [ "$status" -eq 0 ]
     [[ "$output" != *"no loader entry directory"* ]]
     [[ "$output" != *"no *.conf loader entries"* ]]
+    # Absent warnings are not success: the entry must actually be edited.
+    grep -qE '^initrd[[:space:]]+/amd-ucode\.img$' "$dir/arch.conf"
 
     # The microcode line must be first, above the initramfs line.
     local ucode_line initramfs_line

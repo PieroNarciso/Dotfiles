@@ -49,14 +49,34 @@ setup_fixture() {
     [[ "$output" == *"core,dev,desktop,fonts,apps,laptop"* ]]
 }
 
+# Every path, its type, link target and content, so a moved, relinked or
+# rewritten file all change the snapshot -- a bare file count does not see a
+# file replaced by a symlink.
+_snapshot() {
+    (cd "$1" && find . -printf '%p %y %l\n' | sort
+     find . -type f -exec md5sum {} + | sort) | md5sum
+}
+
 @test "--dry-run changes nothing on disk" {
     setup_fixture
-    before="$(find "$FAKE_HOME" -mindepth 1 | wc -l)"
-    entries_before="$(find "$FAKE_ENTRIES" -mindepth 1 | wc -l)"
+    # Give the dotfiles phase real work: an existing checkout with a package
+    # and a colliding file in $HOME. With an empty $HOME it found no packages
+    # and the test passed even with `run mv` and `run stow` made real.
+    local repo="$FAKE_HOME/.dotfiles"
+    mkdir -p "$repo/home"
+    echo "from repo" > "$repo/home/.zshrc"
+    git -C "$repo" init -q
+    git -C "$repo" add -A
+    git -C "$repo" -c user.email=t@t -c user.name=t commit -qm init
+    echo "the user's own" > "$FAKE_HOME/.zshrc"
+    before="$(_snapshot "$FAKE_HOME")"
+    entries_before="$(_snapshot "$FAKE_ENTRIES")"
     run bash -c "$FIXTURE_ENV bash '$INSTALL_DIR/bootstrap.sh' --dry-run 2>&1"
     [ "$status" -eq 0 ]
-    [ "$before" -eq "$(find "$FAKE_HOME" -mindepth 1 | wc -l)" ]
-    [ "$entries_before" -eq "$(find "$FAKE_ENTRIES" -mindepth 1 | wc -l)" ]
+    # Prove the phase had something to do, or the snapshot proves nothing.
+    [[ "$output" == *"backing up existing $FAKE_HOME/.zshrc"* ]]
+    [ "$before" = "$(_snapshot "$FAKE_HOME")" ]
+    [ "$entries_before" = "$(_snapshot "$FAKE_ENTRIES")" ]
 }
 
 @test "preflight fails when not on Arch" {

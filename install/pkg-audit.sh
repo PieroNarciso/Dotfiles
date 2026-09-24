@@ -60,10 +60,10 @@ read_lists() { # <find-expression>...
 # .audit-ignore file exists to prevent.
 read_lists -name '*.txt' -print0 > "$listed"
 
-gpu="$(hw_gpu_vendor)"
+gpus="$(hw_gpu_vendors)"
 audit_skip=()
 for g in amd intel nvidia; do
-    [ "$g" = "$gpu" ] || audit_skip+=("gpu-$g.txt")
+    grep -qx "$g" <<< "$gpus" || audit_skip+=("gpu-$g.txt")
 done
 hw_has_battery || audit_skip+=("laptop.txt")
 

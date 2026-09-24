@@ -217,11 +217,12 @@ teardown() { teardown_tmpdir; }
 }
 
 @test "an absolute symlink in a package does not abort the whole run" {
-    # Found by the live VM install. mason and packer write absolute symlinks
-    # into .local/share/nvim (-> /home/piero/...), stow refuses them outright
-    # with "All operations aborted", and the unguarded `run stow` took the
-    # entire bootstrap down under set -e -- no shell change, no services, no
-    # microcode entry, no manual-steps report.
+    # mason and packer write absolute symlinks into .local/share/nvim
+    # (-> /home/piero/...). Those are gitignored, so a fresh clone never has
+    # them -- the VM run that "found" this was fed a copy of the working tree
+    # -- but a working tree that does (this desktop, re-running bootstrap)
+    # makes stow refuse with "All operations aborted", and the unguarded
+    # `run stow` took the entire bootstrap down under set -e.
     mkdir -p "$REPO/bad/.config/bad"
     ln -s /etc/hostname "$REPO/bad/.config/bad/absolute-link"
     run bash -c "source '$INSTALL_DIR/lib/log.sh'; source '$INSTALL_DIR/lib/dotfiles.sh'; \
@@ -232,7 +233,7 @@ teardown() { teardown_tmpdir; }
 
 @test "the local package does not stow generated nvim state" {
     # .local/share/nvim is mason/packer output, not configuration, and it is
-    # where every absolute symlink in this repo lives.
+    # where every absolute symlink in this working tree lives (untracked).
     REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/../.." && pwd)"
     [ -f "$REPO_ROOT/local/.stow-local-ignore" ]
     grep -q 'share/nvim' "$REPO_ROOT/local/.stow-local-ignore"
@@ -243,4 +244,62 @@ teardown() { teardown_tmpdir; }
         -not -path "$REPO_ROOT/local/.local/share/nvim/*" \
         -exec sh -c 'case "$(readlink "$1")" in /*) echo "$1";; esac' _ {} \; )"
     [ -z "$stray" ] || { echo "absolute symlinks outside the ignored subtree:"; echo "$stray"; false; }
+}
+
+@test "df_backup_conflicts leaves a repo file reached through a folded directory alone" {
+    # Stow without --no-folding (the README's command, and this desktop's
+    # state) links ~/.config/nvim as a whole directory. The leaf is then a
+    # regular file inside the repo, and moving it empties the repo.
+    mkdir -p "$FAKE_HOME/.config"
+    ln -s ../../repo/config/.config/nvim "$FAKE_HOME/.config/nvim"  # relative, as stow makes it
+    run bash -c "source '$INSTALL_DIR/lib/log.sh'; source '$INSTALL_DIR/lib/dotfiles.sh'; \
+        df_backup_conflicts '$REPO' '$FAKE_HOME' '$TEST_TMPDIR/backup'; echo moved=\$DF_BACKED_UP"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"moved=0"* ]]
+    [ "$(cat "$REPO/config/.config/nvim/init.lua")" = "repo nvim" ]
+    [ ! -e "$TEST_TMPDIR/backup/.config/nvim/init.lua" ]
+}
+
+@test "a folded directory is unfolded by the stow that follows the backup" {
+    mkdir -p "$FAKE_HOME/.config"
+    ln -s ../../repo/config/.config/nvim "$FAKE_HOME/.config/nvim"  # relative, as stow makes it
+    run bash -c "source '$INSTALL_DIR/lib/log.sh'; source '$INSTALL_DIR/lib/dotfiles.sh'; \
+        df_backup_conflicts '$REPO' '$FAKE_HOME' '$TEST_TMPDIR/backup' && \
+        df_stow_repo '$REPO' '$FAKE_HOME'"
+    [ "$status" -eq 0 ]
+    [ ! -L "$FAKE_HOME/.config/nvim" ]
+    [ -L "$FAKE_HOME/.config/nvim/init.lua" ]
+    [ "$(cat "$FAKE_HOME/.config/nvim/init.lua")" = "repo nvim" ]
+}
+
+@test "a symlink into a sibling of the repo is not mistaken for the repo" {
+    # "$repo"* also matched ~/.dotfiles-backup-*, so a link into an old
+    # backup was treated as ours and left for stow to trip over.
+    mkdir -p "$REPO-backup"
+    echo "old" > "$REPO-backup/.zshrc"
+    ln -s "$REPO-backup/.zshrc" "$FAKE_HOME/.zshrc"
+    run bash -c "source '$INSTALL_DIR/lib/log.sh'; source '$INSTALL_DIR/lib/dotfiles.sh'; \
+        df_backup_conflicts '$REPO' '$FAKE_HOME' '$TEST_TMPDIR/backup'"
+    [ "$status" -eq 0 ]
+    [ ! -L "$FAKE_HOME/.zshrc" ]
+    [ -L "$TEST_TMPDIR/backup/.zshrc" ]
+}
+
+@test "df_clone_or_pull warns and returns non-zero instead of ending the run" {
+    git -C "$TEST_TMPDIR" init -q noupstream
+    run bash -c "set -euo pipefail; source '$INSTALL_DIR/lib/log.sh'; source '$INSTALL_DIR/lib/dotfiles.sh'; \
+        f() { df_clone_or_pull 'unused' '$TEST_TMPDIR/noupstream' || echo returned=\$?; echo reached; }; f"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"could not update"* ]]
+    [[ "$output" == *"returned=1"* ]]
+    [[ "$output" == *"reached"* ]]
+}
+
+@test "a failed clone warns, links nothing for that repo, and the run goes on" {
+    run bash -c "set -euo pipefail; source '$INSTALL_DIR/lib/log.sh'; source '$INSTALL_DIR/lib/dotfiles.sh'; \
+        df_clone_or_pull '$TEST_TMPDIR/does-not-exist' '$TEST_TMPDIR/clone' || echo returned=\$?; echo reached"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"could not clone"* ]]
+    [[ "$output" == *"returned=1"* ]]
+    [ ! -e "$TEST_TMPDIR/clone" ]
 }

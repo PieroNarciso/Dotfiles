@@ -53,32 +53,48 @@ teardown() { teardown_tmpdir; }
     [ "$status" -ne 0 ]
 }
 
-@test "hw_gpu_vendor detects intel from lspci output" {
+@test "hw_gpu_vendors detects intel from lspci output" {
     cat > "$TEST_TMPDIR/lspci" <<'FAKE'
 #!/usr/bin/env bash
 echo "00:02.0 VGA compatible controller: Intel Corporation Raptor Lake-P [Iris Xe Graphics]"
 FAKE
     chmod +x "$TEST_TMPDIR/lspci"
-    run bash -c "source '$INSTALL_DIR/lib/hw.sh'; HW_LSPCI='$TEST_TMPDIR/lspci' hw_gpu_vendor"
+    run bash -c "source '$INSTALL_DIR/lib/hw.sh'; HW_LSPCI='$TEST_TMPDIR/lspci' hw_gpu_vendors"
     [ "$output" = "intel" ]
 }
 
-@test "hw_gpu_vendor detects amd from lspci output" {
+@test "hw_gpu_vendors detects amd from lspci output" {
     cat > "$TEST_TMPDIR/lspci" <<'FAKE'
 #!/usr/bin/env bash
 echo "03:00.0 VGA compatible controller: Advanced Micro Devices, Inc. [AMD/ATI] Navi 33"
 FAKE
     chmod +x "$TEST_TMPDIR/lspci"
-    run bash -c "source '$INSTALL_DIR/lib/hw.sh'; HW_LSPCI='$TEST_TMPDIR/lspci' hw_gpu_vendor"
+    run bash -c "source '$INSTALL_DIR/lib/hw.sh'; HW_LSPCI='$TEST_TMPDIR/lspci' hw_gpu_vendors"
     [ "$output" = "amd" ]
 }
 
-@test "hw_gpu_vendor detects nvidia from lspci output" {
+@test "hw_gpu_vendors detects nvidia from lspci output" {
     cat > "$TEST_TMPDIR/lspci" <<'FAKE'
 #!/usr/bin/env bash
 echo "01:00.0 VGA compatible controller: NVIDIA Corporation AD107M [GeForce RTX 4060]"
 FAKE
     chmod +x "$TEST_TMPDIR/lspci"
-    run bash -c "source '$INSTALL_DIR/lib/hw.sh'; HW_LSPCI='$TEST_TMPDIR/lspci' hw_gpu_vendor"
+    run bash -c "source '$INSTALL_DIR/lib/hw.sh'; HW_LSPCI='$TEST_TMPDIR/lspci' hw_gpu_vendors"
     [ "$output" = "nvidia" ]
+}
+
+@test "hw_gpu_vendors reports both GPUs of a hybrid laptop" {
+    # NVIDIA was checked first and returned alone, so the Intel iGPU that
+    # drives the internal panel got no vulkan/VA-API drivers.
+    cat > "$TEST_TMPDIR/lspci" <<'FAKE'
+#!/usr/bin/env bash
+echo "00:02.0 VGA compatible controller: Intel Corporation Raptor Lake-P [Iris Xe Graphics]"
+echo "01:00.0 3D controller: NVIDIA Corporation AD107M [GeForce RTX 4060 Max-Q / Mobile]"
+FAKE
+    chmod +x "$TEST_TMPDIR/lspci"
+    run bash -c "source '$INSTALL_DIR/lib/hw.sh'; HW_LSPCI='$TEST_TMPDIR/lspci' hw_gpu_vendors"
+    [ "$status" -eq 0 ]
+    [ "${#lines[@]}" -eq 2 ]
+    [[ "$output" == *nvidia* ]]
+    [[ "$output" == *intel* ]]
 }

@@ -23,16 +23,18 @@ hw_microcode_package() {
     esac
 }
 
-hw_gpu_vendor() {
-    local out
-    out="$("$HW_LSPCI" 2>/dev/null | grep -iE 'vga|3d controller' || true)"
+# Every GPU vendor present, one per line, or "unknown". A hybrid laptop has
+# two: an Intel or AMD iGPU driving the internal panel plus an NVIDIA "3D
+# controller", and picking one left the panel's GPU with no drivers.
+hw_gpu_vendors() {
+    local out found=0
+    out="$("$HW_LSPCI" 2>/dev/null | grep -iE 'vga|3d controller|display controller' || true)"
     # -w matters: without word boundaries, 'ati' matches inside "VGA
     # compatible controller", so every GPU would be detected as AMD.
-    if   echo "$out" | grep -qi nvidia;             then echo nvidia
-    elif echo "$out" | grep -qiEw 'amd|ati|radeon'; then echo amd
-    elif echo "$out" | grep -qi intel;              then echo intel
-    else echo unknown
-    fi
+    if echo "$out" | grep -qi nvidia;             then echo nvidia; found=1; fi
+    if echo "$out" | grep -qiEw 'amd|ati|radeon'; then echo amd;    found=1; fi
+    if echo "$out" | grep -qi intel;              then echo intel;  found=1; fi
+    [ "$found" = 1 ] || echo unknown
 }
 
 hw_has_battery() {

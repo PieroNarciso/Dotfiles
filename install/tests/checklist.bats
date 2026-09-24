@@ -212,3 +212,44 @@ extract_find_check() {
     fi
     [ -z "$offenders" ]
 }
+
+extract_recovery() {
+    _extract_block '^  grep -H initrd ' 'only the initramfs lines left' 4
+}
+
+@test "the Step 8b recovery fixes every entry archinstall actually writes" {
+    # It used to say `nano .../arch.conf`. archinstall 4.4 writes no such
+    # file: its entries are <timestamp>_linux.conf and <timestamp>_linux-lts.conf,
+    # and stage 1 edits both. Following the old line created an empty third
+    # entry and left both real ones unbootable.
+    run extract_recovery
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"sed -i"* ]]
+    [[ "$output" != *"reboot"* ]]
+    [[ "$output" != *"umount"* ]]
+    local block="$output" e
+    mkdir -p "$MNT/loader/entries"
+    for k in linux linux-lts; do
+        printf 'title Arch\nlinux /vmlinuz-%s\ninitrd /amd-ucode.img\ninitrd /initramfs-%s.img\noptions rw\n' \
+            "$k" "$k" > "$MNT/loader/entries/2026-09-24_01-02-03_$k.conf"
+    done
+    run bash -c "$block"
+    [ "$status" -eq 0 ]
+    for e in "$MNT"/loader/entries/*.conf; do
+        ! grep -q 'ucode' "$e"
+        grep -qE '^initrd /initramfs-linux(-lts)?\.img$' "$e"
+        [ "$(wc -l < "$e")" -eq 4 ]
+    done
+    [ "$(ls "$MNT/loader/entries" | wc -l)" -eq 2 ]
+}
+
+@test "second search, LEAK: archinstall's own user_credentials.json is caught" {
+    # archinstall names its saved secrets file user_credentials.json
+    # (args.py USER_CREDS_FILE). 'creds*.json' does not match it.
+    mkdir -p "$MNT/var/log/archinstall"
+    echo '{"encryption_password":"x"}' > "$MNT/var/log/archinstall/user_credentials.json"
+    run bash -c "$(extract_find_check)"
+    [[ "$output" == *"LEAK:"* ]]
+    [[ "$output" == *"user_credentials.json"* ]]
+    [[ "$output" != *"clean:"* ]]
+}

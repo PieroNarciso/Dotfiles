@@ -1,15 +1,21 @@
 #!/usr/bin/env bash
 # Cloning and stowing the dotfile repos. Requires lib/log.sh.
 
+# Returns non-zero on failure instead of letting set -e end the run: a dirty
+# tree, a branch with no upstream or a network blip must cost the user one
+# repo's update, not the shell, services and report phases after it.
 df_clone_or_pull() {
     local url="$1" dest="$2"
     if [ -d "$dest/.git" ]; then
         log_info "updating $dest"
-        run git -C "$dest" pull --ff-only
-    else
-        log_step "cloning $url into $dest"
-        run git clone "$url" "$dest"
+        run git -C "$dest" pull --ff-only && return 0
+        log_warn "could not update $dest; using it as it is"
+        return 1
     fi
+    log_step "cloning $url into $dest"
+    run git clone "$url" "$dest" && return 0
+    log_warn "could not clone $url; its dotfiles will not be linked"
+    return 1
 }
 
 # Every top-level directory holding at least one dotfile is a stow package.
@@ -34,14 +40,22 @@ DF_BACKED_UP=0
 # Move aside anything stow would refuse to overwrite.
 df_backup_conflicts() {
     local repo="$1" target="$2" backup="$3"
-    local pkg src rel dst
+    local pkg src rel dst real_repo
+    real_repo="$(readlink -f "$repo")"
     for pkg in $(_df_packages "$repo"); do
         while IFS= read -r src; do
             rel="${src#"$repo/$pkg/"}"
             dst="$target/$rel"
-            # A symlink already pointing into the repo is our own work; leave it.
-            if [ -L "$dst" ] && [[ "$(readlink -f "$dst")" == "$repo"* ]]; then
-                continue
+            # Anything that already resolves into the repo is our own work;
+            # leave it. That includes a plain file reached through a folded
+            # parent: a stow run without --no-folding (the README's own
+            # command) links ~/.config/i3 as a whole directory, so
+            # ~/.config/i3/config is not itself a symlink -- and moving it
+            # moves the repo's file out of the repo. stow --restow unfolds
+            # such a directory by itself. The trailing slash keeps a sibling
+            # like ~/.dotfiles-backup-* from passing as "inside the repo".
+            if [ -e "$dst" ] || [ -L "$dst" ]; then
+                [[ "$(readlink -f "$dst")" == "$real_repo"/* ]] && continue
             fi
             # Anything else that exists must move, INCLUDING a symlink that
             # points somewhere else: stow refuses to adopt a target it does

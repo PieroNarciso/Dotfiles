@@ -1,8 +1,10 @@
 # Stage 0 — installing Arch from the ISO
 
-Verified against **archinstall 4.4** (Arch ISO 2026.09.01). Run
-`archinstall --version` on your ISO; if it differs, re-verify the config keys
-against that release before trusting them.
+Verified against **archinstall 4.4** (Arch ISO 2026.09.01).
+`make-disk-config.py` enforces this: on any other release it stops before
+touching a disk (`TESTED_ARCHINSTALL` in the script). Re-verify the config
+keys against the new release, then either bump that constant together with
+this line or pass `--archinstall-version-verified <version>` for one run.
 
 ## Before you start
 
@@ -59,19 +61,32 @@ curl -LO https://raw.githubusercontent.com/PieroNarciso/Dotfiles/main/install/ar
 mv creds.json.example creds.json
 # edit creds.json: set the user password, root password and encryption_password
 
-lsblk    # find the target disk and read it twice
+lsblk -o NAME,SIZE,MODEL,TRAN,RM,FSTYPE,MOUNTPOINTS   # find the target disk
+```
+
+Run these two one at a time, not pasted together — a pasted block feeds the
+archinstall line to the generator's retype prompt:
+
+```bash
 python make-disk-config.py --device /dev/nvme0n1 --encrypt \
     --base laptop.json -o install-config.json
+```
 
+```bash
+# only after the generator printed "wrote install-config.json"
 archinstall --config install-config.json --creds creds.json --silent
 ```
 
-The generator prints the partition layout it is about to write, then asks you
+The generator deletes any `install-config.json` left by an earlier run before
+it does anything else, so an aborted run leaves nothing for archinstall to
+pick up. It prints the disk as it is now — model, size, every existing
+partition, and `REMOVABLE` if it is a USB device such as the stick you
+booted from — then the partition layout it is about to write, then asks you
 to retype the device path. **Read the layout, not the prompt.** The prompt no
 longer names the device — retyping it catches a slip between reading `lsblk`
 and typing, and nothing more; it cannot catch a wrong decision about which
 disk to erase. The layout dump, with its sizes and mountpoints, is what tells
-you whether this is the right disk.
+you whether this is the right disk. Match the model against `lsblk`.
 
 That dump is also the last thing you see. `archinstall --silent` suppresses
 every confirmation archinstall would otherwise show, so nothing after this

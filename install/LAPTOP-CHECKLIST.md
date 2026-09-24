@@ -41,14 +41,39 @@ steps in order.
 
   Then read the target disk off `lsblk`, generate the disk config against it,
   retype the device path when the generator asks to confirm, and hand the
-  result to archinstall:
+  result to archinstall. **Three separate commands — run them one at a
+  time.** Pasted as one block, the generator reads the pasted archinstall
+  line as your answer to its retype prompt and aborts.
 
   ```bash
-  lsblk
+  lsblk -o NAME,SIZE,MODEL,TRAN,RM,FSTYPE,MOUNTPOINTS
+  ```
+
+  ```bash
   python make-disk-config.py --device /dev/nvme0n1 --encrypt \
       --base laptop.json -o install-config.json
+  ```
+
+  Run archinstall only if the generator ended with `wrote install-config.json`.
+  It deletes any `install-config.json` from an earlier run before it starts,
+  so after an abort there is nothing for archinstall to find — but do not
+  plug or unplug a USB device between the two commands: the config names the
+  disk by its kernel name, and `/dev/sda` can become a different disk.
+
+  ```bash
   archinstall --config install-config.json --creds creds.json --silent
   ```
+
+  The generator refuses to run on an archinstall other than the release it
+  was verified against (see `install/archinstall/README.md`). If it stops
+  there, do not reach for the override flag it names until you have
+  re-verified the config keys against that release — on a spare machine or
+  the VM, not by guessing.
+
+  The generator first prints the disk as it is now — model, size, and every
+  partition that is about to be destroyed — then the layout it will write.
+  Match the model and size against `lsblk`. If it says `REMOVABLE`, you have
+  almost certainly named the USB stick you booted from.
 
   The generator prints the layout it is about to write before it asks you to
   retype the device path. Read that layout — sizes and mountpoints against
@@ -68,8 +93,9 @@ steps in order.
 
   Record the `archinstall --version` number off-machine: the repo is not
   cloned yet and you are on a ramdisk, so there is nowhere here to keep it.
-  Step 13 compares it against the version pinned in
-  `install/archinstall/README.md`.
+  The generator already enforced it before erasing anything; Step 13 is
+  where you note it in `install/archinstall/README.md` if it was a new
+  release you verified.
 - [ ] **Step 5: Verify no credentials leaked into the installed system before rebooting.**
   `creds.json` holds the LUKS passphrase and both account passwords in
   plaintext. It lives on the ISO's ramdisk, so it dies when the machine
@@ -162,7 +188,7 @@ steps in order.
   if ! printf '%s\n' "$canary" | grep -rlFf - /mnt >/dev/null 2>&1; then
       echo "STOP: /mnt is not searchable — this check did NOT run"
   else
-      found=$(find /mnt -name 'creds*.json' -o -name 'install-config.json' 2>/dev/null)
+      found=$(find /mnt -name 'creds*.json' -o -name 'install-config.json' -o -name 'user_credentials.json' 2>/dev/null)
       [ -z "$found" ] && echo "clean: no config or credential file on the disk" \
                       || { echo "LEAK: shred these:"; echo "$found"; }
   fi
@@ -320,15 +346,30 @@ steps in order.
   ```bash
   # boot the ISO, then (use YOUR device from lsblk):
   mount /dev/nvme0n1p1 /mnt          # the ESP alone, no LUKS unlock needed
-  nano /mnt/loader/entries/arch.conf  # delete the initrd /*-ucode.img line
+  grep -H initrd /mnt/loader/entries/*.conf
+  sed -i -E '/^initrd[[:space:]]+\/(amd|intel)-ucode\.img$/d' /mnt/loader/entries/*.conf
+  grep -H initrd /mnt/loader/entries/*.conf   # only the initramfs lines left
   umount /mnt
   ```
+
+  There is no `arch.conf`: archinstall names its entries
+  `<install-time>_linux.conf` and `<install-time>_linux-lts.conf`, and stage 1
+  edited both, so both need the line removed. The glob is safe here — the ISO
+  shell is root, so it can read the ESP.
 
   Stage 1 also copied each original entry to
   `~/.dotfiles-backup-*/loader-entries/` before editing it, but that path is
   on the LUKS root — reachable only after `cryptsetup open`, so it is the
   slower route, not the first one.
-- [ ] **Step 9: Back up the LUKS header to another machine** (`cryptsetup luksHeaderBackup`).
+- [ ] **Step 9: Back up the LUKS header to another machine.** Use your root
+  partition from `lsblk` (the `crypto_LUKS` one):
+
+  ```bash
+  sudo cryptsetup luksHeaderBackup /dev/nvme0n1p2 --header-backup-file ~/luks-header.img
+  ```
+
+  Copy `~/luks-header.img` off the laptop, then delete it here. A header
+  backup plus the passphrase opens the disk, so keep it with the same care.
 - [ ] **Step 10: Verify the laptop-only phases actually fired:**
 
   ```bash
@@ -375,9 +416,13 @@ steps in order.
     package — `xf86-video-ati` is the older KMS-less driver, also listed but
     not the signal to look for).
   - **NVIDIA** (`gpu-nvidia.txt`): `nvidia-open-dkms` installed.
+  - **Hybrid** (an Intel or AMD iGPU plus an NVIDIA "3D controller" in
+    `lspci`): both lists' signal packages installed. The iGPU usually drives
+    the internal panel, so missing `vulkan-intel` there is the defect to look
+    for.
 - [ ] **Step 12: Work through the manual steps the report printed** (SSH keys, SSH remotes, GPG, `~/.aws`, `gh auth login`). `phase_report` in `install/bootstrap.sh` prints the full list at the end of the run — work through everything it names.
 - [ ] **Step 13: Reconcile the repo with what you actually installed.** Run
-  `install/pkg-audit.sh` on the laptop. It prints two columns and they mean
+  `~/.dotfiles/install/pkg-audit.sh` on the laptop. It prints two columns and they mean
   different things:
 
   - ***unlisted*** — installed here, recorded in no group file. Each one is a
@@ -389,7 +434,8 @@ steps in order.
 
   The audit skips what cannot apply: `optional/` (opt-in by definition), the
   `gpu-*.txt` for hardware this machine does not have, and `laptop.txt` when
-  there is no battery. It says which ones it skipped. Compare the archinstall
-  version you noted in Step 4 against the version pinned in
-  `install/archinstall/README.md`; if it differs, update the pinned version
-  there. Commit both changes together.
+  there is no battery. It says which ones it skipped. If Step 4 ran on a
+  newer archinstall that you verified and let through with
+  `--archinstall-version-verified`, bump `TESTED_ARCHINSTALL` in
+  `make-disk-config.py` and the version line in
+  `install/archinstall/README.md` together. Commit both changes together.

@@ -224,13 +224,15 @@ phase_packages() {
         [ -f "$file" ] || file="$INSTALL_DIR/packages/optional/$g.txt"
         aur_install_file "$file"
     done
-    local gpu; gpu="$(hw_gpu_vendor)"
-    if [ -f "$INSTALL_DIR/packages/gpu-$gpu.txt" ]; then
-        log_info "gpu detected: $gpu"
-        aur_install_file "$INSTALL_DIR/packages/gpu-$gpu.txt"
-    else
-        log_warn "unrecognised GPU; install the driver by hand"
-    fi
+    local gpu
+    while IFS= read -r gpu; do
+        if [ -f "$INSTALL_DIR/packages/gpu-$gpu.txt" ]; then
+            log_info "gpu detected: $gpu"
+            aur_install_file "$INSTALL_DIR/packages/gpu-$gpu.txt"
+        else
+            log_warn "unrecognised GPU; install the driver by hand"
+        fi
+    done < <(hw_gpu_vendors)
     # aur.txt is desktop applications — browsers and an editor. Running it
     # unconditionally meant `--groups server` still pulled in Brave, Code and
     # zen-browser, so it follows the apps group.
@@ -244,12 +246,18 @@ phase_packages() {
 phase_dotfiles() {
     [ "$SKIP_DOTFILES" = "1" ] && { log_info "skipping dotfiles"; return 0; }
     log_step "dotfiles"
-    df_clone_or_pull "$DOTFILES_URL" "$DOTFILES_DIR"
-    df_clone_or_pull "$NVIM_URL" "$NVIM_DIR"
-    df_backup_conflicts "$DOTFILES_DIR" "$HOME" "$BACKUP_DIR"
-    df_backup_conflicts "$NVIM_DIR" "$HOME" "$BACKUP_DIR"
-    df_stow_repo "$DOTFILES_DIR" "$HOME"
-    df_stow_repo "$NVIM_DIR" "$HOME"
+    local -a repos=()
+    local pair url dir
+    for pair in "$DOTFILES_URL|$DOTFILES_DIR" "$NVIM_URL|$NVIM_DIR"; do
+        url="${pair%%|*}"; dir="${pair#*|}"
+        df_clone_or_pull "$url" "$dir" \
+            || BOOTSTRAP_MANUAL+=("get $dir up to date, then re-run this script: git -C $dir status")
+        # A failed pull leaves a usable checkout; a failed clone leaves none.
+        # A dry run clones nothing either, so it has nothing to link.
+        if [ -d "$dir/.git" ]; then repos+=("$dir"); fi
+    done
+    for dir in "${repos[@]}"; do df_backup_conflicts "$dir" "$HOME" "$BACKUP_DIR"; done
+    for dir in "${repos[@]}"; do df_stow_repo "$dir" "$HOME"; done
     # Count, not `[ -d "$BACKUP_DIR" ]`: phase_microcode backs loader entries
     # into the same directory and runs first, so on a fresh laptop the
     # directory exists with nothing of the user's in it.
@@ -306,7 +314,12 @@ phase_version_managers() {
     if [ -d "$HOME/.nvm" ]; then
         log_info "nvm already installed"
     else
-        run bash -c 'curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash' \
+        # PROFILE=/dev/null: the installer otherwise appends its loader to the
+        # profile of $SHELL -- still bash in this session, since chsh only
+        # takes effect at the next login -- and ~/.bashrc is a stowed link
+        # into the repo, so the append dirties home/.bashrc. .zshrc already
+        # loads nvm.
+        run bash -c 'curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | PROFILE=/dev/null bash' \
         || log_warn "the nvm installer failed; install it by hand from https://github.com/nvm-sh/nvm"
     fi
     if [ -d "$HOME/.pyenv" ]; then
@@ -340,11 +353,14 @@ Remaining manual steps — none of these can be automated safely:
   2. Import your GPG key, then check: git config --global user.signingkey
   3. Copy ~/.aws, ~/.gitconfig-bsale and ~/.gitconfig-pws from the desktop.
   4. Authenticate the CLIs: gh auth login, aws configure, gcloud init.
-  5. Open neovim once and let the plugin manager install everything.
+  5. Open neovim, wait for packer to finish installing (an E492 about
+     TSUpdate during that first sync is expected), quit, and open it again.
+     Then :Codeium Auth.
   5b. Hyprland only: the stowed config requires the hyprsplit plugin, which
       is gitignored and must be cloned separately, and its monitor lines name
       the desktop's outputs. On a laptop, check `hyprctl monitors` and edit
-      the hl.monitor() lines in ~/.config/hypr/hyprland.lua to match:
+      the hl.monitor() lines in ~/.config/hypr/hyprland.lua to match
+      (hyprpaper.conf needs no edit: its "*" block covers any output):
         git clone https://github.com/shezdy/hyprsplit ~/.config/hypr/hyprsplit
   6. Install any optional group you skipped:
        install/bootstrap.sh --groups audio-prod,gaming,media,mobile,server,virt,work,x11

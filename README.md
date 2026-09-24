@@ -19,14 +19,14 @@ Design notes: `docs/superpowers/specs/2026-09-21-arch-laptop-bootstrap-design.md
 
 ```bash
 git clone https://github.com/PieroNarciso/Dotfiles.git ~/.dotfiles
-cd ~/.dotfiles && stow --restow --target="$HOME" config home local scripts tmux vim Xresources
+cd ~/.dotfiles && stow --restow --no-folding --target="$HOME" config home local scripts tmux vim Xresources
 ```
 
 The neovim config is a separate repo:
 
 ```bash
 git clone https://github.com/PieroNarciso/nvim-config.git ~/.nvim-config
-cd ~/.nvim-config && stow --restow --target="$HOME" nvim-config nvim-home
+cd ~/.nvim-config && stow --restow --no-folding --target="$HOME" nvim-config nvim-home
 ```
 
 # i3 / BSPWM

@@ -5,3 +5,7 @@ paru             # phase_paru bootstraps it from the AUR
 
 # Deliberately dropped: legacy dependency, install by hand if something needs it.
 openssl-1.0
+
+# A split package makepkg builds beside wazuh-agent: in no repo and not in the
+# AUR, so listing it made every install of the work group fail on it.
+wazuh-agent-debug
