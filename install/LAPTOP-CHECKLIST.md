@@ -59,6 +59,13 @@ steps in order.
   It is also the last confirmation you get: `--silent` suppresses every
   prompt archinstall would otherwise show before writing partitions.
 
+  **Check the root line carries a `[LUKS2]` tag** before you retype anything.
+  That tag is the only pre-erase evidence that `--encrypt` took effect — a
+  dropped or mistyped flag produces a perfectly valid config for an
+  *unencrypted* disk, and the next chance to notice is Step 7, where the only
+  fix is to reinstall. If the generator prints `NOTE: this dump found no root
+  partition to tag [LUKS2]`, stop and work out why before erasing anything.
+
   Record the `archinstall --version` number off-machine: the repo is not
   cloned yet and you are on a ramdisk, so there is nowhere here to keep it.
   Step 13 compares it against the version pinned in
@@ -111,6 +118,23 @@ steps in order.
   The passphrase goes through a shell variable and `printf`, a builtin, so it
   never reaches any process's argv where `ps` could read it.
 
+  **If you get a STOP, do not reboot.** `creds.json` lives on the ramdisk and
+  dies with it, and this check can never be run again afterwards. Fix the
+  cause and re-run the block:
+
+  - *Wrong directory* — `ls creds.json`; the block must run where you edited it.
+  - *`/mnt` not mounted* — archinstall unmounts on completion in some
+    versions. Re-mount it (use YOUR devices from `lsblk`):
+
+    ```bash
+    cryptsetup open /dev/nvme0n1p2 root   # the passphrase from Step 2
+    mount /dev/mapper/root /mnt
+    mount /dev/nvme0n1p1 /mnt/boot
+    ```
+
+  If you cannot make the check run, that is not the same as passing it. Reboot
+  knowing it never ran, and treat Step 7 as the only encryption evidence you have.
+
   Search for the passphrase itself, not for the word "password". On 4.4
   `install.log` carries two benign lines — `INFO - Setting password for
   piero` and the same for root — with no secret value anywhere. Grepping for
@@ -128,14 +152,27 @@ steps in order.
 
   Then confirm no copy of `creds.json` landed on the installed disk, which is
   the thing that would actually matter — `/mnt` is the new system, not the
-  ramdisk, so this is the search worth running:
+  ramdisk, so this is the search worth running. **Run it in the same block, so
+  it inherits the canary's proof that `/mnt` is searchable at all**; on its own
+  its "Expected: nothing" is exactly what an unmounted `/mnt` produces:
 
   ```bash
-  find /mnt -name 'creds*.json' -o -name 'install-config.json' 2>/dev/null
+  canary="creds-check-canary-$$"
+  printf '%s\n' "$canary" > /mnt/root/.creds-check-canary
+  if ! printf '%s\n' "$canary" | grep -rlFf - /mnt >/dev/null 2>&1; then
+      echo "STOP: /mnt is not searchable — this check did NOT run"
+  else
+      found=$(find /mnt -name 'creds*.json' -o -name 'install-config.json' 2>/dev/null)
+      [ -z "$found" ] && echo "clean: no config or credential file on the disk" \
+                      || { echo "LEAK: shred these:"; echo "$found"; }
+  fi
+  rm -f /mnt/root/.creds-check-canary
+  unset canary found
   ```
 
-  Expected: nothing. The `creds.json` you edited lives in the ISO's own working
-  directory and dies with the ramdisk at reboot; it is never copied to `/mnt`.
+  Expected: `clean: no config or credential file on the disk`. The `creds.json`
+  you edited lives in the ISO's own working directory and dies with the
+  ramdisk at reboot; it is never copied to `/mnt`.
 
   `install/archinstall/creds.json` is gitignored so it cannot be committed by
   accident, but that is a safety net, not a reason to keep the file around —
@@ -221,22 +258,52 @@ steps in order.
   entry naming an initrd that is not on the ESP does not boot, and you will
   not find that out at any other point in this checklist.
 
+  **Every read here needs `sudo`.** archinstall mounts the ESP `dmask=0077`,
+  so `/boot` is mode 700 and root-owned on the machine you just installed —
+  an unprivileged `cat` returns "Permission denied", not the file. (`lib/boot.sh`
+  puts `sudo` in front of every ESP read for exactly this reason. A desktop
+  mounted `dmask=0022` reads it fine as the user, which is how this was
+  wrong here in the first place.)
+
   ```bash
-  cat /boot/loader/entries/*.conf     # the microcode initrd must come FIRST
-  ls -la /boot/*.img                  # the image it names must actually exist
+  sudo cat /boot/loader/entries/*.conf   # the microcode initrd must come FIRST
+  sudo ls -la /boot/*.img                # the image it names must actually exist
+  ```
+
+  Check the two against each other by hand: for every `initrd /X.img` line,
+  `X.img` must appear in the `ls`. systemd-boot will not boot an entry naming
+  an initrd that is not there. Then:
+
+  ```bash
   sudo reboot
   ```
 
-  After it comes back up:
+  **The reboot is the verification.** If it comes back up, the entries are
+  good. Do not go looking for a confirming line in the journal: on a machine
+  whose firmware already carries microcode newer than the package, the kernel
+  prints only `microcode: Current revision: 0x...` and no update line at all,
+  and that is correct, not a failure. (`journalctl -b | grep -i microcode`
+  matches that `Current revision` line on every machine, so it passes whether
+  or not the microcode was loaded — it proves nothing.) If you want the real
+  signal, it is `microcode: Updated early from:`, and its absence is not a
+  fault.
+
+  **If it does not boot**, the entry is on the *unencrypted* ESP, so you do
+  not need to unlock the root filesystem to fix it. At the systemd-boot menu
+  `e` only edits the kernel command line — it cannot remove an `initrd` line —
+  so recover from the Arch ISO instead:
 
   ```bash
-  journalctl -b | grep -i microcode   # expect an "early: microcode updated" line
+  # boot the ISO, then (use YOUR device from lsblk):
+  mount /dev/nvme0n1p1 /mnt          # the ESP alone, no LUKS unlock needed
+  nano /mnt/loader/entries/arch.conf  # delete the initrd /*-ucode.img line
+  umount /mnt
   ```
 
-  If it does not boot: at the systemd-boot menu press `e` and delete the
-  `initrd /*-ucode.img` line to boot once, then look in
-  `~/.dotfiles-backup-*/loader-entries/` — stage 1 copied the original entry
-  there before editing it.
+  Stage 1 also copied each original entry to
+  `~/.dotfiles-backup-*/loader-entries/` before editing it, but that path is
+  on the LUKS root — reachable only after `cryptsetup open`, so it is the
+  slower route, not the first one.
 - [ ] **Step 9: Back up the LUKS header to another machine** (`cryptsetup luksHeaderBackup`).
 - [ ] **Step 10: Verify the laptop-only phases actually fired:**
 
@@ -258,13 +325,21 @@ steps in order.
 
   ```bash
   lspci | grep -iE 'vga|3d controller'
-  pacman -Qq | grep -E 'vulkan|xf86-video|nvidia|mesa|intel-media|libva'
+  pacman -Qqe | grep -E 'vulkan|xf86-video|nvidia|mesa|intel-media|libva'
   ```
 
-  The pattern has to cover all three groups. An earlier version matched only
-  `xf86-video|mesa|nvidia`, which cannot match a single package in
-  `gpu-intel.txt` — it reported nothing on exactly the hardware it was written
-  to check.
+  Two things about that command:
+
+  - The pattern has to cover all three groups. An earlier version matched only
+    `xf86-video|mesa|nvidia`, which cannot match a single package in
+    `gpu-intel.txt` — it reported nothing on exactly the hardware it was
+    written to check.
+  - `-Qqe` (**e**xplicitly installed), not `-Qq`. `linux-firmware` in
+    `core.txt` hard-depends on `linux-firmware-nvidia`, so a plain `-Qq`
+    reports an nvidia package on every machine including yours, flatly
+    contradicting the "no `nvidia*` packages" expectation below. Driver
+    packages are installed explicitly by the toolkit; firmware split-packages
+    are pulled in as dependencies and `-Qqe` leaves them out.
 
   An earlier defect in `hw_gpu_vendor` matched `ati` inside the string "VGA
   compatible controller" and mislabelled every Intel GPU as AMD, so treat

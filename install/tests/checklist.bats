@@ -79,3 +79,58 @@ extract_check() {
     [[ "$output" != *'grep -rlF "$pass"'* ]]
     [[ "$output" != *"grep -r '\$pass'"* ]]
 }
+
+# The SECOND search in Step 5 — for a stray creds.json / install-config.json
+# on the installed disk — had none of the first one's guards: its stated
+# "Expected: nothing" is exactly what an unmounted /mnt produces.
+extract_find_check() {
+    sed -n '/^  unset pass canary$/,$p' "$CHECKLIST" \
+        | sed -n '/^  canary="creds-check-canary/,/^  unset canary found$/p' \
+        | sed -e 's/^  //' -e "s#/mnt#$MNT#g"
+}
+
+@test "the second search is extracted and is not the first one" {
+    run extract_find_check
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"install-config.json"* ]]
+    [[ "$output" != *"encryption_password"* ]]
+}
+
+@test "second search, clean: no config or credential file on the disk" {
+    run bash -c "$(extract_find_check)"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"clean: no config or credential file"* ]]
+    [ ! -e "$MNT/root/.creds-check-canary" ]
+}
+
+@test "second search, LEAK: a stray creds.json on the installed disk" {
+    echo '{"encryption_password":"x"}' > "$MNT/root/creds.json"
+    run bash -c "$(extract_find_check)"
+    [[ "$output" == *"LEAK:"* ]]
+    [[ "$output" == *"creds.json"* ]]
+    [[ "$output" != *"clean:"* ]]
+}
+
+@test "second search, STOP: an unmounted /mnt is not reported as clean" {
+    rm -rf "$MNT"
+    run bash -c "$(extract_find_check)"
+    [[ "$output" == *"STOP:"* ]]
+    [[ "$output" != *"clean:"* ]]
+}
+
+@test "no checklist command reads the ESP without sudo" {
+    # archinstall mounts the ESP dmask=0077, so /boot is mode 700 and
+    # root-owned on every machine this toolkit installs. The developer's
+    # desktop is dmask=0022 and reads it fine as the user -- which has now
+    # masked this same defect twice: once in lib/boot.sh (D4), and once in
+    # the very step added to catch an unbootable machine. This test is the
+    # structural guard, not another round of remembering.
+    local offenders
+    offenders="$(grep -nE '^[[:space:]]+(cat|ls|grep|find|head|tail|stat|file|cp|bootctl)[^|#]*[[:space:]]/boot(/|[[:space:]]|$)' "$CHECKLIST" \
+        | grep -vE '(sudo|^\s*[0-9]+:[[:space:]]*#)' || true)"
+    if [ -n "$offenders" ]; then
+        echo "unprivileged ESP reads in the checklist:"
+        echo "$offenders"
+    fi
+    [ -z "$offenders" ]
+}
