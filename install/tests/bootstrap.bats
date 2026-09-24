@@ -215,3 +215,18 @@ report" ]
     # Sourcing must not have executed a phase.
     [[ "$output" != *"::  preflight"* ]]
 }
+
+@test "an interrupt ends the run with a message instead of dying silently" {
+    # A terminal Ctrl-C signals the whole foreground process group, so the
+    # script itself takes SIGINT -- no `|| rc=$?` downstream ever sees it and
+    # the run ends with no output at all. The trap makes the exit deliberate.
+    run bash -c "
+        cd '$BATS_TEST_DIRNAME/../..'
+        source install/bootstrap.sh
+        kill -INT \$\$
+        echo SHOULD-NOT-REACH
+    "
+    [ "$status" -eq 130 ]
+    [[ "$output" == *"interrupted"* ]]
+    [[ "$output" != *"SHOULD-NOT-REACH"* ]]
+}

@@ -64,10 +64,15 @@ _pkg_install_batch() {
     if [ "$rc" -eq 0 ]; then
         return 0
     fi
-    # A signal is the operator or the system stopping the installer, not a
-    # verdict on any package. Bisecting would re-run it on each half and ask
-    # again, so escaping one group of N would take 2N-1 interrupts. Give up
-    # on the whole run instead and let phase_report name what never landed.
+    # A signal is the system stopping the installer, not a verdict on any
+    # package -- an OOM kill, or a SIGTERM from a session shutting down.
+    # Bisecting would re-run the installer on each half, so one such event
+    # would be re-hit 2N-1 times. Give up on the whole run instead and let
+    # phase_report name what never landed.
+    #
+    # This is NOT the Ctrl-C path. A terminal Ctrl-C signals the whole
+    # foreground process group, so bootstrap.sh dies of SIGINT before this
+    # line is ever reached; the trap in bootstrap.sh handles that case.
     if [ "$rc" -ge 128 ]; then
         PKG_ABORTED=1
         log_warn "installer killed by signal $(( rc - 128 )); skipping the remaining packages"

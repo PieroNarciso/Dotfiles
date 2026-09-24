@@ -14,6 +14,10 @@ local mainMod     = "SUPER"
 ------------------
 ---- MONITORS ----
 ------------------
+-- These name the DESKTOP's outputs. A laptop panel is usually eDP-1, so on a
+-- new machine run `hyprctl monitors` and edit these two lines to match before
+-- expecting anything to appear. Stage 1 stows this file as-is; it cannot know
+-- what is plugged in.
 hl.monitor({ output = "DP-3",     mode = "2560x1440@180", position = "0x0",    scale = 1 })
 hl.monitor({ output = "HDMI-A-1", mode = "1920x1080@120", position = "2560x0", scale = 1 })
 
@@ -21,14 +25,20 @@ hl.monitor({ output = "HDMI-A-1", mode = "1920x1080@120", position = "2560x0", s
 ---- WORKSPACES (hyprsplit — awesome-like)
 ----------------------------------------
 -- Per-monitor independent workspaces. Replaces the old split-monitor-workspaces plugin.
--- Clone lives at ~/.config/hypr/hyprsplit (git, .gitignored).
-local hs = require("hyprsplit")
-hs.config({
-    num_workspaces        = 10,    -- per monitor (was max_workspaces 10/monitor)
-    persistent_workspaces = false, -- was enable_persistent_workspaces = 0
-})
--- First listed monitor gets workspaces 1-10, second gets 11-20 (matches old monitor_priority).
-hs.monitor_priority({ "DP-3", "HDMI-A-1" })
+-- Clone lives at ~/.config/hypr/hyprsplit (git, .gitignored), so it is NOT
+-- installed by stowing this repo. On a fresh machine it is simply absent, and
+-- a bare require() would abort the whole config -- no keybinds, no autostart,
+-- no monitors. pcall degrades that to "workspace keys do not work yet".
+--   git clone https://github.com/shezdy/hyprsplit ~/.config/hypr/hyprsplit
+local have_hyprsplit, hs = pcall(require, "hyprsplit")
+if have_hyprsplit then
+    hs.config({
+        num_workspaces        = 10,    -- per monitor (was max_workspaces 10/monitor)
+        persistent_workspaces = false, -- was enable_persistent_workspaces = 0
+    })
+    -- First listed monitor gets workspaces 1-10, second gets 11-20 (matches old monitor_priority).
+    hs.monitor_priority({ "DP-3", "HDMI-A-1" })
+end
 
 -------------------
 ---- AUTOSTART ----
@@ -44,6 +54,10 @@ hl.on("hyprland.start", function()
     hl.exec_cmd("wl-paste --type text --watch cliphist store")
     hl.exec_cmd("wl-paste --type image --watch cliphist store")
     hl.exec_cmd("protonvpn-app --start-minimized")
+    if not have_hyprsplit then
+        hl.exec_cmd("notify-send -u critical 'hyprsplit missing' " ..
+            "'Workspace keys are disabled. git clone https://github.com/shezdy/hyprsplit ~/.config/hypr/hyprsplit'")
+    end
 end)
 
 -------------------------------
@@ -180,10 +194,14 @@ hl.bind("XF86AudioStop",        hl.dsp.exec_cmd("playerctl stop"))
 hl.bind(mainMod .. " + SHIFT + M", hl.dsp.exec_cmd("wpctl set-mute @DEFAULT_SOURCE@ toggle"))
 
 -- Workspaces (hyprsplit): SUPER+N switch on current monitor, SUPER+CTRL+N move window there
-for i = 1, 10 do
-    local key = i % 10 -- 10 maps to key 0
-    hl.bind(mainMod .. " + " .. key,           hs.dsp.focus({ workspace = i }))
-    hl.bind(mainMod .. " + CONTROL + " .. key, hs.dsp.window.move({ workspace = i }))
+-- Skipped entirely when hyprsplit is not cloned: binding hs.* would raise and
+-- take every later binding in this file down with it.
+if have_hyprsplit then
+    for i = 1, 10 do
+        local key = i % 10 -- 10 maps to key 0
+        hl.bind(mainMod .. " + " .. key,           hs.dsp.focus({ workspace = i }))
+        hl.bind(mainMod .. " + CONTROL + " .. key, hs.dsp.window.move({ workspace = i }))
+    end
 end
 
 -- Move/resize windows with mainMod + LMB/RMB drag

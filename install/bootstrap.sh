@@ -10,6 +10,18 @@ readonly INSTALL_DIR
 # shellcheck source=lib/log.sh
 source "$INSTALL_DIR/lib/log.sh"
 
+# Ctrl-C at a package prompt sends SIGINT to the whole foreground process
+# group, so this script dies too -- before any `|| rc=$?` can record it and
+# before phase_report runs. Without this trap the run ends with no output at
+# all and no way to tell an interrupt from a crash.
+_on_interrupt() {
+    trap - INT TERM
+    log_warn "interrupted — stopping here"
+    log_warn "nothing is left half-written; re-run this script to continue"
+    exit 130
+}
+trap _on_interrupt INT TERM
+
 DRY_RUN=0
 SKIP_DOTFILES=0
 # NOTE: not GROUPS — that is a bash special variable and assignments to it
@@ -134,7 +146,10 @@ phase_pacman_conf() {
         # and archinstall does not enable it.
         log_info "enabling multilib in $conf"
         run $sudo_cmd sed -i 's/^#\[multilib\]/[multilib]/; /^\[multilib\]/{n;s/^#Include/Include/}' "$conf"
-        run $sudo_cmd pacman -Syu --noconfirm
+        # Warn, do not abort: this is phase 2 of 10 and set -e would end the
+        # run here with no error line and no report of what never happened.
+        run $sudo_cmd pacman -Syu --noconfirm \
+            || log_warn "system upgrade failed; multilib is on but the package databases may be stale"
     fi
     grep -q '^Color' "$conf" || run $sudo_cmd sed -i 's/^#Color/Color/' "$conf"
     grep -q '^ParallelDownloads' "$conf" || run $sudo_cmd sed -i 's/^#ParallelDownloads.*/ParallelDownloads = 5/' "$conf"
@@ -147,15 +162,39 @@ phase_paru() {
         log_info "DRY-RUN: would install base-devel, clone paru from the AUR and makepkg -si"
         return 0
     fi
-    run sudo pacman -S --needed --noconfirm base-devel git
+    # Every step here can fail on a fresh machine (no network yet, an AUR
+    # outage, a makepkg dependency problem) and each one used to abort the
+    # whole run under set -e -- losing dotfiles, shell, services and the
+    # manual-steps report, none of which need paru.
+    local manual="install paru by hand: https://github.com/Morganamilo/paru"
+    if ! run sudo pacman -S --needed --noconfirm base-devel git; then
+        log_warn "could not install base-devel; $manual"
+        return 0
+    fi
     local tmp; tmp="$(mktemp -d)"
-    run git clone https://aur.archlinux.org/paru.git "$tmp/paru"
-    ( cd "$tmp/paru" && run makepkg -si --noconfirm )
+    if ! run git clone https://aur.archlinux.org/paru.git "$tmp/paru"; then
+        log_warn "could not clone paru from the AUR; $manual"
+        run rm -rf "$tmp"
+        return 0
+    fi
+    if ! ( cd "$tmp/paru" && run makepkg -si --noconfirm ); then
+        log_warn "building paru failed; $manual"
+    fi
     run rm -rf "$tmp"
+    return 0
 }
 
 phase_packages() {
     log_step "packages"
+    # phase_paru now warns instead of aborting, so paru can legitimately be
+    # missing here. Without this, every package in every group would be
+    # attempted, bisected and recorded as failed -- hundreds of lines of
+    # "command not found" hiding the one fact that matters.
+    if [ "$DRY_RUN" != "1" ] && ! command -v paru >/dev/null; then
+        log_warn "paru is not installed; skipping all package groups"
+        log_warn "install paru, then re-run: install/bootstrap.sh"
+        return 0
+    fi
     # Everything goes through paru, which resolves repo and AUR packages
     # alike. Several optional groups (mobile, work, media) contain AUR-only
     # packages, so a pacman-only path would fail every one of them.
@@ -196,8 +235,13 @@ phase_dotfiles() {
     # Count, not `[ -d "$BACKUP_DIR" ]`: phase_microcode backs loader entries
     # into the same directory and runs first, so on a fresh laptop the
     # directory exists with nothing of the user's in it.
-    [ "$DF_BACKED_UP" -gt 0 ] \
-        && log_warn "$DF_BACKED_UP pre-existing file(s) were moved to $BACKUP_DIR"
+    if [ "$DF_BACKED_UP" -gt 0 ]; then
+        if [ "$DRY_RUN" = "1" ]; then
+            log_warn "$DF_BACKED_UP pre-existing file(s) would be moved to $BACKUP_DIR"
+        else
+            log_warn "$DF_BACKED_UP pre-existing file(s) were moved to $BACKUP_DIR"
+        fi
+    fi
     return 0
 }
 
@@ -272,6 +316,11 @@ Remaining manual steps — none of these can be automated safely:
   3. Copy ~/.aws, ~/.gitconfig-bsale and ~/.gitconfig-pws from the desktop.
   4. Authenticate the CLIs: gh auth login, aws configure, gcloud init.
   5. Open neovim once and let the plugin manager install everything.
+  5b. Hyprland only: the stowed config requires the hyprsplit plugin, which
+      is gitignored and must be cloned separately, and its monitor lines name
+      the desktop's outputs. On a laptop, check `hyprctl monitors` and edit
+      the hl.monitor() lines in ~/.config/hypr/hyprland.lua to match:
+        git clone https://github.com/shezdy/hyprsplit ~/.config/hypr/hyprsplit
   6. Install any optional group you skipped:
        install/bootstrap.sh --groups audio-prod,gaming,media,mobile,server,virt,work,x11
 

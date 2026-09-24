@@ -3,6 +3,9 @@
 # The entries directory is overridable so the tests never touch a real /boot.
 
 BOOTCTL_ENTRIES_DIR="${BOOTCTL_ENTRIES_DIR:-/boot/loader/entries}"
+# Where the microcode image itself must exist. Overridable so the tests can
+# point it at a fixture instead of the real ESP.
+BOOTCTL_ESP="${BOOTCTL_ESP:-/boot}"
 
 # _boot_backup_entry <entry> <backup-dir> <timestamp> [sudo]
 # Never edit a loader entry without a copy of the original first. Prefers the
@@ -78,6 +81,20 @@ boot_add_microcode_initrd() {
     # shellcheck disable=SC2086
     if ! $sudo_cmd test -d "$dir"; then
         log_warn "no loader entry directory at $dir; $manual"
+        return 0
+    fi
+
+    # pacman reporting the package installed is not the same as the image
+    # being on THIS ESP: a reinstalled /boot, a second ESP, or a post-install
+    # hook that failed all leave the package present and the image absent.
+    # systemd-boot refuses to boot an entry naming an initrd that is not
+    # there, so naming it would trade a missing microcode update for an
+    # unbootable machine -- the exact failure phase_microcode's own guard
+    # was added to prevent, reached by the sibling path.
+    local esp="${BOOTCTL_ESP:-/boot}"
+    # shellcheck disable=SC2086
+    if ! $sudo_cmd test -f "$esp/$img"; then
+        log_warn "$img is not on the ESP at $esp; leaving the loader entries alone"
         return 0
     fi
 

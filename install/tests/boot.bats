@@ -12,7 +12,11 @@ teardown() { teardown_tmpdir; }
 setup_entries() {
     ENTRIES="$TEST_TMPDIR/entries"
     BACKUP="$TEST_TMPDIR/backup"
-    mkdir -p "$ENTRIES"
+    # The ESP must hold the microcode image itself: boot_add_microcode_initrd
+    # refuses to name an initrd that is not there.
+    ESP="$TEST_TMPDIR/esp"
+    mkdir -p "$ENTRIES" "$ESP"
+    : > "$ESP/amd-ucode.img"
     cat > "$ENTRIES/arch.conf" <<'EOF'
 title   Arch Linux
 linux   /vmlinuz-linux
@@ -36,6 +40,7 @@ add_ucode() { # [backup-dir]
     bash -c "source '$INSTALL_DIR/lib/log.sh'
              source '$INSTALL_DIR/lib/boot.sh'
              DRY_RUN='${DRY_RUN:-0}' BOOTCTL_ENTRIES_DIR='$ENTRIES' \
+                 BOOTCTL_ESP='${BOOTCTL_ESP:-$ESP}' \
                  boot_add_microcode_initrd amd-ucode.img '${1:-}' 2>&1"
 }
 
@@ -318,4 +323,19 @@ EOF
     [ "$status" -eq 0 ]
     [[ "$output" != *"arch.conf: /amd-ucode.img already loaded"* ]]
     grep -qx 'initrd /amd-ucode.img' "$ENTRIES/arch.conf"
+}
+
+@test "an entry is not told to load a microcode image that is not on the ESP" {
+    # pacman reporting amd-ucode installed does not put the image on THIS ESP
+    # (a reinstalled /boot, a second ESP, a failed post-install hook).
+    # systemd-boot refuses to boot an entry naming a missing initrd, so
+    # writing the line would trade a missing microcode update for a machine
+    # that does not start.
+    setup_entries
+    rm -f "$ESP/amd-ucode.img"
+    local before; before="$(cat "$ENTRIES/arch.conf")"
+    run add_ucode "$BACKUP"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"not on the ESP"* ]]
+    [ "$(cat "$ENTRIES/arch.conf")" = "$before" ]
 }

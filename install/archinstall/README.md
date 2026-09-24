@@ -77,7 +77,18 @@ That dump is also the last thing you see. `archinstall --silent` suppresses
 every confirmation archinstall would otherwise show, so nothing after this
 point asks again before the partitions are written.
 
-Reboot when it finishes, log in as your user, then run stage 1:
+Reboot when it finishes and log in as your user. **You will have no wifi.**
+`network_config: {"type": "nm"}` installs and enables NetworkManager but
+carries no credentials, and the ISO's `iwctl` association died with the
+ramdisk. `iwd` itself arrives in stage 1, which needs the network first, so
+reconnect with `nmcli` before anything else:
+
+```bash
+nmcli device wifi connect "YOUR-SSID" --ask
+ping -c3 archlinux.org
+```
+
+Then run stage 1:
 
 ```bash
 git clone https://github.com/PieroNarciso/Dotfiles.git ~/.dotfiles

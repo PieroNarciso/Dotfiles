@@ -77,25 +77,39 @@ steps in order.
 
   # Run this from the directory holding the creds.json you edited in Step 4.
   pass=$(python3 -c 'import json;print(json.load(open("creds.json"))["encryption_password"])')
+  canary="creds-check-canary-$$"
+  printf '%s\n' "$canary" > /mnt/root/.creds-check-canary
   if [ -z "$pass" ]; then
       echo "STOP: could not read the passphrase -- this check did NOT run"
+  elif ! printf '%s\n' "$canary" | grep -rlFf - /mnt >/dev/null 2>&1; then
+      echo "STOP: the search cannot find its own canary -- /mnt is not searchable"
+      echo "      (not mounted? wrong path? grep erroring?) this check did NOT run"
   elif printf '%s\n' "$pass" | grep -rlFf - /mnt 2>/dev/null; then
       echo "LEAK: the passphrase is on the installed disk (files listed above)"
   else
       echo "clean: passphrase not found anywhere under /mnt"
   fi
-  unset pass
+  rm -f /mnt/root/.creds-check-canary
+  unset pass canary
   ```
 
   Expected: the single line `clean: passphrase not found anywhere under /mnt`.
 
-  Read that line, not the absence of output. An empty pattern makes GNU grep
-  match nothing and exit 1 — identical to a clean result — so if the `python3`
-  call fails (wrong directory, missing key) a silent version of this check
-  would report success without having searched. That is why the passphrase is
-  captured first and the empty case stops you explicitly. The value goes
-  through a shell variable and `printf`, a builtin, so it never reaches any
-  process's argv where `ps` could read it.
+  Read that line, not the absence of output. This check has two ways to look
+  clean without having run, and both are guarded:
+
+  - **Empty pattern.** GNU grep given an empty pattern file matches nothing
+    and exits 1 — indistinguishable from a clean result. So if the `python3`
+    call fails (wrong directory, missing key), the passphrase is captured
+    first and the empty case stops you explicitly.
+  - **Empty haystack.** A `/mnt` that is not mounted, is the wrong path, or
+    that grep cannot read returns exactly the same "no match". So a canary
+    file is planted first and searched for: if the search cannot find a string
+    it just wrote, it has proved nothing about the passphrase either. The
+    canary is removed on the line after.
+
+  The passphrase goes through a shell variable and `printf`, a builtin, so it
+  never reaches any process's argv where `ps` could read it.
 
   Search for the passphrase itself, not for the word "password". On 4.4
   `install.log` carries two benign lines — `INFO - Setting password for
@@ -127,9 +141,27 @@ steps in order.
   accident, but that is a safety net, not a reason to keep the file around —
   if a `creds.json` is ever created inside the repo checkout, `shred -u` it
   instead of deleting it normally.
-- [ ] **Step 6: Reboot, log in, clone the dotfiles repo.** The reboot after
-  stage 0 leaves a bare system — nothing has cloned the repo yet, so do it
-  before running anything else:
+- [ ] **Step 6: Reboot, log in, and get back onto the network.** The `iwctl`
+  association from Step 3 lived on the ISO's ramdisk and died with it. Stage 0
+  installs NetworkManager (`network_config: {"type": "nm"}` in `laptop.json`)
+  and enables it, but it carries **no wifi credentials** — nothing was ever
+  told your SSID or password. On a wifi-only laptop you are offline at this
+  point, and every step from here on needs the network.
+
+  `iwctl` is not available: `iwd` ships in `install/packages/core.txt`, which
+  stage 1 installs, and stage 1 needs the network first. Use `nmcli`:
+
+  ```bash
+  systemctl status NetworkManager     # must be active; if not: sudo systemctl enable --now NetworkManager
+  nmcli device wifi list
+  nmcli device wifi connect "YOUR-SSID" --ask    # --ask keeps the password out of your shell history
+  ping -c3 archlinux.org
+  ```
+
+  Do not continue until `ping` succeeds. On ethernet this is usually already
+  done for you, but check rather than assume.
+- [ ] **Step 6b: Clone the dotfiles repo.** The reboot leaves a bare system —
+  nothing has cloned the repo yet, so do it before running anything else:
 
   ```bash
   git clone https://github.com/PieroNarciso/Dotfiles.git ~/.dotfiles
@@ -164,8 +196,15 @@ steps in order.
   steps below. So read the output for `warn:` lines, and check the one that
   cannot be seen any other way:
 
+  Run it once, to a log you can read afterwards — do not run it a second time
+  just to count warnings, and do not wrap it in `<(...)`: that swallows the
+  manual steps Step 12 depends on, and hides the password prompts `chsh` and
+  `sudo` will ask you for.
+
   ```bash
-  grep -c '^warn:' <(install/bootstrap.sh 2>&1)   # or just watch the run
+  ~/.dotfiles/install/bootstrap.sh 2>&1 | tee ~/bootstrap.log
+  grep -c '^warn:' ~/bootstrap.log     # how many steps warned
+  grep '^warn:' ~/bootstrap.log        # and which ones
   ```
 
   Then log out, log back in, and confirm the shell actually changed:
@@ -176,6 +215,28 @@ steps in order.
 
   `chsh` asks for your password. If you mistyped it the run still exits 0 and
   you stay on bash. Fix it with `chsh -s /usr/bin/zsh` and log in again.
+- [ ] **Step 8b: Reboot, and confirm the machine still boots.** Stage 1 is the
+  only thing in this toolkit that rewrites the systemd-boot loader entries —
+  `phase_microcode` adds the `initrd /amd-ucode.img` (or `intel-`) line. An
+  entry naming an initrd that is not on the ESP does not boot, and you will
+  not find that out at any other point in this checklist.
+
+  ```bash
+  cat /boot/loader/entries/*.conf     # the microcode initrd must come FIRST
+  ls -la /boot/*.img                  # the image it names must actually exist
+  sudo reboot
+  ```
+
+  After it comes back up:
+
+  ```bash
+  journalctl -b | grep -i microcode   # expect an "early: microcode updated" line
+  ```
+
+  If it does not boot: at the systemd-boot menu press `e` and delete the
+  `initrd /*-ucode.img` line to boot once, then look in
+  `~/.dotfiles-backup-*/loader-entries/` — stage 1 copied the original entry
+  there before editing it.
 - [ ] **Step 9: Back up the LUKS header to another machine** (`cryptsetup luksHeaderBackup`).
 - [ ] **Step 10: Verify the laptop-only phases actually fired:**
 
@@ -197,8 +258,13 @@ steps in order.
 
   ```bash
   lspci | grep -iE 'vga|3d controller'
-  pacman -Qq | grep -E 'xf86-video|mesa|nvidia'
+  pacman -Qq | grep -E 'vulkan|xf86-video|nvidia|mesa|intel-media|libva'
   ```
+
+  The pattern has to cover all three groups. An earlier version matched only
+  `xf86-video|mesa|nvidia`, which cannot match a single package in
+  `gpu-intel.txt` — it reported nothing on exactly the hardware it was written
+  to check.
 
   An earlier defect in `hw_gpu_vendor` matched `ati` inside the string "VGA
   compatible controller" and mislabelled every Intel GPU as AMD, so treat
@@ -212,9 +278,19 @@ steps in order.
   - **NVIDIA** (`gpu-nvidia.txt`): `nvidia-open-dkms` installed.
 - [ ] **Step 12: Work through the manual steps the report printed** (SSH keys, SSH remotes, GPG, `~/.aws`, `gh auth login`). `phase_report` in `install/bootstrap.sh` prints the full list at the end of the run — work through everything it names.
 - [ ] **Step 13: Reconcile the repo with what you actually installed.** Run
-  `install/pkg-audit.sh` on the laptop. Expected: the *unlisted* column is
-  empty. Anything there is a package you installed by hand during setup — add
-  it to a group file so the next machine gets it. Compare the archinstall
+  `install/pkg-audit.sh` on the laptop. It prints two columns and they mean
+  different things:
+
+  - ***unlisted*** — installed here, recorded in no group file. Each one is a
+    package you installed by hand during setup; add it to a group file so the
+    next machine gets it.
+  - ***missing*** — listed in a group that applies to this machine, not
+    installed. Usually a package that failed during stage 1; cross-check it
+    against the `warn:` lines in `~/bootstrap.log` from Step 8.
+
+  The audit skips what cannot apply: `optional/` (opt-in by definition), the
+  `gpu-*.txt` for hardware this machine does not have, and `laptop.txt` when
+  there is no battery. It says which ones it skipped. Compare the archinstall
   version you noted in Step 4 against the version pinned in
   `install/archinstall/README.md`; if it differs, update the pinned version
   there. Commit both changes together.
