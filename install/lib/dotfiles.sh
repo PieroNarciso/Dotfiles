@@ -63,5 +63,10 @@ df_stow_repo() {
     mapfile -t pkgs < <(_df_packages "$repo")
     [ "${#pkgs[@]}" -gt 0 ] || { log_warn "no stow packages in $repo"; return 0; }
     log_step "stowing ${#pkgs[@]} package(s) from $repo"
-    run stow --restow --dir="$repo" --target="$target" "${pkgs[@]}"
+    # --no-folding: without it stow replaces a whole directory with one symlink
+    # when the target does not exist yet, so on a fresh machine the first repo
+    # turns ~/.config into a link into its own tree and the second repo aborts
+    # with "existing target is not owned by stow". Real directories with
+    # symlinked leaves let both repos share ~/.config.
+    run stow --restow --no-folding --dir="$repo" --target="$target" "${pkgs[@]}"
 }

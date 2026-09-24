@@ -157,3 +157,36 @@ teardown() { teardown_tmpdir; }
     [ "$status" -eq 0 ]
     [ -f "$TEST_TMPDIR/clone/g" ]
 }
+
+@test "a second repo can stow into .config after the first one claimed it" {
+    # The VM run died here. Stow folds a whole directory into one symlink when
+    # the target does not exist yet, so on a fresh machine the first repo turns
+    # ~/.config into a link to its own tree. The second repo then finds .config
+    # owned by a different stow dir and aborts the run -- taking the shell,
+    # services and report phases with it. A developer's own machine never sees
+    # it: ~/.config is already a real directory there, so stow descends instead
+    # of folding.
+    # Mirror the real split: only the nvim repo ships .config/nvim, so the one
+    # thing the two repos share is the .config directory itself.
+    rm -rf "$REPO/config/.config/nvim"
+    mkdir -p "$REPO/config/.config/hypr"
+    echo "repo hypr" > "$REPO/config/.config/hypr/hyprland.lua"
+    local NVIM="$TEST_TMPDIR/nvim-repo"
+    mkdir -p "$NVIM/nvim-config/.config/nvim"
+    echo "nvim repo" > "$NVIM/nvim-config/.config/nvim/init.lua"
+
+    bash -c "source '$INSTALL_DIR/lib/log.sh'; source '$INSTALL_DIR/lib/dotfiles.sh'; \
+        df_stow_repo '$REPO' '$FAKE_HOME'"
+    run bash -c "source '$INSTALL_DIR/lib/log.sh'; source '$INSTALL_DIR/lib/dotfiles.sh'; \
+        df_stow_repo '$NVIM' '$FAKE_HOME'"
+
+    [ "$status" -eq 0 ]
+    [[ "$output" != *"not owned by stow"* ]]
+    # Both repos reachable through a real .config, not a folded symlink.
+    [ ! -L "$FAKE_HOME/.config" ]
+    [ -d "$FAKE_HOME/.config" ]
+    [ "$(cat "$FAKE_HOME/.config/nvim/init.lua")" = "nvim repo" ]
+    # The first repo's own .config content survives the second repo's stow.
+    [ "$(cat "$FAKE_HOME/.config/hypr/hyprland.lua")" = "repo hypr" ]
+    [ "$(cat "$FAKE_HOME/.zshrc")" = "from repo" ]
+}
