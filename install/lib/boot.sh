@@ -9,12 +9,14 @@ BOOTCTL_ENTRIES_DIR="${BOOTCTL_ENTRIES_DIR:-/boot/loader/entries}"
 # run's backup directory; falls back to a sibling file and says so.
 _boot_backup_entry() {
     local entry="$1" backup="$2" ts="$3" sudo_cmd="${4:-}"
-    # The backup directory lives under $HOME and must stay owned by the user;
-    # loader entries are world-readable, so copying out of /boot needs no sudo.
-    # Only the sibling fallback below writes into /boot and takes $sudo_cmd.
+    # /boot is mode 700 and root-owned on any machine stage 0 installs, so
+    # reading an entry needs sudo; the copy is then chowned back so the
+    # backup directory under $HOME stays owned by the user who ran bootstrap.
+    # shellcheck disable=SC2086
     if [ -n "$backup" ] \
         && run mkdir -p "$backup" \
-        && run cp -a "$entry" "$backup/$(basename "$entry")"; then
+        && run $sudo_cmd cp -a "$entry" "$backup/$(basename "$entry")" \
+        && run $sudo_cmd chown "$(id -un):$(id -gn)" "$backup/$(basename "$entry")"; then
         return 0
     fi
     [ -z "$backup" ] || log_warn "cannot back up into $backup; using $entry.bak-$ts instead"
@@ -36,26 +38,46 @@ boot_add_microcode_initrd() {
     local img="$1" backup="${2:-}"
     local dir="${BOOTCTL_ENTRIES_DIR:-/boot/loader/entries}"
     local manual="add 'initrd /$img' above the first 'initrd /initramfs...' line by hand"
-    local sudo_cmd="sudo"
-    # Tests point BOOTCTL_ENTRIES_DIR at a writable fixture; no sudo there.
-    [ "$dir" = "/boot/loader/entries" ] || sudo_cmd=""
+    # Default: sudo against the real ESP, nothing against a test fixture.
+    # BOOTCTL_SUDO overrides both -- tests use it to point privilege at a
+    # stub, and an operator could use it to force sudo off entirely.
+    local sudo_cmd
+    if [ -n "${BOOTCTL_SUDO+set}" ]; then
+        sudo_cmd="$BOOTCTL_SUDO"
+    elif [ "$dir" = "/boot/loader/entries" ]; then
+        sudo_cmd="sudo"
+    else
+        sudo_cmd=""
+    fi
 
-    if [ ! -d "$dir" ]; then
+    # Probes must NOT go through run(): run() skips execution under DRY_RUN
+    # and a probe that does not run returns a wrong answer. /boot is mode 700
+    # and root-owned on any machine stage 0 installs, so an unprivileged
+    # `[ -d ... ]` here reports "missing" for a directory that is present.
+    # shellcheck disable=SC2086
+    if ! $sudo_cmd test -d "$dir"; then
         log_warn "no loader entry directory at $dir; $manual"
         return 0
     fi
 
     local -a entries=()
     local f
-    for f in "$dir"/*.conf; do
-        # A symlinked entry would be rewritten in place by sed -i, replacing the
-        # link with a plain file and leaving the real entry untouched. Skip it.
-        if [ -L "$f" ]; then
-            log_warn "$(basename "$f") is a symlink; skipped — $manual"
-            continue
-        fi
-        [ -f "$f" ] && entries+=("$f")
-    done
+    # A symlinked entry would be rewritten in place by sed -i, replacing the
+    # link with a plain file and leaving the real entry untouched. Warn and skip.
+    # shellcheck disable=SC2086
+    while IFS= read -r f; do
+        [ -n "$f" ] || continue
+        log_warn "$(basename "$f") is a symlink; skipped — $manual"
+    done < <($sudo_cmd find "$dir" -maxdepth 1 -name '*.conf' -type l 2>/dev/null | sort)
+
+    # find -type f does not follow symlinks, so an entry cannot land in both
+    # this list and the symlink list above.
+    # shellcheck disable=SC2086
+    while IFS= read -r f; do
+        [ -n "$f" ] || continue
+        entries+=("$f")
+    done < <($sudo_cmd find "$dir" -maxdepth 1 -name '*.conf' -type f 2>/dev/null | sort)
+
     if [ "${#entries[@]}" -eq 0 ]; then
         log_warn "no *.conf loader entries in $dir; $manual"
         return 0
@@ -65,7 +87,8 @@ boot_add_microcode_initrd() {
     local entry name
     for entry in "${entries[@]}"; do
         name="$(basename "$entry")"
-        if grep -qE "^initrd[[:space:]]+/$img([[:space:]]*)\$" "$entry"; then
+        # shellcheck disable=SC2086
+        if $sudo_cmd grep -qE "^initrd[[:space:]]+/$img([[:space:]]*)\$" "$entry"; then
             log_info "$name: /$img already loaded"
             continue
         fi
@@ -73,7 +96,8 @@ boot_add_microcode_initrd() {
         # (a UKI stub, a rescue stanza someone hand-wrote). Guessing where the
         # microcode goes in a file we do not understand is how a machine stops
         # booting, so warn and leave it alone.
-        if ! grep -qE '^initrd[[:space:]]+/initramfs' "$entry"; then
+        # shellcheck disable=SC2086
+        if ! $sudo_cmd grep -qE '^initrd[[:space:]]+/initramfs' "$entry"; then
             log_warn "$name: no 'initrd /initramfs...' line; skipped — $manual"
             continue
         fi

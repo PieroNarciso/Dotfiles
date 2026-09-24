@@ -125,3 +125,131 @@ add_ucode() { # [backup-dir]
     [ "$status" -eq 0 ]
     [[ "$output" == *"no *.conf loader entries"* ]]
 }
+
+# archinstall mounts the ESP dmask=0077, so /boot is mode 700 and root-owned;
+# bootstrap.sh runs unprivileged. Mode 000 reproduces that precisely without
+# needing real root: only root can bypass it, so an inline `[ -d "$dir" ]`
+# (or a glob, or a plain grep/sed) fails exactly the way it does on the real
+# ESP. BOOTCTL_SUDO points at a stub that opens the directory, runs the real
+# command, and closes it again -- standing in for what sudo would do for real.
+# This is the primary regression test: it needs no privilege at all, so it
+# always runs, unlike the real-sudo tests below.
+@test "an entries directory untraversable by its own owner is still processed" {
+    local dir="$TEST_TMPDIR/esp/loader/entries"
+    mkdir -p "$dir"
+    cat > "$dir/arch.conf" <<'EOF'
+title	Arch Linux
+linux	/vmlinuz-linux
+initrd	/initramfs-linux.img
+options	rw
+EOF
+    # Order matters: chmod the child before the parent, or the second chmod
+    # cannot even resolve its own path. Same order in reverse to undo it.
+    chmod 000 "$dir"
+    chmod 000 "$TEST_TMPDIR/esp"
+
+    local stub="$TEST_TMPDIR/sudo-stub.sh"
+    cat > "$stub" <<STUB
+#!/usr/bin/env bash
+chmod 755 '$TEST_TMPDIR/esp' '$dir'
+"\$@"
+rc=\$?
+chmod 000 '$dir'
+chmod 000 '$TEST_TMPDIR/esp'
+exit "\$rc"
+STUB
+    chmod +x "$stub"
+
+    run bash -c "
+        source '$INSTALL_DIR/lib/log.sh'
+        source '$INSTALL_DIR/lib/boot.sh'
+        BOOTCTL_ENTRIES_DIR='$dir' BOOTCTL_SUDO='$stub' \
+            boot_add_microcode_initrd amd-ucode.img '$TEST_TMPDIR/backup' 2>&1
+    "
+    # Clean up before any assertion can fail and skip the chmod.
+    chmod 755 "$TEST_TMPDIR/esp" "$dir"
+
+    [ "$status" -eq 0 ]
+    [[ "$output" != *"no loader entry directory"* ]]
+    [[ "$output" != *"no *.conf loader entries"* ]]
+
+    # The microcode line must be first, above the initramfs line.
+    local ucode_line initramfs_line
+    ucode_line=$(grep -n 'amd-ucode' "$dir/arch.conf" | cut -d: -f1)
+    initramfs_line=$(grep -n 'initramfs-linux.img' "$dir/arch.conf" | cut -d: -f1)
+    [ -n "$ucode_line" ]
+    [ -n "$initramfs_line" ]
+    [ "$ucode_line" -lt "$initramfs_line" ]
+}
+
+# The real-world check: an actual root-owned mode-700 directory via real
+# sudo. Skips without passwordless sudo -- this machine has none, so it is
+# not the evidence for the fix, the test above is. It is kept so the
+# machinery is exercised against genuine privilege whenever that is available.
+@test "a root-owned mode-700 entries directory is still processed (real sudo)" {
+    sudo -n true 2>/dev/null || skip "needs passwordless sudo"
+
+    local dir="$TEST_TMPDIR/rootesp/loader/entries"
+    sudo mkdir -p "$dir"
+    sudo tee "$dir/arch.conf" >/dev/null <<'EOF'
+title	Arch Linux
+linux	/vmlinuz-linux
+initrd	/initramfs-linux.img
+options	rw
+EOF
+    sudo chmod 700 "$TEST_TMPDIR/rootesp" "$dir"
+    sudo chmod 600 "$dir/arch.conf"
+
+    run bash -c "
+        source '$INSTALL_DIR/lib/log.sh'
+        source '$INSTALL_DIR/lib/boot.sh'
+        BOOTCTL_ENTRIES_DIR='$dir' BOOTCTL_SUDO=sudo \
+            boot_add_microcode_initrd amd-ucode.img '$TEST_TMPDIR/backup' 2>&1
+    "
+    [ "$status" -eq 0 ]
+    [[ "$output" != *"no loader entry directory"* ]]
+    [[ "$output" != *"no *.conf loader entries"* ]]
+
+    run sudo sed -n '1,10p' "$dir/arch.conf"
+    [[ "$output" == *"initrd /amd-ucode.img"* ]]
+    local ucode_line initramfs_line
+    ucode_line=$(sudo grep -n 'amd-ucode' "$dir/arch.conf" | cut -d: -f1)
+    initramfs_line=$(sudo grep -n 'initramfs-linux.img' "$dir/arch.conf" | cut -d: -f1)
+    [ "$ucode_line" -lt "$initramfs_line" ]
+
+    # The backup must exist and be owned by the invoking user, not root.
+    run bash -c "ls '$TEST_TMPDIR/backup'/*/arch.conf"
+    [ "$status" -eq 0 ]
+    run bash -c "stat -c %U '$TEST_TMPDIR/backup'/*/arch.conf"
+    [ "$output" = "$(id -un)" ]
+
+    sudo rm -rf "$TEST_TMPDIR/rootesp"
+}
+
+@test "a root-owned entries directory is left byte-identical by a dry run (real sudo)" {
+    sudo -n true 2>/dev/null || skip "needs passwordless sudo"
+
+    local dir="$TEST_TMPDIR/rootesp2/loader/entries"
+    sudo mkdir -p "$dir"
+    sudo tee "$dir/arch.conf" >/dev/null <<'EOF'
+title	Arch Linux
+linux	/vmlinuz-linux
+initrd	/initramfs-linux.img
+EOF
+    sudo chmod 700 "$TEST_TMPDIR/rootesp2" "$dir"
+    local before
+    before=$(sudo md5sum "$dir/arch.conf" | cut -d' ' -f1)
+
+    run bash -c "
+        source '$INSTALL_DIR/lib/log.sh'
+        source '$INSTALL_DIR/lib/boot.sh'
+        DRY_RUN=1 BOOTCTL_ENTRIES_DIR='$dir' BOOTCTL_SUDO=sudo \
+            boot_add_microcode_initrd amd-ucode.img '$TEST_TMPDIR/backup2' 2>&1
+    "
+    [ "$status" -eq 0 ]
+    local after
+    after=$(sudo md5sum "$dir/arch.conf" | cut -d' ' -f1)
+    [ "$before" = "$after" ]
+
+    sudo rm -rf "$TEST_TMPDIR/rootesp2"
+}

@@ -92,7 +92,20 @@ phase_microcode() {
         log_info "$ucode already installed"
     else
         run sudo pacman -S --needed --noconfirm "$ucode"
-        run sudo bootctl update || log_warn "bootctl update failed; check the boot entry by hand"
+        # bootctl update exits 1 when the installed loader is already current,
+        # which is the normal case and not a failure. It is not load-bearing
+        # for microcode either -- it refreshes the systemd-boot binary and
+        # never touches loader entries, which is what
+        # boot_add_microcode_initrd is for.
+        local bootctl_out
+        if bootctl_out="$(run sudo bootctl update 2>&1)"; then
+            [ -z "$bootctl_out" ] || log_info "$bootctl_out"
+        elif [[ "$bootctl_out" == *"same boot loader version in place already"* ]]; then
+            log_info "systemd-boot already current"
+        else
+            log_warn "bootctl update failed; check the boot entry by hand"
+            log_warn "$bootctl_out"
+        fi
     fi
     # Installing the package only drops the image into /boot. The microcode is
     # loaded only when a loader entry names it, and `bootctl update` refreshes
