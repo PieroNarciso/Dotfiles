@@ -105,13 +105,13 @@ print('CLEAN' if 'disk_config' not in base else 'MUTATED')
     [ "$output" = "CLEAN" ]
 }
 
-@test "the committed laptop-luks.json no longer carries an empty encryption block" {
+@test "the committed base config carries no encryption block at all" {
     REPO="$(cd "$BATS_TEST_DIRNAME/../.." && pwd)"
     run python3 -c "
 import json, sys
 cfg = json.load(open(sys.argv[1]))
 enc = cfg.get('disk_encryption')
 print('EMPTY_PARTITIONS' if enc is not None and not enc.get('partitions') else 'OK')
-" "$REPO/install/archinstall/laptop-luks.json"
+" "$REPO/install/archinstall/laptop.json"
     [ "$output" = "OK" ]
 }

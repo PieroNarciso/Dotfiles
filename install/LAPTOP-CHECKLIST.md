@@ -28,7 +28,7 @@ steps in order.
 
   ```bash
   pacman -Sy archinstall
-  curl -LO https://raw.githubusercontent.com/PieroNarciso/Dotfiles/main/install/archinstall/laptop-luks.json
+  curl -LO https://raw.githubusercontent.com/PieroNarciso/Dotfiles/main/install/archinstall/laptop.json
   curl -LO https://raw.githubusercontent.com/PieroNarciso/Dotfiles/main/install/archinstall/creds.json.example
   curl -LO https://raw.githubusercontent.com/PieroNarciso/Dotfiles/main/install/archinstall/make-disk-config.py
   mv creds.json.example creds.json
@@ -45,7 +45,7 @@ steps in order.
   ```bash
   lsblk
   python make-disk-config.py --device /dev/nvme0n1 --encrypt \
-      --base laptop-luks.json -o install-config.json
+      --base laptop.json -o install-config.json
   archinstall --config install-config.json --creds creds.json --silent
   ```
 
@@ -68,12 +68,28 @@ steps in order.
 
   ```bash
   ls -la /mnt/var/log/archinstall/
-  python3 -c 'import json;print(json.load(open("creds.json"))["encryption_password"])' \
-    | grep -rlFf - /mnt 2>/dev/null
+
+  # Run this from the directory holding the creds.json you edited in Step 4.
+  pass=$(python3 -c 'import json;print(json.load(open("creds.json"))["encryption_password"])')
+  if [ -z "$pass" ]; then
+      echo "STOP: could not read the passphrase -- this check did NOT run"
+  elif printf '%s\n' "$pass" | grep -rlFf - /mnt 2>/dev/null; then
+      echo "LEAK: the passphrase is on the installed disk (files listed above)"
+  else
+      echo "clean: passphrase not found anywhere under /mnt"
+  fi
+  unset pass
   ```
 
-  Expected: nothing. The passphrase is piped in rather than interpolated, so
-  it never appears in `grep`'s argv where `ps` would show it.
+  Expected: the single line `clean: passphrase not found anywhere under /mnt`.
+
+  Read that line, not the absence of output. An empty pattern makes GNU grep
+  match nothing and exit 1 — identical to a clean result — so if the `python3`
+  call fails (wrong directory, missing key) a silent version of this check
+  would report success without having searched. That is why the passphrase is
+  captured first and the empty case stops you explicitly. The value goes
+  through a shell variable and `printf`, a builtin, so it never reaches any
+  process's argv where `ps` could read it.
 
   Search for the passphrase itself, not for the word "password". On 4.4
   `install.log` carries two benign lines — `INFO - Setting password for

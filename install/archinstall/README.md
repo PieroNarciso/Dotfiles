@@ -10,11 +10,16 @@ against that release before trusting them.
 hardware.** Install these same configs end to end in a UEFI VM first — see
 Step 1 of [`install/LAPTOP-CHECKLIST.md`](../LAPTOP-CHECKLIST.md).
 
-Pick the config:
+There is one base config, `laptop.json`. It carries everything that is not
+disk layout: hostname, locale, kernels, packages, bootloader.
 
-- `laptop.json` — plain ext4 root. Use on machines that never leave the house.
-- `laptop-luks.json` — LUKS2-encrypted root, unencrypted `/boot`. Use on the
-  laptop.
+**Encryption is not in that file.** It comes from the `--encrypt` flag you pass
+to `make-disk-config.py`, which is what writes the `disk_encryption` block
+against the partition it just declared. There used to be a second file named
+`laptop-luks.json`; it was removed because it had become byte-identical to this
+one, and a name ending in `-luks` that does not itself encrypt anything is the
+worst kind of documentation — you would have trusted it and got a plaintext
+disk. Pass `--encrypt`, or you get plain ext4.
 
 **The LUKS passphrase cannot be recovered. If you forget it the data is gone.**
 Put it in your password manager *before* you start the install. After the first
@@ -48,7 +53,7 @@ Boot the Arch ISO, connect to the network (`iwctl` for wifi), then:
 
 ```bash
 pacman -Sy archinstall
-curl -LO https://raw.githubusercontent.com/PieroNarciso/Dotfiles/main/install/archinstall/laptop-luks.json
+curl -LO https://raw.githubusercontent.com/PieroNarciso/Dotfiles/main/install/archinstall/laptop.json
 curl -LO https://raw.githubusercontent.com/PieroNarciso/Dotfiles/main/install/archinstall/creds.json.example
 curl -LO https://raw.githubusercontent.com/PieroNarciso/Dotfiles/main/install/archinstall/make-disk-config.py
 mv creds.json.example creds.json
@@ -56,7 +61,7 @@ mv creds.json.example creds.json
 
 lsblk    # find the target disk and read it twice
 python make-disk-config.py --device /dev/nvme0n1 --encrypt \
-    --base laptop-luks.json -o install-config.json
+    --base laptop.json -o install-config.json
 
 archinstall --config install-config.json --creds creds.json --silent
 ```
