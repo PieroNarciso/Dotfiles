@@ -253,3 +253,51 @@ EOF
 
     sudo rm -rf "$TEST_TMPDIR/rootesp2"
 }
+
+@test "a dry run never blocks on a sudo password prompt" {
+    # The D4 fix moved the probes off run() so they execute under DRY_RUN --
+    # which on the real ESP meant a bare `sudo test -d` with no cached
+    # credential, i.e. a password prompt in the mode that promises to change
+    # nothing. The VM could not catch this: the harness had
+    # `Defaults:piero !authenticate`, so sudo never prompted there.
+    if sudo -n true 2>/dev/null; then
+        skip "passwordless sudo here; this test needs sudo to require a password"
+    fi
+    run timeout 10 bash -c "source '$INSTALL_DIR/lib/log.sh'; source '$INSTALL_DIR/lib/boot.sh'; \
+        DRY_RUN=1 BOOTCTL_ENTRIES_DIR=/boot/loader/entries \
+        boot_add_microcode_initrd amd-ucode.img '' < /dev/null 2>&1"
+    # 124 is timeout's "still running" -- that is the hang this guards against.
+    [ "$status" -ne 124 ]
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"needs a sudo password"* ]]
+    # And it must not print the false warning D4 existed to remove.
+    [[ "$output" != *"no loader entry directory"* ]]
+}
+
+@test "the backup copy is chowned back to the invoking user" {
+    # The real-sudo test that would cover ownership skips without passwordless
+    # sudo, and the mode-000 fixture cannot catch it either: there the entry is
+    # already owned by the test user, so the copy comes out user-owned whether
+    # or not the chown runs. Deleting the chown from _boot_backup_entry left
+    # the whole suite green. Observing the privileged calls through the
+    # BOOTCTL_SUDO seam tests it with no root at all.
+    local dir="$BATS_TEST_TMPDIR/entries" log="$BATS_TEST_TMPDIR/privileged.log"
+    mkdir -p "$dir" "$BATS_TEST_TMPDIR/backup"
+    printf 'title Arch\nlinux /vmlinuz-linux\ninitrd /initramfs-linux.img\n' \
+        > "$dir/arch.conf"
+    cat > "$BATS_TEST_TMPDIR/sudo-stub" <<STUB
+#!/usr/bin/env bash
+echo "\$@" >> "$log"
+exec "\$@"
+STUB
+    chmod +x "$BATS_TEST_TMPDIR/sudo-stub"
+
+    run bash -c "source '$INSTALL_DIR/lib/log.sh'; source '$INSTALL_DIR/lib/boot.sh'; \
+        DRY_RUN=0 BOOTCTL_ENTRIES_DIR='$dir' BOOTCTL_SUDO='$BATS_TEST_TMPDIR/sudo-stub' \
+        boot_add_microcode_initrd amd-ucode.img '$BATS_TEST_TMPDIR/backup' 2>&1"
+    [ "$status" -eq 0 ]
+    # The backup was taken with privilege and then handed back to the user.
+    grep -q "^cp -a $dir/arch.conf " "$log"
+    grep -q "^chown $(id -un):$(id -gn) $BATS_TEST_TMPDIR/backup/arch.conf$" "$log"
+    [ -f "$BATS_TEST_TMPDIR/backup/arch.conf" ]
+}

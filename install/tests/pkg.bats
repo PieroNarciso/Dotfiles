@@ -84,6 +84,9 @@ FAKE
         pkg_missing() { printf '%s\n' good1 bad good2; }
         # Fails the whole-group call and the single call for 'bad'.
         fake() {
+            # Log every attempt, not just the successes: the batches that
+            # fail are exactly the evidence of bisection.
+            echo ATTEMPT \"\$@\"
             for a in \"\$@\"; do
                 [ \"\$a\" = bad ] && return 1
             done
@@ -96,11 +99,18 @@ FAKE
         echo \"FAILED=\${PKG_FAILED[*]}\"
     "
     [ "$status" -eq 0 ]
-    # The good ones still got installed individually after the group failed.
+    # The good ones still got installed after the group failed.
     [[ "$output" == *"INSTALLED --needed --noconfirm good1"* ]]
     [[ "$output" == *"INSTALLED --needed --noconfirm good2"* ]]
     # Only the genuinely bad package is recorded.
     [[ "$output" == *"FAILED=bad"* ]]
+    # The three assertions above all hold for a flat one-at-a-time loop too,
+    # so on their own they cannot tell the shipped bisection from the design
+    # it replaced. Bisection's signature is that after the whole group fails
+    # it retries HALVES: good1 alone, then {bad,good2} together. A flat loop
+    # never attempts a multi-package batch, so this line is what gives the
+    # test teeth against the pre-17c9038 code.
+    [[ "$output" == *"ATTEMPT --needed --noconfirm bad good2"* ]]
 }
 
 @test "an up-to-date group invokes the installer not at all" {

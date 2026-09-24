@@ -90,8 +90,14 @@ phase_microcode() {
     fi
     if [ -z "$(pkg_missing "$ucode")" ]; then
         log_info "$ucode already installed"
+    elif ! run sudo pacman -S --needed --noconfirm "$ucode"; then
+        # Return, do not fall through: boot_add_microcode_initrd would add
+        # `initrd /$ucode.img` for an image that was never installed, and
+        # systemd-boot fails to boot an entry naming a missing initrd. A
+        # missing microcode update is survivable; an unbootable machine is not.
+        log_warn "could not install $ucode; leaving the loader entries alone"
+        return 0
     else
-        run sudo pacman -S --needed --noconfirm "$ucode"
         # bootctl update exits 1 when the installed loader is already current,
         # which is the normal case and not a failure. It is not load-bearing
         # for microcode either -- it refreshes the systemd-boot binary and

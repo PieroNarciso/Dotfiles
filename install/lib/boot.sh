@@ -41,13 +41,30 @@ boot_add_microcode_initrd() {
     # Default: sudo against the real ESP, nothing against a test fixture.
     # BOOTCTL_SUDO overrides both -- tests use it to point privilege at a
     # stub, and an operator could use it to force sudo off entirely.
-    local sudo_cmd
+    local sudo_cmd probe_blocked=0
     if [ -n "${BOOTCTL_SUDO+set}" ]; then
         sudo_cmd="$BOOTCTL_SUDO"
     elif [ "$dir" = "/boot/loader/entries" ]; then
-        sudo_cmd="sudo"
+        if [ "${DRY_RUN:-0}" = "1" ]; then
+            # phase_preflight deliberately skips `sudo -v` under DRY_RUN, so
+            # there is no cached credential here. A bare `sudo` probe would
+            # sit on a password prompt -- invisible if the operator piped the
+            # dry run to a file, and a hang in the one mode whose whole
+            # promise is that it changes nothing.
+            sudo_cmd="sudo -n"
+            sudo -n true 2>/dev/null || probe_blocked=1
+        else
+            sudo_cmd="sudo"
+        fi
     else
         sudo_cmd=""
+    fi
+
+    # Saying so beats guessing: an unprivileged probe would report the
+    # directory missing and print D4's false warning back again.
+    if [ "$probe_blocked" = 1 ]; then
+        log_info "dry run: reading $dir needs a sudo password; the real run will inspect it"
+        return 0
     fi
 
     # Probes must NOT go through run(): run() skips execution under DRY_RUN

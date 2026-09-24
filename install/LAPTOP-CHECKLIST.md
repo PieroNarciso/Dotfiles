@@ -28,6 +28,7 @@ steps in order.
 
   ```bash
   pacman -Sy archinstall
+  archinstall --version    # write this number down on paper or in your phone
   curl -LO https://raw.githubusercontent.com/PieroNarciso/Dotfiles/main/install/archinstall/laptop.json
   curl -LO https://raw.githubusercontent.com/PieroNarciso/Dotfiles/main/install/archinstall/creds.json.example
   curl -LO https://raw.githubusercontent.com/PieroNarciso/Dotfiles/main/install/archinstall/make-disk-config.py
@@ -53,10 +54,10 @@ steps in order.
   wrong disk. Check the device against `lsblk` rather than reflexively
   retyping it.
 
-  Before you do, run `archinstall --version` on the ISO and write the number
-  down — on paper or in your phone. The repo is not cloned yet at this point
-  and you are on a ramdisk, so you cannot record it here; Step 13 compares it
-  against the version pinned in `install/archinstall/README.md`.
+  Record the `archinstall --version` number off-machine: the repo is not
+  cloned yet and you are on a ramdisk, so there is nowhere here to keep it.
+  Step 13 compares it against the version pinned in
+  `install/archinstall/README.md`.
 - [ ] **Step 5: Verify no credentials leaked into the installed system before rebooting.**
   `creds.json` holds the LUKS passphrase and both account passwords in
   plaintext. It lives on the ISO's ramdisk, so it dies when the machine
@@ -151,6 +152,25 @@ steps in order.
   Stage 1 moves any pre-existing dotfile that conflicts with the repo into a
   timestamped `~/.dotfiles-backup-*` directory instead of deleting it — if
   something looks missing after the first run, check there first.
+
+  **Exit 0 is not proof the run did everything.** Three steps warn and carry
+  on rather than aborting — `chsh`, enabling a service, and the nvm installer
+  — because a failure there used to kill the run before it printed the manual
+  steps below. So read the output for `warn:` lines, and check the one that
+  cannot be seen any other way:
+
+  ```bash
+  grep -c '^warn:' <(install/bootstrap.sh 2>&1)   # or just watch the run
+  ```
+
+  Then log out, log back in, and confirm the shell actually changed:
+
+  ```bash
+  echo "$SHELL"          # expect /usr/bin/zsh
+  ```
+
+  `chsh` asks for your password. If you mistyped it the run still exits 0 and
+  you stay on bash. Fix it with `chsh -s /usr/bin/zsh` and log in again.
 - [ ] **Step 9: Back up the LUKS header to another machine** (`cryptsetup luksHeaderBackup`).
 - [ ] **Step 10: Verify the laptop-only phases actually fired:**
 
