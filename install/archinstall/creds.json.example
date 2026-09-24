@@ -7,5 +7,5 @@
     }
   ],
   "!root-password": "CHANGE-ME",
-  "!encryption-password": "CHANGE-ME-ONLY-FOR-THE-LUKS-CONFIG"
+  "encryption_password": "CHANGE-ME-ONLY-FOR-THE-LUKS-CONFIG"
 }

@@ -11,7 +11,7 @@
   "network_config": { "type": "nm" },
   "ntp": true,
   "packages": ["git", "stow", "zsh", "sudo", "openssh", "vim"],
-  "parallel downloads": 5,
+  "parallel_downloads": 5,
   "profile_config": {
     "gfx_driver": null,
     "greeter": null,
