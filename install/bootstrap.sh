@@ -22,6 +22,9 @@ _on_interrupt() {
 }
 trap _on_interrupt INT TERM
 
+# Things the run could not do that the operator must. phase_report prints it.
+BOOTSTRAP_MANUAL=()
+
 DRY_RUN=0
 SKIP_DOTFILES=0
 # NOTE: not GROUPS — that is a bash special variable and assignments to it
@@ -146,10 +149,25 @@ phase_pacman_conf() {
         # and archinstall does not enable it.
         log_info "enabling multilib in $conf"
         run $sudo_cmd sed -i 's/^#\[multilib\]/[multilib]/; /^\[multilib\]/{n;s/^#Include/Include/}' "$conf"
-        # Warn, do not abort: this is phase 2 of 10 and set -e would end the
-        # run here with no error line and no report of what never happened.
-        run $sudo_cmd pacman -Syu --noconfirm \
-            || log_warn "system upgrade failed; multilib is on but the package databases may be stale"
+    fi
+
+    # Outside the branch above, deliberately. Enabling multilib adds a repo
+    # whose database has never been downloaded, and a FAILED upgrade has to be
+    # retried on the next run -- if this sat in the else, a re-run would take
+    # the "already enabled" path and never sync again, leaving every lib32-*
+    # in the gpu-*.txt groups unresolvable.
+    #
+    # Warn rather than abort: this is phase 2 of 10 and set -e would end the
+    # run with no error line and no report of what never happened.
+    if ! run $sudo_cmd pacman -Syu --noconfirm; then
+        log_warn "pacman -Syu failed"
+        # The dangerous half is a sync that SUCCEEDED before the upgrade did:
+        # fresh databases on an un-upgraded system, and the ~300 packages the
+        # next phase installs are then built against libraries this machine
+        # does not have. That is a partial upgrade, and it breaks Arch.
+        log_warn "do NOT ignore this: installing packages now risks a partial upgrade"
+        log_warn "fix it first, in another terminal or after this run: sudo pacman -Syu"
+        BOOTSTRAP_MANUAL+=("run 'sudo pacman -Syu' — the upgrade during bootstrap failed, and packages installed after it may be built against libraries this system does not have")
     fi
     grep -q '^Color' "$conf" || run $sudo_cmd sed -i 's/^#Color/Color/' "$conf"
     grep -q '^ParallelDownloads' "$conf" || run $sudo_cmd sed -i 's/^#ParallelDownloads.*/ParallelDownloads = 5/' "$conf"
@@ -304,6 +322,13 @@ phase_report() {
     log_step "report"
     if [ "${#PKG_FAILED[@]}" -gt 0 ]; then
         log_warn "packages that failed to install: ${PKG_FAILED[*]}"
+    fi
+    if [ "${#BOOTSTRAP_MANUAL[@]}" -gt 0 ]; then
+        log_warn "steps this run could not complete — do these yourself:"
+        local m
+        for m in "${BOOTSTRAP_MANUAL[@]}"; do
+            log_warn "  - $m"
+        done
     fi
     cat >&2 <<'MANUAL'
 

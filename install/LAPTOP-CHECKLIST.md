@@ -190,10 +190,22 @@ steps in order.
 
   ```bash
   systemctl status NetworkManager     # must be active; if not: sudo systemctl enable --now NetworkManager
-  nmcli device wifi list
-  nmcli device wifi connect "YOUR-SSID" --ask    # --ask keeps the password out of your shell history
+  sudo nmcli device wifi list
+  sudo nmcli --ask device wifi connect "YOUR-SSID"
   ping -c3 archlinux.org
   ```
+
+  Two details that both matter here, because this is the one recipe standing
+  between you and an offline laptop:
+
+  - **`--ask` goes before `device`.** `nmcli [OPTIONS] OBJECT { COMMAND }` —
+    it is a global option, and in an argument position nmcli rejects it. It is
+    what keeps the wifi password out of your shell history, so the natural
+    retry after a syntax error is the one that leaks it.
+  - **`sudo`.** Letting a non-root user control networking needs polkit, which
+    is only an *optional* dependency of networkmanager and is not in
+    `laptop.json`'s package list. It first arrives with `polkit-gnome` in
+    stage 1 — which needs the network this step is creating.
 
   Do not continue until `ping` succeeds. On ethernet this is usually already
   done for you, but check rather than assume.

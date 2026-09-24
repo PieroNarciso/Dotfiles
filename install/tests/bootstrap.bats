@@ -230,3 +230,50 @@ report" ]
     [[ "$output" == *"interrupted"* ]]
     [[ "$output" != *"SHOULD-NOT-REACH"* ]]
 }
+
+@test "a failed system upgrade warns, continues, and is named in the report" {
+    # set -e used to end the run here, at phase 2 of 10, with no error line
+    # and nothing to say which of the eight later phases never happened.
+    printf '#[multilib]\n#Include = /etc/pacman.d/mirrorlist\n#Color\n#ParallelDownloads = 5\n' \
+        > "$BATS_TEST_TMPDIR/pacman.conf"
+    mkdir -p "$BATS_TEST_TMPDIR/bin"
+    cat > "$BATS_TEST_TMPDIR/bin/pacman" <<'STUB'
+#!/usr/bin/env bash
+[ "$1" = "-Syu" ] && exit 1
+exit 0
+STUB
+    chmod +x "$BATS_TEST_TMPDIR/bin/pacman"
+    run bash -c "
+        cd '$BATS_TEST_DIRNAME/../..'
+        PATH='$BATS_TEST_TMPDIR/bin:$PATH'
+        source install/bootstrap.sh
+        # main() sources the libs; sourcing bootstrap.sh alone gives only
+        # log.sh, and phase_report reads PKG_FAILED out of pkg.sh.
+        source install/lib/pkg.sh
+        BOOTSTRAP_PACMAN_CONF='$BATS_TEST_TMPDIR/pacman.conf' phase_pacman_conf
+        echo PHASE_RETURNED=\$?
+        phase_report
+    "
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"PHASE_RETURNED=0"* ]]
+    [[ "$output" == *"partial upgrade"* ]]
+    # The report is the only place the operator learns about it afterwards.
+    [[ "$output" == *"sudo pacman -Syu"* ]]
+}
+
+@test "the upgrade is retried on a run where multilib is already enabled" {
+    # The retry used to live inside the "enabling multilib" branch, so a
+    # second run took the "already enabled" path and never synced again --
+    # leaving the just-added multilib database undownloaded and every
+    # lib32-* package in the gpu groups unresolvable.
+    printf '[multilib]\nInclude = /etc/pacman.d/mirrorlist\nColor\nParallelDownloads = 5\n' \
+        > "$BATS_TEST_TMPDIR/pacman.conf"
+    run bash -c "
+        cd '$BATS_TEST_DIRNAME/../..'
+        source install/bootstrap.sh
+        DRY_RUN=1 BOOTSTRAP_PACMAN_CONF='$BATS_TEST_TMPDIR/pacman.conf' phase_pacman_conf
+    "
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"multilib already enabled"* ]]
+    [[ "$output" == *"pacman -Syu"* ]]
+}

@@ -11,16 +11,41 @@ setup() {
     CHECKLIST="$INSTALL_DIR/LAPTOP-CHECKLIST.md"
     MNT="$TEST_TMPDIR/mnt"
     mkdir -p "$MNT/root" "$MNT/var/log/archinstall"
+    # These tests execute text pulled out of a document. Sandbox $HOME so a
+    # runaway extraction cannot reach the real one.
+    export HOME="$TEST_TMPDIR/home"; mkdir -p "$HOME"
     cd "$TEST_TMPDIR"
 }
 teardown() { teardown_tmpdir; }
 
-# Pull the block verbatim out of the checklist, then point it at the fixture
+# Pull a block verbatim out of the checklist, then point it at the fixture
 # instead of the real /mnt. If the checklist changes, these tests change with
 # it -- which is the point.
+#
+# The validation is not optional. `sed -n '/a/,/b/p'` runs to END OF FILE
+# whenever its end anchor stops matching, and these tests pipe the result
+# into `bash -c`. The rest of this checklist contains `sudo reboot` and a
+# real `~/.dotfiles/install/bootstrap.sh` invocation -- so a one-word edit to
+# the document could turn the test suite into something that stows dotfiles
+# over the developer's home directory and reboots the machine. Refuse to
+# return anything unless the block ended where it was supposed to.
+_extract_block() { # <start-regex> <end-regex> <max-lines>
+    local out
+    out="$(sed -n "/$1/,/$2/p" "$CHECKLIST")"
+    [ -n "$out" ] || { echo "EXTRACTION FAILED: start anchor never matched" >&2; return 1; }
+    printf '%s\n' "$out" | tail -n1 | grep -qE "$2" || {
+        echo "EXTRACTION FAILED: end anchor never matched; sed ran to EOF" >&2
+        return 1
+    }
+    [ "$(printf '%s\n' "$out" | wc -l)" -le "$3" ] || {
+        echo "EXTRACTION FAILED: block longer than $3 lines" >&2
+        return 1
+    }
+    printf '%s\n' "$out" | sed -e 's/^  //' -e "s#/mnt#$MNT#g"
+}
+
 extract_check() {
-    sed -n '/^  pass=\$(python3/,/^  unset pass canary$/p' "$CHECKLIST" \
-        | sed -e 's/^  //' -e "s#/mnt#$MNT#g"
+    _extract_block '^  pass=\$(python3' '^  unset pass canary$' 40
 }
 
 @test "the extraction finds the check at all" {
@@ -84,9 +109,19 @@ extract_check() {
 # on the installed disk — had none of the first one's guards: its stated
 # "Expected: nothing" is exactly what an unmounted /mnt produces.
 extract_find_check() {
-    sed -n '/^  unset pass canary$/,$p' "$CHECKLIST" \
-        | sed -n '/^  canary="creds-check-canary/,/^  unset canary found$/p' \
-        | sed -e 's/^  //' -e "s#/mnt#$MNT#g"
+    local out
+    out="$(sed -n '/^  unset pass canary$/,$p' "$CHECKLIST" \
+        | sed -n '/^  canary="creds-check-canary/,/^  unset canary found$/p')"
+    [ -n "$out" ] || { echo "EXTRACTION FAILED: start anchor never matched" >&2; return 1; }
+    printf '%s\n' "$out" | tail -n1 | grep -q '^  unset canary found$' || {
+        echo "EXTRACTION FAILED: end anchor never matched; sed ran to EOF" >&2
+        return 1
+    }
+    [ "$(printf '%s\n' "$out" | wc -l)" -le 40 ] || {
+        echo "EXTRACTION FAILED: block longer than 40 lines" >&2
+        return 1
+    }
+    printf '%s\n' "$out" | sed -e 's/^  //' -e "s#/mnt#$MNT#g"
 }
 
 @test "the second search is extracted and is not the first one" {
@@ -133,4 +168,30 @@ extract_find_check() {
         echo "$offenders"
     fi
     [ -z "$offenders" ]
+}
+
+@test "a runaway extraction is refused instead of executed" {
+    # The whole reason the extractors validate: with the end anchor gone, sed
+    # returns the remaining ~270 lines of the checklist, and these tests feed
+    # their output straight to `bash -c`. That text contains `sudo reboot`.
+    run _extract_block '^  pass=\$(python3' '^  unset pass canary-NO-SUCH-ANCHOR$' 40
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"EXTRACTION FAILED"* ]]
+    [[ "$output" != *"reboot"* ]]
+    [[ "$output" != *"bootstrap.sh"* ]]
+}
+
+@test "the extracted block never contains a destructive command" {
+    # Belt and braces: whatever the anchors do, what we execute must be the
+    # credential check and nothing else.
+    run extract_check
+    [ "$status" -eq 0 ]
+    [[ "$output" != *"reboot"* ]]
+    [[ "$output" != *"bootstrap.sh"* ]]
+    [[ "$output" != *"cryptsetup"* ]]
+    [[ "$output" != *"archinstall"* ]]
+    run extract_find_check
+    [ "$status" -eq 0 ]
+    [[ "$output" != *"reboot"* ]]
+    [[ "$output" != *"bootstrap.sh"* ]]
 }
