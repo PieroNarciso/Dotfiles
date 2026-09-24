@@ -23,9 +23,24 @@ steps in order.
   the disk is not disposable. Do not start Step 2 until it passes.
 - [ ] **Step 2: Record the LUKS passphrase in your password manager before starting.** There is no recovery.
 - [ ] **Step 3: Boot the Arch ISO on the laptop, connect to wifi with `iwctl`.**
-- [ ] **Step 4: Run stage 0.** Read the target disk off `lsblk`, generate the
-  disk config against it, retype the device path when the generator asks to
-  confirm, then hand the result to archinstall:
+- [ ] **Step 4: Run stage 0.** Nothing you need is on the ISO yet — the repo is
+  not cloned at this point — so fetch the installer and the three files first:
+
+  ```bash
+  pacman -Sy archinstall
+  curl -LO https://raw.githubusercontent.com/PieroNarciso/Dotfiles/main/install/archinstall/laptop-luks.json
+  curl -LO https://raw.githubusercontent.com/PieroNarciso/Dotfiles/main/install/archinstall/creds.json.example
+  curl -LO https://raw.githubusercontent.com/PieroNarciso/Dotfiles/main/install/archinstall/make-disk-config.py
+  mv creds.json.example creds.json
+  ```
+
+  Edit `creds.json` and set all three secrets: the user password, the root
+  password, and `encryption_password`. That last one is the LUKS passphrase
+  from Step 2 and must match it exactly, or the disk will not unlock.
+
+  Then read the target disk off `lsblk`, generate the disk config against it,
+  retype the device path when the generator asks to confirm, and hand the
+  result to archinstall:
 
   ```bash
   lsblk
@@ -33,6 +48,10 @@ steps in order.
       --base laptop-luks.json -o install-config.json
   archinstall --config install-config.json --creds creds.json --silent
   ```
+
+  The retype prompt is the only thing standing between you and erasing the
+  wrong disk. Check the device against `lsblk` rather than reflexively
+  retyping it.
 
   Before you do, run `archinstall --version` on the ISO and write the number
   down — on paper or in your phone. The repo is not cloned yet at this point
@@ -61,8 +80,16 @@ steps in order.
     && rm -rf /mnt/var/log/archinstall
   ```
 
-  Then check the ramdisk path as a second belt, because it costs nothing:
-  `ls /mnt/creds.json`.
+  Then confirm no copy of `creds.json` landed on the installed disk, which is
+  the thing that would actually matter — `/mnt` is the new system, not the
+  ramdisk, so this is the search worth running:
+
+  ```bash
+  find /mnt -name 'creds*.json' -o -name 'install-config.json' 2>/dev/null
+  ```
+
+  Expected: nothing. The `creds.json` you edited lives in the ISO's own working
+  directory and dies with the ramdisk at reboot; it is never copied to `/mnt`.
 
   `install/archinstall/creds.json` is gitignored so it cannot be committed by
   accident, but that is a safety net, not a reason to keep the file around —

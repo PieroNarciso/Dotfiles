@@ -53,6 +53,32 @@ print(out['hostname'])
     [ "${lines[1]}" = "laptop" ]
 }
 
+@test "build_config drops a stale disk_encryption inherited from the base" {
+    # The test above passes a base that never had the key, so it cannot tell
+    # "strips a stale block" from "does nothing at all" — deleting the pop()
+    # would still pass it. Reusing a previously generated config as --base
+    # without --encrypt is the real case: the inherited block would point at
+    # partition ids the new layout does not contain.
+    run python3 -c "
+import importlib.util, sys
+spec = importlib.util.spec_from_file_location('g', sys.argv[1])
+g = importlib.util.module_from_spec(spec); spec.loader.exec_module(g)
+base = {
+    'hostname': 'laptop',
+    'disk_encryption': {
+        'encryption_type': 'luks',
+        'partitions': ['stale-id-from-a-previous-run'],
+        'lvm_volumes': [],
+    },
+}
+out = g.build_config(base, {'config_type': 'default_layout'}, None)
+print('ABSENT' if 'disk_encryption' not in out else 'LEAKED')
+print('BASE_INTACT' if 'disk_encryption' in base else 'BASE_MUTATED')
+" "$GEN"
+    [ "${lines[0]}" = "ABSENT" ]
+    [ "${lines[1]}" = "BASE_INTACT" ]
+}
+
 @test "build_config with encryption keeps the partition id it was handed" {
     run python3 -c "
 import importlib.util, sys, json
