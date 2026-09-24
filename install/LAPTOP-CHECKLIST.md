@@ -68,12 +68,22 @@ steps in order.
 
   ```bash
   ls -la /mnt/var/log/archinstall/
-  grep -rl 'password\|passphrase' /mnt/var/log/archinstall/ 2>/dev/null
+  python3 -c 'import json;print(json.load(open("creds.json"))["encryption_password"])' \
+    | grep -rlFf - /mnt 2>/dev/null
   ```
 
-  Expected: the `grep` finds nothing. If a future archinstall release ever
-  does copy a credential here, `shred -u` the matching files, or take the log
-  directory wholesale — nothing after the install needs it:
+  Expected: nothing. The passphrase is piped in rather than interpolated, so
+  it never appears in `grep`'s argv where `ps` would show it.
+
+  Search for the passphrase itself, not for the word "password". On 4.4
+  `install.log` carries two benign lines — `INFO - Setting password for
+  piero` and the same for root — with no secret value anywhere. Grepping for
+  the word matches those and reports a leak that did not happen, which is
+  worse than not checking at all: the next time you see it you will wave it
+  through.
+
+  If a real credential ever does land here, `shred -u` the matching files, or
+  take the log directory wholesale — nothing after the install needs it:
 
   ```bash
   find /mnt/var/log/archinstall -type f -exec shred -u {} + \
