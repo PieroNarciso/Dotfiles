@@ -13,3 +13,7 @@ scripts/.scripts/monitor.log
 
 # archinstall credentials — never commit real passwords
 install/archinstall/creds.json
+
+# Python bytecode, regenerated whenever the generator is imported by its tests.
+__pycache__/
+*.pyc
