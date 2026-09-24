@@ -183,3 +183,35 @@ report" ]
     expected="$(cd "$INSTALL_DIR/packages/optional" && ls ./*.txt | sed -e 's#^\./##' -e 's/\.txt$//' | paste -sd,)"
     [ "$listed" = "$expected" ]
 }
+
+# The VM run died twice inside phase_shell: chsh authenticates, and under
+# set -e its failure took phase_services, phase_version_managers and
+# phase_report with it. --dry-run cannot catch this, because run() executes
+# nothing under DRY_RUN, so the guard needs a real invocation to test.
+@test "a failing chsh warns and lets the rest of the run continue" {
+    setup_fixture
+    mkdir -p "$TEST_TMPDIR/bin"
+    printf '#!/bin/sh\necho "chsh: Authentication token manipulation error" >&2\nexit 1\n' \
+        > "$TEST_TMPDIR/bin/chsh"
+    # This developer's own login shell is already zsh, so the phase would
+    # return before ever reaching chsh. Report bash, the state a fresh
+    # archinstall machine is actually in.
+    printf '#!/bin/sh\necho "%s:x:1000:1000::/home/%s:/usr/bin/bash"\n' "$USER" "$USER" \
+        > "$TEST_TMPDIR/bin/getent"
+    chmod +x "$TEST_TMPDIR/bin/chsh" "$TEST_TMPDIR/bin/getent"
+    run bash -c "PATH='$TEST_TMPDIR/bin:$PATH' HOME='$FAKE_HOME' \
+        bash -c \"source '$INSTALL_DIR/bootstrap.sh'; DRY_RUN=0; phase_shell; echo PHASE_RETURNED=\\\$?\" 2>&1"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"PHASE_RETURNED=0"* ]]
+    [[ "$output" == *"chsh failed"* ]]
+}
+
+@test "sourcing bootstrap.sh defines the phases without running them" {
+    setup_fixture
+    run bash -c "HOME='$FAKE_HOME' bash -c \"source '$INSTALL_DIR/bootstrap.sh'; \
+        declare -F phase_shell phase_services phase_report >/dev/null && echo DEFINED\" 2>&1"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"DEFINED"* ]]
+    # Sourcing must not have executed a phase.
+    [[ "$output" != *"::  preflight"* ]]
+}

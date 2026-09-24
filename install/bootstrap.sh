@@ -202,7 +202,12 @@ phase_shell() {
     if [ "$current" = "$want" ]; then log_info "login shell already zsh"; return 0; fi
     [ -x "$want" ] || { log_warn "zsh not installed; skipping chsh"; return 0; }
     grep -qxF "$want" /etc/shells || { log_warn "$want is not listed in /etc/shells; skipping chsh"; return 0; }
-    run chsh -s "$want"
+    # chsh authenticates, so it fails on a mistyped password -- and under
+    # set -e an unguarded failure here kills the run before services, the
+    # version managers and the report. Every other branch of this phase is
+    # already guarded; this one was not. A dry run cannot catch it, because
+    # run() does not execute anything under DRY_RUN.
+    run chsh -s "$want" || log_warn "chsh failed; set it by hand: chsh -s $want"
 }
 
 phase_services() {
@@ -218,7 +223,9 @@ phase_services() {
     local s
     for s in "${services[@]}"; do
         systemctl list-unit-files "$s.service" >/dev/null 2>&1 || { log_warn "no unit: $s"; continue; }
-        run sudo systemctl enable --now "$s.service"
+        # One service that will not start must not cost the user the report.
+        run sudo systemctl enable --now "$s.service" \
+            || log_warn "could not enable $s; check: systemctl status $s"
     done
 }
 
@@ -227,7 +234,8 @@ phase_version_managers() {
     if [ -d "$HOME/.nvm" ]; then
         log_info "nvm already installed"
     else
-        run bash -c 'curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash'
+        run bash -c 'curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | bash' \
+        || log_warn "the nvm installer failed; install it by hand from https://github.com/nvm-sh/nvm"
     fi
     if [ -d "$HOME/.pyenv" ]; then
         log_info "pyenv already installed"
@@ -289,4 +297,7 @@ main() {
     log_info "done"
 }
 
-main "$@"
+# Sourced by the tests to get the phase functions without running them.
+if [ "${BASH_SOURCE[0]}" = "$0" ]; then
+    main "$@"
+fi
