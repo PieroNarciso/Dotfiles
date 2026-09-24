@@ -66,10 +66,16 @@ python make-disk-config.py --device /dev/nvme0n1 --encrypt \
 archinstall --config install-config.json --creds creds.json --silent
 ```
 
-The generator prints the layout and makes you retype the device path before it
-writes anything. **That prompt is the only thing standing between you and
-erasing the wrong disk** — check it against `lsblk` rather than reflexively
-retyping.
+The generator prints the partition layout it is about to write, then asks you
+to retype the device path. **Read the layout, not the prompt.** The prompt no
+longer names the device — retyping it catches a slip between reading `lsblk`
+and typing, and nothing more; it cannot catch a wrong decision about which
+disk to erase. The layout dump, with its sizes and mountpoints, is what tells
+you whether this is the right disk.
+
+That dump is also the last thing you see. `archinstall --silent` suppresses
+every confirmation archinstall would otherwise show, so nothing after this
+point asks again before the partitions are written.
 
 Reboot when it finishes, log in as your user, then run stage 1:
 

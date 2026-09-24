@@ -160,3 +160,43 @@ FAKE
     run grep -E 'INSTALLED --needed --noconfirm [^ ]+ [^ ]+' <<< "$output"
     [ "$status" -eq 0 ]
 }
+
+@test "a signal from the installer stops the run instead of bisecting" {
+    # Ctrl-C at a paru prompt kills paru, not bootstrap. Bisecting on that
+    # re-runs the installer on each half and prompts again, so escaping one
+    # group of N packages would take 2N-1 interrupts. One attempt, everything
+    # recorded as failed, no second prompt.
+    run bash -c "
+        cd '$BATS_TEST_DIRNAME/../..'
+        source install/lib/log.sh
+        source install/lib/pkg.sh
+        pkg_missing() { printf '%s\n' a b c d; }
+        fake() { echo ATTEMPT \"\$@\"; return 130; }
+        export -f fake
+        printf 'a\nb\nc\nd\n' > '$BATS_TEST_TMPDIR/g.txt'
+        _pkg_install_with 'fake' '$BATS_TEST_TMPDIR/g.txt'
+        echo \"FAILED=\${PKG_FAILED[*]}\"
+    "
+    [ "$status" -eq 0 ]
+    [ "$(grep -c '^ATTEMPT' <<< "$output")" -eq 1 ]
+    [[ "$output" == *"killed by signal 2"* ]]
+    [[ "$output" == *"FAILED=a b c d"* ]]
+}
+
+@test "an ordinary failure after a signal is not retried either" {
+    # The abort is global: once the operator has interrupted, later group
+    # files are recorded as failed rather than prompting all over again.
+    run bash -c "
+        cd '$BATS_TEST_DIRNAME/../..'
+        source install/lib/log.sh
+        source install/lib/pkg.sh
+        PKG_ABORTED=1
+        fake() { echo ATTEMPT \"\$@\"; return 0; }
+        export -f fake
+        _pkg_install_batch 'fake' x y
+        echo \"FAILED=\${PKG_FAILED[*]}\"
+    "
+    [ "$status" -eq 0 ]
+    [[ "$output" != *"ATTEMPT"* ]]
+    [[ "$output" == *"FAILED=x y"* ]]
+}

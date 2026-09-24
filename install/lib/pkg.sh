@@ -3,6 +3,9 @@
 
 PKG_QUERY_CMD="${PKG_QUERY_CMD:-pacman -Qq}"
 PKG_FAILED=()
+# Set once the installer is killed by a signal. Every later batch is then
+# recorded as failed without being retried: see _pkg_install_batch.
+PKG_ABORTED=0
 
 pkg_read_list() {
     local file="$1"
@@ -51,8 +54,24 @@ _pkg_install_batch() {
     local installer="$1"; shift
     local -a pkgs=("$@")
     [ "${#pkgs[@]}" -eq 0 ] && return 0
+    if [ "$PKG_ABORTED" = 1 ]; then
+        PKG_FAILED+=("${pkgs[@]}")
+        return 0
+    fi
+    local rc=0
     # shellcheck disable=SC2086  # $installer intentionally splits into multiple words
-    if run $installer --needed --noconfirm "${pkgs[@]}"; then
+    run $installer --needed --noconfirm "${pkgs[@]}" || rc=$?
+    if [ "$rc" -eq 0 ]; then
+        return 0
+    fi
+    # A signal is the operator or the system stopping the installer, not a
+    # verdict on any package. Bisecting would re-run it on each half and ask
+    # again, so escaping one group of N would take 2N-1 interrupts. Give up
+    # on the whole run instead and let phase_report name what never landed.
+    if [ "$rc" -ge 128 ]; then
+        PKG_ABORTED=1
+        log_warn "installer killed by signal $(( rc - 128 )); skipping the remaining packages"
+        PKG_FAILED+=("${pkgs[@]}")
         return 0
     fi
     if [ "${#pkgs[@]}" -eq 1 ]; then

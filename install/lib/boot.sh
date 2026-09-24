@@ -37,6 +37,10 @@ _boot_backup_entry() {
 boot_add_microcode_initrd() {
     local img="$1" backup="${2:-}"
     local dir="${BOOTCTL_ENTRIES_DIR:-/boot/loader/entries}"
+    # `.` is an ERE any-character metacharacter, so an unescaped
+    # "amd-ucode.img" would also match "amd-ucodeXimg". Nothing plausible
+    # collides today; escaping it keeps the pattern honest about what it means.
+    local img_re="${img//./\\.}"
     local manual="add 'initrd /$img' above the first 'initrd /initramfs...' line by hand"
     # Default: sudo against the real ESP, nothing against a test fixture.
     # BOOTCTL_SUDO overrides both -- tests use it to point privilege at a
@@ -105,7 +109,7 @@ boot_add_microcode_initrd() {
     for entry in "${entries[@]}"; do
         name="$(basename "$entry")"
         # shellcheck disable=SC2086
-        if $sudo_cmd grep -qE "^initrd[[:space:]]+/$img([[:space:]]*)\$" "$entry"; then
+        if $sudo_cmd grep -qE "^initrd[[:space:]]+/$img_re([[:space:]]*)\$" "$entry"; then
             log_info "$name: /$img already loaded"
             continue
         fi

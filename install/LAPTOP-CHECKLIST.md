@@ -50,9 +50,14 @@ steps in order.
   archinstall --config install-config.json --creds creds.json --silent
   ```
 
-  The retype prompt is the only thing standing between you and erasing the
-  wrong disk. Check the device against `lsblk` rather than reflexively
-  retyping it.
+  The generator prints the layout it is about to write before it asks you to
+  retype the device path. Read that layout — sizes and mountpoints against
+  what `lsblk` showed. The retype prompt does not name the device, so it
+  catches a typo between reading and typing; it cannot catch a wrong decision
+  about which disk to erase. The layout dump can.
+
+  It is also the last confirmation you get: `--silent` suppresses every
+  prompt archinstall would otherwise show before writing partitions.
 
   Record the `archinstall --version` number off-machine: the repo is not
   cloned yet and you are on a ramdisk, so there is nowhere here to keep it.

@@ -193,7 +193,11 @@ phase_dotfiles() {
     df_backup_conflicts "$NVIM_DIR" "$HOME" "$BACKUP_DIR"
     df_stow_repo "$DOTFILES_DIR" "$HOME"
     df_stow_repo "$NVIM_DIR" "$HOME"
-    [ -d "$BACKUP_DIR" ] && log_warn "pre-existing files were moved to $BACKUP_DIR"
+    # Count, not `[ -d "$BACKUP_DIR" ]`: phase_microcode backs loader entries
+    # into the same directory and runs first, so on a fresh laptop the
+    # directory exists with nothing of the user's in it.
+    [ "$DF_BACKED_UP" -gt 0 ] \
+        && log_warn "$DF_BACKED_UP pre-existing file(s) were moved to $BACKUP_DIR"
     return 0
 }
 

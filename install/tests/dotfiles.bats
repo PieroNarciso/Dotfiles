@@ -190,3 +190,28 @@ teardown() { teardown_tmpdir; }
     [ "$(cat "$FAKE_HOME/.config/hypr/hyprland.lua")" = "repo hypr" ]
     [ "$(cat "$FAKE_HOME/.zshrc")" = "from repo" ]
 }
+
+@test "DF_BACKED_UP stays 0 when the backup dir exists but nothing was moved" {
+    # phase_microcode backs loader entries into the same directory and runs
+    # first, so on a fresh laptop $BACKUP_DIR exists before phase_dotfiles
+    # ever looks at it. A caller testing `[ -d "$BACKUP_DIR" ]` then tells the
+    # operator their dotfiles were moved aside when none were, and the
+    # checklist sends them digging through it.
+    mkdir -p "$TEST_TMPDIR/backup/loader-entries"
+    echo "an entry" > "$TEST_TMPDIR/backup/loader-entries/arch.conf"
+    run bash -c "source '$INSTALL_DIR/lib/log.sh'; source '$INSTALL_DIR/lib/dotfiles.sh'; \
+        df_backup_conflicts '$REPO' '$FAKE_HOME' '$TEST_TMPDIR/backup'; \
+        echo \"COUNT=\$DF_BACKED_UP\""
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"COUNT=0"* ]]
+}
+
+@test "DF_BACKED_UP counts every file actually moved aside" {
+    echo "pre-existing" > "$FAKE_HOME/.zshrc"
+    mkdir -p "$FAKE_HOME/.config/nvim"
+    echo "old nvim" > "$FAKE_HOME/.config/nvim/init.lua"
+    run bash -c "source '$INSTALL_DIR/lib/log.sh'; source '$INSTALL_DIR/lib/dotfiles.sh'; \
+        df_backup_conflicts '$REPO' '$FAKE_HOME' '$TEST_TMPDIR/backup'; \
+        echo \"COUNT=\$DF_BACKED_UP\""
+    [[ "$output" == *"COUNT=2"* ]]
+}

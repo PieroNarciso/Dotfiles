@@ -20,6 +20,13 @@ import sys
 # importable — and testable — on a machine that does not have it.
 
 
+# The prompt must NOT contain the device path. A prompt that prints the answer
+# turns "retype it" into "copy the line above", which catches a typo between
+# reading and typing and nothing else. The layout dump above it is the part
+# that can catch the wrong *disk*; this only confirms you read the dump.
+CONFIRM_PROMPT = "Retype the target device path to confirm, or anything else to abort: "
+
+
 def confirm_device(typed: str, expected: str) -> bool:
     """True when the user retyped the device path they are about to erase."""
     return typed.strip() == expected.strip()
@@ -76,7 +83,17 @@ async def _generate(device_path: str, encrypt: bool) -> tuple[dict, dict | None]
 
 
 def _describe(disk_config: dict, encrypt: bool) -> str:
+    """Render the serialized layout for the operator to read before erasing.
+
+    Reads `layout.json()`, a plain dict, while _generate() picks the root
+    partition off the live archinstall objects. The two accessors can drift:
+    if a future archinstall serializes `mountpoint` differently this walk
+    silently prints blanks and drops the [LUKS2] tag while the generated
+    config stays correct. The trailing note below makes that drift visible
+    rather than letting the one pre-erase view degrade in silence.
+    """
     lines = []
+    tagged = 0
     for mod in disk_config.get("device_modifications", []):
         lines.append(f"  {mod['device']}  (wipe: {mod.get('wipe')})")
         for part in mod.get("partitions", []):
@@ -84,6 +101,7 @@ def _describe(disk_config: dict, encrypt: bool) -> str:
             enc_tag = ""
             if encrypt and part.get("mountpoint") == "/":
                 enc_tag = "  [LUKS2]"
+                tagged += 1
             lines.append(
                 "    {:<8} {:>6} {:<6} {}{}".format(
                     part.get("status", ""),
@@ -93,6 +111,16 @@ def _describe(disk_config: dict, encrypt: bool) -> str:
                     enc_tag,
                 )
             )
+    if encrypt and tagged == 0:
+        lines.append(
+            "  NOTE: this dump found no root partition to tag [LUKS2]. The config"
+        )
+        lines.append(
+            "  is built from the live disk objects and is unaffected -- but read"
+        )
+        lines.append(
+            "  the layout above carefully, and verify encryption after first boot."
+        )
     return "\n".join(lines)
 
 
@@ -116,7 +144,7 @@ def main() -> int:
     print()
 
     if not args.no_confirm:
-        typed = input(f"Retype {args.device} to confirm, or anything else to abort: ")
+        typed = input(CONFIRM_PROMPT)
         if not confirm_device(typed, args.device):
             print("aborted; nothing written", file=sys.stderr)
             return 1

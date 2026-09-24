@@ -25,6 +25,12 @@ _df_packages() {
     done | sort
 }
 
+# How many paths were actually moved aside. The backup directory is shared
+# with the loader-entry backup in phase_microcode, so its existence proves
+# nothing about dotfiles -- a caller that tests `[ -d "$BACKUP_DIR" ]` sends
+# the reader looking for files that were never moved.
+DF_BACKED_UP=0
+
 # Move aside anything stow would refuse to overwrite.
 df_backup_conflicts() {
     local repo="$1" target="$2" backup="$3"
@@ -53,6 +59,7 @@ df_backup_conflicts() {
             log_warn "backing up existing $dst"
             run mkdir -p "$(dirname "$dest")"
             run mv "$dst" "$dest"
+            DF_BACKED_UP=$((DF_BACKED_UP + 1))
         done < <(find "$repo/$pkg" \( -type f -o -type l \))
     done
 }

@@ -115,3 +115,70 @@ print('EMPTY_PARTITIONS' if enc is not None and not enc.get('partitions') else '
 " "$REPO/install/archinstall/laptop.json"
     [ "$output" = "OK" ]
 }
+
+@test "the retype prompt does not contain the answer it is asking for" {
+    # A prompt that prints the device path makes "retyping" a copy from the
+    # line above. Reverting to the f-string version means either this constant
+    # disappears (error) or a device path appears in it (ECHOES).
+    run python3 -c "
+import importlib.util, sys
+spec = importlib.util.spec_from_file_location('g', sys.argv[1])
+g = importlib.util.module_from_spec(spec); spec.loader.exec_module(g)
+p = g.CONFIRM_PROMPT
+print('ECHOES' if ('/dev' in p or '{' in p) else 'PLAIN')
+" "$GEN"
+    [ "$status" -eq 0 ]
+    [ "$output" = "PLAIN" ]
+}
+
+@test "_describe tags the encrypted root and prints every partition" {
+    run python3 -c "
+import importlib.util, sys
+spec = importlib.util.spec_from_file_location('g', sys.argv[1])
+g = importlib.util.module_from_spec(spec); spec.loader.exec_module(g)
+cfg = {'device_modifications': [{'device': '/dev/testdisk', 'wipe': True, 'partitions': [
+    {'status': 'create', 'size': {'value': 1, 'unit': 'GiB'}, 'fs_type': 'fat32', 'mountpoint': '/boot'},
+    {'status': 'create', 'size': {'value': 40, 'unit': 'GiB'}, 'fs_type': 'ext4', 'mountpoint': '/'},
+]}]}
+print(g._describe(cfg, True))
+" "$GEN"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"/dev/testdisk"* ]]
+    [[ "$output" == *"/boot"* ]]
+    [[ "$output" == *"[LUKS2]"* ]]
+    # The tag belongs to the root line, not the ESP line.
+    [[ "$(grep -F '[LUKS2]' <<< "$output")" == *" /"* ]]
+    [[ "$(grep -F '/boot' <<< "$output")" != *"[LUKS2]"* ]]
+}
+
+@test "_describe says so when it cannot find the root it was asked to tag" {
+    # _describe reads the serialized dict while _generate picks the root off
+    # live archinstall objects. If that key ever serializes differently the
+    # dump would silently drop the tag -- the operator's only pre-erase view
+    # degrading without a word. Simulated here by a renamed key.
+    run python3 -c "
+import importlib.util, sys
+spec = importlib.util.spec_from_file_location('g', sys.argv[1])
+g = importlib.util.module_from_spec(spec); spec.loader.exec_module(g)
+cfg = {'device_modifications': [{'device': '/dev/testdisk', 'wipe': True, 'partitions': [
+    {'status': 'create', 'size': {'value': 40, 'unit': 'GiB'}, 'fs_type': 'ext4', 'mount_point': '/'},
+]}]}
+print(g._describe(cfg, True))
+" "$GEN"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"no root partition to tag"* ]]
+}
+
+@test "_describe stays quiet about LUKS when encryption was not asked for" {
+    run python3 -c "
+import importlib.util, sys
+spec = importlib.util.spec_from_file_location('g', sys.argv[1])
+g = importlib.util.module_from_spec(spec); spec.loader.exec_module(g)
+cfg = {'device_modifications': [{'device': '/dev/testdisk', 'wipe': True, 'partitions': [
+    {'status': 'create', 'size': {'value': 40, 'unit': 'GiB'}, 'fs_type': 'ext4', 'mountpoint': '/'},
+]}]}
+print(g._describe(cfg, False))
+" "$GEN"
+    [ "$status" -eq 0 ]
+    [[ "$output" != *"LUKS"* ]]
+}

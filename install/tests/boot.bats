@@ -301,3 +301,21 @@ STUB
     grep -q "^chown $(id -un):$(id -gn) $BATS_TEST_TMPDIR/backup/arch.conf$" "$log"
     [ -f "$BATS_TEST_TMPDIR/backup/arch.conf" ]
 }
+
+@test "a lookalike initrd line does not count as the microcode already loaded" {
+    # The `.` in "amd-ucode.img" is an ERE any-character metacharacter, so an
+    # unescaped pattern also matches "amd-ucodeXimg" -- and the entry would be
+    # declared done and skipped, leaving a machine running without microcode.
+    setup_entries
+    cat > "$ENTRIES/arch.conf" <<'EOF'
+title   Arch Linux
+linux   /vmlinuz-linux
+initrd  /amd-ucodeXimg
+initrd  /initramfs-linux.img
+options root=/dev/mapper/root rw
+EOF
+    run add_ucode "$BACKUP"
+    [ "$status" -eq 0 ]
+    [[ "$output" != *"arch.conf: /amd-ucode.img already loaded"* ]]
+    grep -qx 'initrd /amd-ucode.img' "$ENTRIES/arch.conf"
+}
