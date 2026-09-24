@@ -29,6 +29,9 @@ SKIP_DOTFILES=0
 # NOTE: not GROUPS — that is a bash special variable and assignments to it
 # are silently ignored.
 PKG_GROUPS="core,dev,desktop,fonts,apps,laptop"
+# 1 once --groups is passed: an explicit group list is a request to honor, so
+# the battery gate on the laptop group does not apply to it.
+PKG_GROUPS_EXPLICIT=0
 
 readonly DOTFILES_URL="https://github.com/PieroNarciso/Dotfiles.git"
 readonly DOTFILES_DIR="$HOME/.dotfiles"
@@ -46,6 +49,9 @@ Options:
   --dry-run            Print every action without changing anything.
   --groups <list>      Comma-separated package groups to install.
                        Default: core,dev,desktop,fonts,apps,laptop
+                       (the laptop group is skipped automatically on a machine
+                       with no battery, e.g. the desktop; name it on --groups
+                       to force it)
                        Optional: audio-prod, gaming, media, mobile, server,
                                  virt, work, x11
   --skip-dotfiles      Do not clone or stow the dotfile repos.
@@ -60,7 +66,7 @@ parse_args() {
             --skip-dotfiles) SKIP_DOTFILES=1 ;;
             --groups)
                 [ $# -ge 2 ] || die "--groups needs a value"
-                PKG_GROUPS="$2"; shift ;;
+                PKG_GROUPS="$2"; PKG_GROUPS_EXPLICIT=1; shift ;;
             -h|--help)       usage; exit 0 ;;
             *)               usage >&2; die "unknown option: $1" ;;
         esac
@@ -141,6 +147,15 @@ phase_microcode() {
     # the systemd-boot binary without ever touching the entries — so this runs
     # on the already-installed path too: a machine that has the package and no
     # initrd line is exactly the broken case worth fixing.
+    # Only edit loader entries on a machine archinstall installed. The desktop
+    # was built another way: its board firmware carries newer microcode than
+    # amd-ucode, and the decision there is to leave its entries alone. A machine
+    # we did not install is one whose bootloader we do not own.
+    if ! boot_machine_archinstalled; then
+        log_info "this machine was not installed by archinstall; leaving the loader entries alone"
+        BOOTSTRAP_MANUAL+=("microcode: this machine was not installed by archinstall, so its loader entries were left alone; if $ucode should load from a loader entry, add 'initrd /$ucode.img' above the first 'initrd /initramfs...' line by hand")
+        return 0
+    fi
     boot_add_microcode_initrd "$ucode.img" "$BACKUP_DIR/loader-entries"
 }
 
@@ -228,6 +243,16 @@ phase_packages() {
     local -a groups
     IFS=',' read -ra groups <<< "$PKG_GROUPS"
     for g in "${groups[@]}"; do
+        # laptop.txt is tlp, thermald and other battery hardware support. It is
+        # in the default groups so a laptop needs no --groups, but on a machine
+        # with no battery (the desktop) it is dead weight -- the same reason
+        # phase_services gates the tlp/thermald enable on a battery. Skip it
+        # there -- unless the user named the groups explicitly on --groups, in
+        # which case laptop was asked for and is installed regardless.
+        if [ "$g" = "laptop" ] && ! hw_has_battery && [ "$PKG_GROUPS_EXPLICIT" != "1" ]; then
+            log_info "no battery detected; skipping the laptop package group (pass --groups ...,laptop to force it)"
+            continue
+        fi
         file="$INSTALL_DIR/packages/$g.txt"
         [ -f "$file" ] || file="$INSTALL_DIR/packages/optional/$g.txt"
         aur_install_file "$file"
@@ -264,6 +289,17 @@ phase_dotfiles() {
         # A dry run clones nothing either, so it has nothing to link.
         if [ -d "$dir/.git" ]; then repos+=("$dir"); fi
     done
+    # stow comes from paru (core.txt). If paru never built it, moving files
+    # aside for a stow that will fail with "command not found" only takes the
+    # user's data out of the way for links that never get made. A dry run is
+    # exempt -- it moves nothing (run() is a no-op) and its conflict report is
+    # still useful -- so this guards the real run only.
+    if [ "$DRY_RUN" != "1" ] && ! df_stow_available; then
+        log_warn "stow is not installed; skipping the dotfile backup and linking"
+        log_warn "without it, files would be moved aside for links that never get made"
+        BOOTSTRAP_MANUAL+=("install stow (it is a paru package), then re-run this script to back up conflicts and link the dotfiles")
+        return 0
+    fi
     for dir in "${repos[@]}"; do df_backup_conflicts "$dir" "$HOME" "$BACKUP_DIR"; done
     for dir in "${repos[@]}"; do df_stow_repo "$dir" "$HOME"; done
     # Count, not `[ -d "$BACKUP_DIR" ]`: phase_microcode backs loader entries
@@ -281,7 +317,11 @@ phase_dotfiles() {
 
 phase_shell() {
     log_step "shell"
-    local want="/usr/bin/zsh"
+    # The zsh path and the shells file are overridable so the tests can point
+    # them at fixtures instead of the machine's real /usr/bin/zsh and
+    # /etc/shells.
+    local want="${BOOTSTRAP_ZSH:-/usr/bin/zsh}"
+    local shells="${BOOTSTRAP_SHELLS:-/etc/shells}"
     # An unguarded assignment here would kill the whole bootstrap under set -e
     # if the user is not resolvable through NSS.
     local current=""
@@ -289,7 +329,7 @@ phase_shell() {
         || { log_warn "cannot read the passwd entry for $USER; skipping chsh"; return 0; }
     if [ "$current" = "$want" ]; then log_info "login shell already zsh"; return 0; fi
     [ -x "$want" ] || { log_warn "zsh not installed; skipping chsh"; return 0; }
-    grep -qxF "$want" /etc/shells || { log_warn "$want is not listed in /etc/shells; skipping chsh"; return 0; }
+    grep -qxF "$want" "$shells" || { log_warn "$want is not listed in $shells; skipping chsh"; return 0; }
     # chsh authenticates, so it fails on a mistyped password -- and under
     # set -e an unguarded failure here kills the run before services, the
     # version managers and the report. Every other branch of this phase is

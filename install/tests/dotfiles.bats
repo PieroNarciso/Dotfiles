@@ -318,6 +318,9 @@ teardown() { teardown_tmpdir; }
 }
 
 @test "a path the package's .stow-local-ignore excludes is never moved aside" {
+    # Needs stow's Perl module: the find fallback does not read
+    # .stow-local-ignore, so without Stow.pm the ignored path is not excluded.
+    perl -MStow -e1 2>/dev/null || skip "needs stow's Perl module"
     # stow will never link it, so it is not a conflict; moving it only takes
     # the user's own data (here: nvim's generated state) out of the way.
     mkdir -p "$REPO/local/.local/share/nvim" "$REPO/local/.local/bin"
@@ -339,4 +342,40 @@ teardown() { teardown_tmpdir; }
         df_stow_repo '$REPO' '$FAKE_HOME'"
     [ "$status" -eq 0 ]
     [ -L "$FAKE_HOME/.local/bin/tool" ]
+}
+
+@test "a real run with stow missing links nothing and reports it instead of moving files aside" {
+    # The M2 bug: stow comes from paru (core.txt). If paru never built it, the
+    # old path walked every file with find and moved ~/.bashrc and nvim state
+    # aside, then stow failed "command not found" and linked nothing -- the
+    # user's data taken out of the way for links that never got made.
+    mkdir -p "$FAKE_HOME/.dotfiles/home"
+    echo "from repo" > "$FAKE_HOME/.dotfiles/home/.bashrc"
+    git -C "$FAKE_HOME/.dotfiles" init -q
+    echo "pre-existing" > "$FAKE_HOME/.bashrc"
+    run bash -c "HOME='$FAKE_HOME'; source '$INSTALL_DIR/bootstrap.sh'; source '$INSTALL_DIR/lib/dotfiles.sh'
+        df_clone_or_pull() { return 0; }
+        df_stow_available() { return 1; }
+        DRY_RUN=0 phase_dotfiles 2>&1; echo MOVED=\$DF_BACKED_UP"
+    [ "$status" -eq 0 ]
+    [ "$(cat "$FAKE_HOME/.bashrc")" = "pre-existing" ]
+    [ ! -e "$FAKE_HOME"/.dotfiles-backup-*/.bashrc ] 2>/dev/null || true
+    [[ "$output" == *"MOVED=0"* ]]
+    [[ "$output" == *"stow is not installed"* ]]
+}
+
+@test "a dry run with stow missing still reports what would be moved" {
+    # Dry runs keep the find fallback: nothing is actually moved (run() is a
+    # no-op under DRY_RUN), but the operator still sees the conflict count.
+    mkdir -p "$FAKE_HOME/.dotfiles/home"
+    echo "from repo" > "$FAKE_HOME/.dotfiles/home/.bashrc"
+    git -C "$FAKE_HOME/.dotfiles" init -q
+    echo "pre-existing" > "$FAKE_HOME/.bashrc"
+    run bash -c "HOME='$FAKE_HOME'; source '$INSTALL_DIR/bootstrap.sh'; source '$INSTALL_DIR/lib/dotfiles.sh'
+        df_clone_or_pull() { return 0; }
+        df_stow_available() { return 1; }
+        DRY_RUN=1 phase_dotfiles 2>&1; echo MOVED=\$DF_BACKED_UP"
+    [ "$status" -eq 0 ]
+    [ "$(cat "$FAKE_HOME/.bashrc")" = "pre-existing" ]
+    [[ "$output" == *"would be moved"* ]]
 }

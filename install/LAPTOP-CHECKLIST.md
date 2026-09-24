@@ -32,7 +32,7 @@ steps in order.
   curl -LO https://raw.githubusercontent.com/PieroNarciso/Dotfiles/main/install/archinstall/creds.json.example
   curl -LO https://raw.githubusercontent.com/PieroNarciso/Dotfiles/main/install/archinstall/make-disk-config.py
   mv creds.json.example creds.json
-  archinstall --version    # write this number down on paper or in your phone
+  archinstall --version    # the version the ISO ships; may be replaced below
   ```
 
   The generator only runs on the archinstall release it was verified against
@@ -42,7 +42,7 @@ steps in order.
 
   ```bash
   pacman -U --noconfirm https://archive.archlinux.org/packages/a/archinstall/archinstall-4.4-1-any.pkg.tar.zst
-  archinstall --version
+  archinstall --version    # write THIS number down -- the final one the generator enforced
   ```
 
   If that archived build will not start (the ISO's Python has moved past
@@ -453,7 +453,8 @@ steps in order.
   `gpu-*.txt` for hardware this machine does not have, and `laptop.txt` when
   there is no battery. It says which ones it skipped. If Step 4 ran on a
   newer archinstall that you verified and let through with
-  `--archinstall-version-verified`, bump `TESTED_ARCHINSTALL` in
-  `make-disk-config.py`, the version line in
-  `install/archinstall/README.md`, and the archive URL in Step 4 of this
-  checklist. Commit the three changes together.
+  `--archinstall-version-verified`, bump all four places the version is
+  pinned: `TESTED_ARCHINSTALL` in `make-disk-config.py`, the "Verified
+  against" line in `install/archinstall/README.md`, the archive URL in that
+  same README, and the archive URL in Step 4 of this checklist. Commit the
+  four changes together.

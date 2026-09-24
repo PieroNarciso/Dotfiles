@@ -36,18 +36,50 @@ MKINITCPIO_CONF="${MKINITCPIO_CONF:-/etc/mkinitcpio.conf}"
 # True when mkinitcpio's HOOKS include `microcode`. That hook packs the
 # microcode into the initramfs itself, so the kernel loads it early with no
 # separate initrd line -- archinstall 4.4 puts it in the default hooks, as
-# does every mkinitcpio.conf shipped since mkinitcpio 38. Drop-ins in
-# mkinitcpio.conf.d are read after the main file, so the last HOOKS= wins.
+# does every mkinitcpio.conf shipped since mkinitcpio 38.
+#
+# Resolve HOOKS the way mkinitcpio 42 does rather than scraping it: source the
+# main config, then the drop-ins in `mkinitcpio.conf.d` in the exact order
+# mkinitcpio reads them (`find -xtype f | LC_ALL=C.UTF-8 sort -V`), and inspect
+# the resulting array. This is correct for cases a single `grep '^HOOKS='`
+# gets wrong: a multi-line `HOOKS=(` array, `HOOKS+=(microcode)`, a
+# `declare`/`export HOOKS=`, and drop-ins whose version order differs from the
+# shell's glob order (a `9-*.conf` sorts AFTER `10-*.conf` under sort -V). It
+# matches a hook by exact array element, never by substring. The config is
+# root-owned system state that mkinitcpio itself sources, so sourcing it here
+# carries the same trust; the tests point MKINITCPIO_CONF at a fixture.
 boot_initramfs_has_microcode() {
-    local conf="${MKINITCPIO_CONF:-/etc/mkinitcpio.conf}" hooks
-    local -a files=("$conf")
-    local f
-    for f in "$conf.d"/*.conf; do
-        [ -e "$f" ] && files+=("$f")
-    done
-    hooks="$(grep -hE '^[[:space:]]*HOOKS=' "${files[@]}" 2>/dev/null | tail -n 1)"
-    hooks="${hooks%%#*}"
-    [[ " ${hooks//[()\"\']/ } " == *" microcode "* ]]
+    local conf="${MKINITCPIO_CONF:-/etc/mkinitcpio.conf}"
+    (
+        set +eu
+        HOOKS=()
+        # shellcheck disable=SC1090
+        [ -r "$conf" ] && source "$conf"
+        local f
+        while IFS= read -r f; do
+            [ -r "$f" ] || continue
+            # shellcheck disable=SC1090
+            source "$f"
+        done < <(find "$conf.d" -maxdepth 1 -xtype f -name '*.conf' 2>/dev/null \
+                     | LC_ALL=C.UTF-8 sort -V)
+        printf '%s\n' "${HOOKS[@]}" | grep -qx microcode
+    )
+}
+
+# Where archinstall records its install log inside the system it installed.
+# Its presence is how stage 1 knows this machine's bootloader was laid down by
+# archinstall -- the only machines whose loader entries we own and edit.
+# Overridable so the tests can point it at a fixture.
+BOOT_ARCHINSTALL_MARKER="${BOOT_ARCHINSTALL_MARKER:-/var/log/archinstall}"
+
+# boot_machine_archinstalled
+#
+# True when this machine was installed by archinstall (stage 0): archinstall
+# copies its install log into the installed system under /var/log/archinstall.
+# A machine set up any other way -- the desktop, a hand-built install -- has no
+# such directory, and stage 1 leaves its loader entries alone.
+boot_machine_archinstalled() {
+    [ -d "${BOOT_ARCHINSTALL_MARKER:-/var/log/archinstall}" ]
 }
 
 # boot_add_microcode_initrd <ucode-image> [backup-dir]

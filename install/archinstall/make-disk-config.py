@@ -74,6 +74,15 @@ def creds_problems(creds: dict, encrypt: bool) -> list[str]:
         return not isinstance(value, str) or not value or value.startswith("CHANGE-ME")
 
     problems = []
+    # archinstall 4.4 (lib/args.py) also reads the hashed spellings `users`
+    # and `root_enc_password`, and they take PRECEDENCE over the ! forms. A
+    # file carrying either is unsupported here: a valid hashed config we do not
+    # generate, or a trap where a placeholder hash beside a good !users is the
+    # one archinstall actually uses. Refuse it -- this generator emits only the
+    # ! form.
+    for key in ("users", "root_enc_password"):
+        if key in creds:
+            problems.append(f"{key} (unsupported; use the ! form)")
     if encrypt and bad(creds.get("encryption_password")):
         problems.append("encryption_password")
     if bad(creds.get("!root-password")):
@@ -83,8 +92,21 @@ def creds_problems(creds: dict, encrypt: bool) -> list[str]:
         problems.append("!users")
     else:
         for i, user in enumerate(users):
-            if not isinstance(user, dict) or bad(user.get("!password")):
-                name = user.get("username", i) if isinstance(user, dict) else i
+            if not isinstance(user, dict):
+                # archinstall skips anything that is not a user mapping, so a
+                # non-dict slot yields no account at all.
+                problems.append(f"!users[{i}].username")
+                continue
+            username = user.get("username")
+            # archinstall 4.4 (lib/models/users.py: `if not username or
+            # password is None: continue`) DROPS a user whose username is
+            # missing or empty without a word -- the install then has no
+            # account, Step 6's first login fails and stage 1 has no one to run
+            # as. A non-string username is just as unusable. Treat it as fatal.
+            if not isinstance(username, str) or not username:
+                problems.append(f"!users[{i}].username")
+            if bad(user.get("!password")):
+                name = username if isinstance(username, str) and username else i
                 problems.append(f"!users[{name}].!password")
     return problems
 
@@ -278,6 +300,9 @@ def main() -> int:
 
     if args.base and os.path.exists(args.output) and os.path.samefile(args.base, args.output):
         raise SystemExit("--base and -o are the same file; the base would be lost")
+    if os.path.exists(args.output) and os.path.exists(args.creds) \
+            and os.path.samefile(args.creds, args.output):
+        raise SystemExit("--creds and -o are the same file; the creds would be lost")
 
     # Remove any config an earlier run left behind BEFORE anything can fail.
     # Otherwise an abort here leaves the old one in place, and the archinstall

@@ -280,3 +280,28 @@ _step4() {
 @test "the header backup is handed back to the user" {
     grep -A1 'luksHeaderBackup' "$CHECKLIST" | grep -q 'chown "$USER":'
 }
+
+@test "every archinstall archive URL in the docs pins the tested version" {
+    # The version is duplicated across make-disk-config.py, the README's
+    # "Verified against" line, and two `pacman -U .../archinstall-<v>-1-any`
+    # URLs. Step 13 tells the operator to bump all four together; this catches
+    # the one that gets forgotten.
+    local gen="$INSTALL_DIR/archinstall/make-disk-config.py"
+    local readme="$INSTALL_DIR/archinstall/README.md"
+    local tested
+    tested="$(sed -n 's/^TESTED_ARCHINSTALL = "\(.*\)"/\1/p' "$gen")"
+    [ -n "$tested" ]
+    local urls v
+    urls="$(grep -rhoE 'archinstall-[0-9.]+-[0-9]+-any\.pkg\.tar\.zst' "$CHECKLIST" "$readme")"
+    [ -n "$urls" ]
+    while IFS= read -r line; do
+        v="$(printf '%s\n' "$line" | sed -E 's/^archinstall-([0-9.]+)-[0-9]+-any.*/\1/')"
+        [ "$v" = "$tested" ] || { echo "archive URL pins $v but TESTED_ARCHINSTALL is $tested" >&2; false; }
+    done <<< "$urls"
+    # The README's "Verified against archinstall <v>" prose line is the fourth
+    # pinned place; it must match too.
+    local prose
+    prose="$(sed -nE 's/.*Verified against \*\*archinstall ([0-9.]+)\*\*.*/\1/p' "$readme")"
+    [ -n "$prose" ]
+    [ "$prose" = "$tested" ] || { echo "README prose pins $prose but TESTED_ARCHINSTALL is $tested" >&2; false; }
+}

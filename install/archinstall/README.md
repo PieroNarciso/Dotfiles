@@ -69,6 +69,12 @@ mv creds.json.example creds.json
 lsblk -o NAME,SIZE,MODEL,TRAN,RM,FSTYPE,MOUNTPOINTS   # find the target disk
 ```
 
+Only a **plaintext** creds file is supported. archinstall also accepts an
+encrypted creds file (its contents start with `$`), but the generator reads
+the file with `json.load` to check the secrets, so an encrypted one is refused
+as "cannot read". Keep `creds.json` plaintext — it lives on the ISO's ramdisk
+and dies at reboot (Step 5).
+
 Run these two one at a time, not pasted together — a pasted block feeds the
 archinstall line to the generator's retype prompt:
 

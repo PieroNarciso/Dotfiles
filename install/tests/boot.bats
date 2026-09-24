@@ -418,3 +418,72 @@ has_hook() { # <conf-contents> [drop-in-contents]
     [ "$before" = "$(cat "$ENTRIES"/*.conf)" ]
     ! compgen -G "$TEST_TMPDIR/.dotfiles-backup-*" >/dev/null
 }
+
+# --- M1: only edit loader entries on a machine archinstall installed --------
+
+@test "phase_microcode leaves the loader entries alone on a machine archinstall did not install" {
+    # The desktop was not laid down by our stage 0. Its mkinitcpio has no
+    # microcode hook AND its board firmware carries newer microcode than
+    # amd-ucode, so adding an initrd line is unwanted. We only manage the
+    # bootloader on machines archinstall installed (marker dir absent here).
+    setup_entries
+    printf 'HOOKS=(base udev autodetect keyboard modconf block filesystems fsck)\n' > "$TEST_TMPDIR/mkinitcpio.conf"
+    printf 'vendor_id\t: AuthenticAMD\n' > "$TEST_TMPDIR/cpuinfo"
+    before="$(cat "$ENTRIES"/*.conf)"
+    run bash -c "HOME='$TEST_TMPDIR'; source '$INSTALL_DIR/bootstrap.sh'
+        source '$INSTALL_DIR/lib/hw.sh'; source '$INSTALL_DIR/lib/boot.sh'
+        pkg_missing() { :; }
+        HW_CPUINFO='$TEST_TMPDIR/cpuinfo' MKINITCPIO_CONF='$TEST_TMPDIR/mkinitcpio.conf' \
+            BOOT_ARCHINSTALL_MARKER='$TEST_TMPDIR/no-archinstall' \
+            BOOTCTL_ENTRIES_DIR='$ENTRIES' BOOTCTL_ESP='$ESP' phase_microcode 2>&1"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"not installed by archinstall"* ]]
+    [ "$before" = "$(cat "$ENTRIES"/*.conf)" ]
+    ! compgen -G "$TEST_TMPDIR/.dotfiles-backup-*" >/dev/null
+}
+
+@test "phase_microcode adds the microcode initrd on an archinstall machine that lacks the hook" {
+    # The safety net the round-5 change was for: a machine we installed that
+    # has the package but no hook and no initrd line. Marker present, so edit.
+    setup_entries
+    printf 'HOOKS=(base udev autodetect keyboard modconf block filesystems fsck)\n' > "$TEST_TMPDIR/mkinitcpio.conf"
+    printf 'vendor_id\t: AuthenticAMD\n' > "$TEST_TMPDIR/cpuinfo"
+    mkdir -p "$TEST_TMPDIR/archinstall-marker"
+    run bash -c "HOME='$TEST_TMPDIR'; source '$INSTALL_DIR/bootstrap.sh'
+        source '$INSTALL_DIR/lib/hw.sh'; source '$INSTALL_DIR/lib/boot.sh'
+        pkg_missing() { :; }
+        HW_CPUINFO='$TEST_TMPDIR/cpuinfo' MKINITCPIO_CONF='$TEST_TMPDIR/mkinitcpio.conf' \
+            BOOT_ARCHINSTALL_MARKER='$TEST_TMPDIR/archinstall-marker' \
+            BOOTCTL_ENTRIES_DIR='$ENTRIES' BOOTCTL_ESP='$ESP' phase_microcode 2>&1"
+    [ "$status" -eq 0 ]
+    grep -qx 'initrd /amd-ucode.img' "$ENTRIES/arch.conf"
+}
+
+# --- L6: hook detection must match what mkinitcpio itself resolves ----------
+
+@test "a multi-line HOOKS array is read for the microcode hook" {
+    printf 'HOOKS=(base udev\n  autodetect microcode\n  block filesystems)\n' > "$TEST_TMPDIR/mkinitcpio.conf"
+    run bash -c "source '$INSTALL_DIR/lib/log.sh'; source '$INSTALL_DIR/lib/boot.sh'
+        MKINITCPIO_CONF='$TEST_TMPDIR/mkinitcpio.conf' boot_initramfs_has_microcode"
+    [ "$status" -eq 0 ]
+}
+
+@test "HOOKS+=(microcode) counts as loading microcode" {
+    printf 'HOOKS=(base udev autodetect block filesystems)\nHOOKS+=(microcode)\n' > "$TEST_TMPDIR/mkinitcpio.conf"
+    run bash -c "source '$INSTALL_DIR/lib/log.sh'; source '$INSTALL_DIR/lib/boot.sh'
+        MKINITCPIO_CONF='$TEST_TMPDIR/mkinitcpio.conf' boot_initramfs_has_microcode"
+    [ "$status" -eq 0 ]
+}
+
+@test "drop-ins are read in mkinitcpio's version-sort order, not shell glob order" {
+    printf 'HOOKS=(base udev autodetect block filesystems)\n' > "$TEST_TMPDIR/mkinitcpio.conf"
+    mkdir -p "$TEST_TMPDIR/mkinitcpio.conf.d"
+    # 9-add adds the hook, 10-remove takes it back. mkinitcpio sorts -V, so it
+    # sources 9-add THEN 10-remove and the hook is gone. A shell glob sorts
+    # "10-" before "9-", so the old grep|tail saw 9-add last and said present.
+    printf 'HOOKS=(base udev autodetect microcode block filesystems)\n' > "$TEST_TMPDIR/mkinitcpio.conf.d/9-add.conf"
+    printf 'HOOKS=(base udev autodetect block filesystems)\n' > "$TEST_TMPDIR/mkinitcpio.conf.d/10-remove.conf"
+    run bash -c "source '$INSTALL_DIR/lib/log.sh'; source '$INSTALL_DIR/lib/boot.sh'
+        MKINITCPIO_CONF='$TEST_TMPDIR/mkinitcpio.conf' boot_initramfs_has_microcode"
+    [ "$status" -ne 0 ]
+}

@@ -232,12 +232,35 @@ report" ]
     # archinstall machine is actually in.
     printf '#!/bin/sh\necho "%s:x:1000:1000::/home/%s:/usr/bin/bash"\n' "$USER" "$USER" \
         > "$TEST_TMPDIR/bin/getent"
-    chmod +x "$TEST_TMPDIR/bin/chsh" "$TEST_TMPDIR/bin/getent"
+    # Fixture zsh and shells file, so the test does not depend on the machine's
+    # real /usr/bin/zsh being installed and listed in /etc/shells.
+    printf '#!/bin/sh\n' > "$TEST_TMPDIR/bin/zsh"
+    chmod +x "$TEST_TMPDIR/bin/chsh" "$TEST_TMPDIR/bin/getent" "$TEST_TMPDIR/bin/zsh"
+    echo "$TEST_TMPDIR/bin/zsh" > "$TEST_TMPDIR/shells"
     run bash -c "PATH='$TEST_TMPDIR/bin:$PATH' HOME='$FAKE_HOME' \
+        BOOTSTRAP_ZSH='$TEST_TMPDIR/bin/zsh' BOOTSTRAP_SHELLS='$TEST_TMPDIR/shells' \
         bash -c \"source '$INSTALL_DIR/bootstrap.sh'; DRY_RUN=0; phase_shell; echo PHASE_RETURNED=\\\$?\" 2>&1"
     [ "$status" -eq 0 ]
     [[ "$output" == *"PHASE_RETURNED=0"* ]]
     [[ "$output" == *"chsh failed"* ]]
+}
+
+@test "chsh is skipped when zsh is not listed in the shells file" {
+    setup_fixture
+    mkdir -p "$TEST_TMPDIR/bin"
+    printf '#!/bin/sh\necho "%s:x:1000:1000::/home/%s:/usr/bin/bash"\n' "$USER" "$USER" \
+        > "$TEST_TMPDIR/bin/getent"
+    printf '#!/bin/sh\necho SHOULD-NOT-RUN-CHSH; exit 1\n' > "$TEST_TMPDIR/bin/chsh"
+    printf '#!/bin/sh\n' > "$TEST_TMPDIR/bin/zsh"
+    chmod +x "$TEST_TMPDIR/bin/getent" "$TEST_TMPDIR/bin/chsh" "$TEST_TMPDIR/bin/zsh"
+    : > "$TEST_TMPDIR/shells"   # empty: zsh is not listed
+    run bash -c "PATH='$TEST_TMPDIR/bin:$PATH' HOME='$FAKE_HOME' \
+        BOOTSTRAP_ZSH='$TEST_TMPDIR/bin/zsh' BOOTSTRAP_SHELLS='$TEST_TMPDIR/shells' \
+        bash -c \"source '$INSTALL_DIR/bootstrap.sh'; DRY_RUN=0; phase_shell; echo PHASE_RETURNED=\\\$?\" 2>&1"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"PHASE_RETURNED=0"* ]]
+    [[ "$output" == *"not listed in"* ]]
+    [[ "$output" != *"SHOULD-NOT-RUN-CHSH"* ]]
 }
 
 @test "sourcing bootstrap.sh defines the phases without running them" {
@@ -338,4 +361,47 @@ STUB
     [[ "$output" == *"INSTALL gpu-nvidia.txt"* ]]
     [[ "$output" != *"INSTALL gpu-amd.txt"* ]]
     [[ "$output" == *"unrecognised GPU"* ]]
+}
+
+@test "the laptop package group is skipped on a machine with no battery" {
+    # The desktop has no battery, so tlp/thermald/etc. in laptop.txt are dead
+    # weight there. The service enable (phase_services) is already battery-gated;
+    # the package install must be too, or --groups had to be spelled out by hand.
+    setup_fixture
+    run bash -c "HOME='$FAKE_HOME'; source '$INSTALL_DIR/bootstrap.sh'
+        DRY_RUN=1; PKG_GROUPS=core,laptop
+        aur_install_file() { echo \"INSTALL \$(basename \"\$1\")\"; }
+        hw_gpu_vendors() { printf 'amd\n'; }
+        hw_has_battery() { return 1; }
+        phase_packages 2>&1"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"INSTALL core.txt"* ]]
+    [[ "$output" != *"INSTALL laptop.txt"* ]]
+    [[ "$output" == *"no battery"* ]]
+}
+
+@test "the laptop package group is installed on a machine with a battery" {
+    setup_fixture
+    run bash -c "HOME='$FAKE_HOME'; source '$INSTALL_DIR/bootstrap.sh'
+        DRY_RUN=1; PKG_GROUPS=core,laptop
+        aur_install_file() { echo \"INSTALL \$(basename \"\$1\")\"; }
+        hw_gpu_vendors() { printf 'amd\n'; }
+        hw_has_battery() { return 0; }
+        phase_packages 2>&1"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"INSTALL laptop.txt"* ]]
+}
+
+@test "an explicit --groups laptop installs laptop.txt even with no battery" {
+    # The battery gate is a default-set convenience. If the user names laptop
+    # on --groups, that is an explicit request and must be honored.
+    setup_fixture
+    run bash -c "HOME='$FAKE_HOME'; source '$INSTALL_DIR/bootstrap.sh'
+        DRY_RUN=1; PKG_GROUPS=core,laptop; PKG_GROUPS_EXPLICIT=1
+        aur_install_file() { echo \"INSTALL \$(basename \"\$1\")\"; }
+        hw_gpu_vendors() { printf 'amd\n'; }
+        hw_has_battery() { return 1; }
+        phase_packages 2>&1"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"INSTALL laptop.txt"* ]]
 }

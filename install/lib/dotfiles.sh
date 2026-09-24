@@ -18,6 +18,11 @@ df_clone_or_pull() {
     return 1
 }
 
+# Whether stow is available. stow is a paru package (core.txt), so on a fresh
+# machine where paru failed to build it there is none. A seam: the real run
+# asks PATH; the tests force the answer to exercise the no-stow path.
+df_stow_available() { command -v stow >/dev/null 2>&1; }
+
 # Every top-level directory holding at least one dotfile is a stow package.
 # A directory with no dot-entry is repo tooling (install/, docs/) and must
 # never be stowed into $HOME.

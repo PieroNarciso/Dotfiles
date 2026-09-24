@@ -483,3 +483,51 @@ g.main()
     [ ! -e out.json ]
     [ ! -e out.json.tmp ]
 }
+
+# --- M3: a user with no username is no user at all --------------------------
+
+_creds_problems() { # <python-dict-literal> <encrypt True/False>
+    python3 -c "
+import importlib.util, sys
+spec = importlib.util.spec_from_file_location('g', sys.argv[1])
+g = importlib.util.module_from_spec(spec); spec.loader.exec_module(g)
+print(g.creds_problems($1, $2))
+" "$GEN"
+}
+
+@test "a user whose username is empty, missing, or not a string is refused" {
+    run _creds_problems "{'!users':[{'username':'','!password':'p'}], '!root-password':'r'}" False
+    [ "$status" -eq 0 ]; [[ "$output" == *"!users[0].username"* ]]
+    run _creds_problems "{'!users':[{'!password':'p'}], '!root-password':'r'}" False
+    [ "$status" -eq 0 ]; [[ "$output" == *"!users[0].username"* ]]
+    run _creds_problems "{'!users':[{'username':42,'!password':'p'}], '!root-password':'r'}" False
+    [ "$status" -eq 0 ]; [[ "$output" == *"!users[0].username"* ]]
+    run _creds_problems "{'!users':['notadict'], '!root-password':'r'}" False
+    [ "$status" -eq 0 ]; [[ "$output" == *"!users[0].username"* ]]
+}
+
+@test "a good user with a real username and password is accepted" {
+    run _creds_problems "{'!users':[{'username':'u','!password':'p'}], '!root-password':'r'}" False
+    [ "$status" -eq 0 ]; [[ "$output" == *"[]"* ]]
+}
+
+# --- L2: archinstall's hashed key spellings are unsupported ------------------
+
+@test "creds carrying archinstall's hashed key spellings are refused" {
+    run _creds_problems "{'users':[{'username':'u'}], '!users':[{'username':'u','!password':'p'}], '!root-password':'r'}" False
+    [ "$status" -eq 0 ]; [[ "$output" == *"users"* ]]
+    run _creds_problems "{'root_enc_password':'x', '!users':[{'username':'u','!password':'p'}], '!root-password':'r'}" False
+    [ "$status" -eq 0 ]; [[ "$output" == *"root_enc_password"* ]]
+}
+
+# --- L1: --creds and -o must not be the same file ---------------------------
+
+@test "--creds and -o naming the same file is refused before the creds are deleted" {
+    _stub_archinstall "$(_tested_version)"
+    cd "$BATS_TEST_TMPDIR"
+    cp "$(_set_creds)" creds.json
+    run _gen $'/dev/testdisk\n' --device /dev/testdisk -o creds.json --creds creds.json
+    [ "$status" -ne 0 ]
+    [ -s creds.json ]
+    [[ "$output" != *"ERASE"* ]]
+}
