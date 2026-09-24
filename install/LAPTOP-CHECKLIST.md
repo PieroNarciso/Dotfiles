@@ -202,10 +202,13 @@ steps in order.
     it is a global option, and in an argument position nmcli rejects it. It is
     what keeps the wifi password out of your shell history, so the natural
     retry after a syntax error is the one that leaks it.
-  - **`sudo`.** Letting a non-root user control networking needs polkit, which
-    is only an *optional* dependency of networkmanager and is not in
-    `laptop.json`'s package list. It first arrives with `polkit-gnome` in
-    stage 1 — which needs the network this step is creating.
+  - **`sudo` on the `connect`.** Reading (`device status`, `wifi list`) works
+    as your user; *changing* anything does not, and fails with
+    `Error: ... Insufficient privileges`. polkit itself happens to be on the
+    system — pulled in as a dependency of `pcsclite`, not deliberately — but
+    nothing is running a polkit *authentication agent* to answer the prompt:
+    that arrives with `polkit-gnome` in stage 1, which needs the network this
+    step is creating. Verified on a real install, not assumed.
 
   Do not continue until `ping` succeeds. On ethernet this is usually already
   done for you, but check rather than assume.

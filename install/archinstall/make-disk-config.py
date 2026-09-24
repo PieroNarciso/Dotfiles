@@ -82,6 +82,27 @@ async def _generate(device_path: str, encrypt: bool) -> tuple[dict, dict | None]
     return layout.json(), enc
 
 
+def _human_size(size: dict) -> str:
+    """Render a serialized partition size so a human can check it against lsblk.
+
+    archinstall sizes the ESP in GiB but the "rest of the disk" root partition
+    in raw bytes, so the layout dump printed `1GiB` beside `41873833984B`.
+    That dump is the operator's main defence against erasing the wrong disk,
+    and an eleven-digit byte count is not something anyone checks against
+    `lsblk` -- it just gets skimmed.
+    """
+    value = size.get("value")
+    unit = size.get("unit", "")
+    if value is None:
+        return "?"
+    if unit == "B" and isinstance(value, (int, float)):
+        for suffix, factor in (("TiB", 1 << 40), ("GiB", 1 << 30),
+                               ("MiB", 1 << 20), ("KiB", 1 << 10)):
+            if value >= factor:
+                return f"{value / factor:.1f}{suffix}"
+    return f"{value}{unit}"
+
+
 def _describe(disk_config: dict, encrypt: bool) -> str:
     """Render the serialized layout for the operator to read before erasing.
 
@@ -103,9 +124,9 @@ def _describe(disk_config: dict, encrypt: bool) -> str:
                 enc_tag = "  [LUKS2]"
                 tagged += 1
             lines.append(
-                "    {:<8} {:>6} {:<6} {}{}".format(
+                "    {:<8} {:>9} {:<6} {}{}".format(
                     part.get("status", ""),
-                    f"{size.get('value', '?')}{size.get('unit', '')}",
+                    _human_size(size),
                     part.get("fs_type", ""),
                     part.get("mountpoint") or "-",
                     enc_tag,

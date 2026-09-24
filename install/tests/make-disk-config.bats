@@ -182,3 +182,40 @@ print(g._describe(cfg, False))
     [ "$status" -eq 0 ]
     [[ "$output" != *"LUKS"* ]]
 }
+
+@test "the layout dump prints sizes a human can check against lsblk" {
+    # Found by the live VM run: archinstall sizes the ESP in GiB but the
+    # "rest of the disk" root partition in raw bytes, so the dump read
+    # "1GiB" beside "41873833984B". That dump is the operator's main defence
+    # against erasing the wrong disk, and an 11-digit byte count is skimmed,
+    # not checked.
+    run python3 -c "
+import importlib.util, sys
+spec = importlib.util.spec_from_file_location('g', sys.argv[1])
+g = importlib.util.module_from_spec(spec); spec.loader.exec_module(g)
+cfg = {'device_modifications': [{'device': '/dev/vda', 'wipe': True, 'partitions': [
+    {'status': 'create', 'size': {'value': 1, 'unit': 'GiB'}, 'fs_type': 'fat32', 'mountpoint': '/boot'},
+    {'status': 'create', 'size': {'value': 41873833984, 'unit': 'B'}, 'fs_type': 'ext4', 'mountpoint': '/'},
+]}]}
+print(g._describe(cfg, True))
+" "$GEN"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"39.0GiB"* ]]
+    [[ "$output" != *"41873833984"* ]]
+    # A size already in sensible units is left exactly as it was.
+    [[ "$output" == *"1GiB"* ]]
+}
+
+@test "_human_size leaves units it cannot convert alone" {
+    run python3 -c "
+import importlib.util, sys
+spec = importlib.util.spec_from_file_location('g', sys.argv[1])
+g = importlib.util.module_from_spec(spec); spec.loader.exec_module(g)
+print(g._human_size({'value': 2048, 'unit': 'sectors'}))
+print(g._human_size({'value': 512, 'unit': 'B'}))
+print(g._human_size({}))
+" "$GEN"
+    [ "${lines[0]}" = "2048sectors" ]
+    [ "${lines[1]}" = "512B" ]
+    [ "${lines[2]}" = "?" ]
+}

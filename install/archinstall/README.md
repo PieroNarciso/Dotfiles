@@ -88,10 +88,10 @@ sudo nmcli --ask device wifi connect "YOUR-SSID"
 ping -c3 archlinux.org
 ```
 
-`--ask` is a global option and must come before `device`, and `sudo` is
-required because polkit — what lets a non-root user control networking — is
-only an optional dependency of networkmanager and is not installed by
-stage 0.
+`--ask` is a global option and must come before `device`. `sudo` is required
+because no polkit authentication agent runs at this point — `nmcli` reads
+fine as your user but any change fails with `Insufficient privileges`, and
+the agent (`polkit-gnome`) only arrives in stage 1.
 
 Then run stage 1:
 
