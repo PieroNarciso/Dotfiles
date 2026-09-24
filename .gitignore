@@ -17,3 +17,6 @@ install/archinstall/creds.json
 # Python bytecode, regenerated whenever the generator is imported by its tests.
 __pycache__/
 *.pyc
+
+# AI planning/design docs — kept out of the public repo
+docs/

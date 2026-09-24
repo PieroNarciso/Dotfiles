@@ -7,8 +7,8 @@ steps in order.
 
 - [ ] **Step 1: Gate — the VM validation run must pass before stage 0 touches the laptop.**
   This is not a suggestion: the design makes it a hard gate ("Stage 0 is not
-  run on laptop hardware until the VM run passes",
-  `docs/superpowers/specs/2026-09-21-arch-laptop-bootstrap-design.md`). Install
+  run on laptop hardware until the VM run passes").
+  Install
   the same configs end to end in a UEFI VM on a machine you already have —
   systemd-boot needs UEFI, so a BIOS VM proves nothing:
 

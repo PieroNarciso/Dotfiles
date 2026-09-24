@@ -1,7 +1,6 @@
 #!/usr/bin/env bash
 # shellcheck source-path=SCRIPTDIR
 # Stage 1 of the Arch laptop setup: everything after the first login.
-# See docs/superpowers/specs/2026-09-21-arch-laptop-bootstrap-design.md
 set -euo pipefail
 
 INSTALL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"

@@ -13,7 +13,6 @@ Full machine setup, from the Arch ISO onwards, lives in `install/`:
 - `install/pkg-audit.sh` — reports drift between the group files and what is
   actually installed. Run it after installing something new.
 
-Design notes: `docs/superpowers/specs/2026-09-21-arch-laptop-bootstrap-design.md`
 
 ## Just the dotfiles, on a machine that already exists
 
