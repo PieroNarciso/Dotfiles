@@ -215,3 +215,32 @@ teardown() { teardown_tmpdir; }
         echo \"COUNT=\$DF_BACKED_UP\""
     [[ "$output" == *"COUNT=2"* ]]
 }
+
+@test "an absolute symlink in a package does not abort the whole run" {
+    # Found by the live VM install. mason and packer write absolute symlinks
+    # into .local/share/nvim (-> /home/piero/...), stow refuses them outright
+    # with "All operations aborted", and the unguarded `run stow` took the
+    # entire bootstrap down under set -e -- no shell change, no services, no
+    # microcode entry, no manual-steps report.
+    mkdir -p "$REPO/bad/.config/bad"
+    ln -s /etc/hostname "$REPO/bad/.config/bad/absolute-link"
+    run bash -c "source '$INSTALL_DIR/lib/log.sh'; source '$INSTALL_DIR/lib/dotfiles.sh'; \
+        df_stow_repo '$REPO' '$FAKE_HOME'; echo RETURNED=\$?"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"RETURNED=0"* ]]
+}
+
+@test "the local package does not stow generated nvim state" {
+    # .local/share/nvim is mason/packer output, not configuration, and it is
+    # where every absolute symlink in this repo lives.
+    REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/../.." && pwd)"
+    [ -f "$REPO_ROOT/local/.stow-local-ignore" ]
+    grep -q 'share/nvim' "$REPO_ROOT/local/.stow-local-ignore"
+    # And no absolute symlink outside that ignored subtree, which the ignore
+    # file would not protect against.
+    local stray
+    stray="$(find "$REPO_ROOT" -type l -not -path '*/.git/*' \
+        -not -path "$REPO_ROOT/local/.local/share/nvim/*" \
+        -exec sh -c 'case "$(readlink "$1")" in /*) echo "$1";; esac' _ {} \; )"
+    [ -z "$stray" ] || { echo "absolute symlinks outside the ignored subtree:"; echo "$stray"; false; }
+}

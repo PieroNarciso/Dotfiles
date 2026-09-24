@@ -280,10 +280,19 @@ steps in order.
   mounted `dmask=0022` reads it fine as the user, which is how this was
   wrong here in the first place.)
 
+  The glob has to be expanded by the *privileged* shell, not yours. `sudo cat
+  /boot/loader/entries/*.conf` fails: your shell tries to expand the pattern
+  first, cannot read the directory, and never reaches sudo — silently under
+  bash, and with `zsh: no matches found` under the zsh that Step 8 just made
+  your login shell.
+
   ```bash
-  sudo cat /boot/loader/entries/*.conf   # the microcode initrd must come FIRST
-  sudo ls -la /boot/*.img                # the image it names must actually exist
+  sudo sh -c 'cat /boot/loader/entries/*.conf'   # microcode initrd must come FIRST
+  sudo sh -c 'ls -la /boot/*.img'                # the image it names must exist
   ```
+
+  Expected: every entry has `initrd /amd-ucode.img` (or `intel-`) *above* its
+  `initrd /initramfs-...` line, and that `.img` appears in the listing.
 
   Check the two against each other by hand: for every `initrd /X.img` line,
   `X.img` must appear in the `ls`. systemd-boot will not boot an entry naming

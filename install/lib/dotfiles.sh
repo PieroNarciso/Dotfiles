@@ -75,5 +75,14 @@ df_stow_repo() {
     # turns ~/.config into a link into its own tree and the second repo aborts
     # with "existing target is not owned by stow". Real directories with
     # symlinked leaves let both repos share ~/.config.
-    run stow --restow --no-folding --dir="$repo" --target="$target" "${pkgs[@]}"
+    # Guarded for the same reason chsh and the service enables are: stow
+    # aborts the entire invocation on one bad package ("All operations
+    # aborted"), and under set -e that took the whole bootstrap down with it
+    # -- losing the shell change, the services, the microcode entry and the
+    # manual-steps report, none of which depend on stow succeeding.
+    if ! run stow --restow --no-folding --dir="$repo" --target="$target" "${pkgs[@]}"; then
+        log_warn "stow failed for $repo; dotfiles are NOT linked"
+        log_warn "fix the reported conflict, then: stow --restow --no-folding --dir=$repo --target=$target ${pkgs[*]}"
+        return 0
+    fi
 }

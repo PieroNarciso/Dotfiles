@@ -195,3 +195,20 @@ extract_find_check() {
     [[ "$output" != *"reboot"* ]]
     [[ "$output" != *"bootstrap.sh"* ]]
 }
+
+@test "no checklist command globs an unreadable /boot in the user's shell" {
+    # Found by the live VM run. `sudo cat /boot/loader/entries/*.conf` never
+    # reaches sudo: the unprivileged shell expands the glob first and cannot
+    # read a mode-700 ESP. Under bash the pattern passes through and cat
+    # fails; under the zsh this toolkit sets as the login shell it is a hard
+    # "no matches found" and the command does not run at all. The glob has to
+    # be inside the privileged shell: sudo sh -c '...'.
+    local offenders
+    offenders="$(grep -nE "^[[:space:]]+sudo[[:space:]]+[a-z-]+[^|#]*[[:space:]]/boot[^[:space:]]*\*" "$CHECKLIST" \
+        | grep -vE "sudo[[:space:]]+(sh|bash)[[:space:]]+-c" || true)"
+    if [ -n "$offenders" ]; then
+        echo "glob expanded in the caller's shell against a root-only /boot:"
+        echo "$offenders"
+    fi
+    [ -z "$offenders" ]
+}
