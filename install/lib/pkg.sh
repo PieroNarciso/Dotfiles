@@ -31,16 +31,39 @@ _pkg_install_with() {
         return 0
     fi
     log_step "$(basename "$file"): installing ${#missing[@]} of ${#wanted[@]}"
-    local p
-    for p in "${missing[@]}"; do
-        # One at a time: a single unavailable package must not abort the group.
-        # shellcheck disable=SC2086  # $installer intentionally splits into multiple words
-        if ! run $installer --needed --noconfirm "$p"; then
-            log_warn "failed to install: $p"
-            PKG_FAILED+=("$p")
-        fi
-    done
+    _pkg_install_batch "$installer" "${missing[@]}"
     return 0
+}
+
+# _pkg_install_batch <installer-command> <package>...
+#
+# Tries the whole batch as one transaction first, so pacman sees every
+# explicit target while it resolves virtual dependencies (a package earlier
+# in a group must not make pacman pick a default provider that a package
+# later in the same group then conflicts with). If the transaction fails,
+# bisect: split the batch in half and retry each half. This isolates a
+# genuinely bad package (the guarantee the old one-at-a-time loop existed
+# for) without falling all the way to singleton installs when the failure
+# has nothing to do with any one package -- a group-wide failure caused by
+# one unrelated bad name must not silently strip every other package's
+# sibling context and reintroduce the provider bug for them too.
+_pkg_install_batch() {
+    local installer="$1"; shift
+    local -a pkgs=("$@")
+    [ "${#pkgs[@]}" -eq 0 ] && return 0
+    # shellcheck disable=SC2086  # $installer intentionally splits into multiple words
+    if run $installer --needed --noconfirm "${pkgs[@]}"; then
+        return 0
+    fi
+    if [ "${#pkgs[@]}" -eq 1 ]; then
+        log_warn "failed to install: ${pkgs[0]}"
+        PKG_FAILED+=("${pkgs[0]}")
+        return 0
+    fi
+    log_warn "batch of ${#pkgs[@]} packages failed as a unit; narrowing down"
+    local mid=$(( ${#pkgs[@]} / 2 ))
+    _pkg_install_batch "$installer" "${pkgs[@]:0:mid}"
+    _pkg_install_batch "$installer" "${pkgs[@]:mid}"
 }
 
 # Everything installs through paru, which resolves repo and AUR packages

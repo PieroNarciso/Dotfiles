@@ -2,6 +2,11 @@
 hyprland
 hyprlock
 hyprpaper
+# pipewire-jack provides the virtual `jack` package that waybar depends on.
+# The group is installed in one transaction so pacman resolves this correctly
+# regardless of order, but keeping the provider first makes the dependency
+# visible.
+pipewire-jack
 waybar
 wofi
 rofi
@@ -18,7 +23,6 @@ gnome-keyring
 alacritty
 kitty
 pipewire-alsa
-pipewire-jack
 pipewire-pulse
 pavucontrol
 playerctl
