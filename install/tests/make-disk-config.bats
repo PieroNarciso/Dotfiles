@@ -229,7 +229,7 @@ print(g._human_size({}))
     [ "${lines[2]}" = "?" ]
 }
 
-# A stand-in archinstall 4.4 on PYTHONPATH, shaped like the real objects the
+# A stand-in archinstall on PYTHONPATH, shaped like the real objects the
 # generator touches, so main() runs end to end without a real disk or root.
 # The dist-info is what importlib.metadata reads the version from.
 _stub_archinstall() { # <version>
@@ -290,13 +290,36 @@ PY
     STUB_PATH="$root"
 }
 
+# The release the generator itself names, so bumping TESTED_ARCHINSTALL does
+# not break every end-to-end test below.
+_tested_version() {
+    python3 -c "
+import importlib.util, sys
+spec = importlib.util.spec_from_file_location('g', sys.argv[1])
+g = importlib.util.module_from_spec(spec); spec.loader.exec_module(g)
+print(g.TESTED_ARCHINSTALL)
+" "$GEN"
+}
+
+_set_creds() { # prints the path of a creds file with every secret set
+    printf '%s\n' '{"!users": [{"username": "u", "!password": "set-a", "sudo": true}],' \
+        '"!root-password": "set-b", "encryption_password": "set-c"}' > "$BATS_TEST_TMPDIR/set-creds.json"
+    echo "$BATS_TEST_TMPDIR/set-creds.json"
+}
+
+# Runs the generator with a creds file whose secrets are all set, unless the
+# test passes its own --creds.
 _gen() { # <stdin> <args...>
     local input="$1"; shift
-    printf '%s' "$input" | PYTHONPATH="$STUB_PATH" python3 "$GEN" "$@"
+    local -a creds=()
+    if [[ " $* " != *" --creds "* ]]; then
+        creds=(--creds "$(_set_creds)")
+    fi
+    printf '%s' "$input" | PYTHONPATH="$STUB_PATH" python3 "$GEN" "${creds[@]}" "$@"
 }
 
 @test "main writes an encrypted config after the device is retyped" {
-    _stub_archinstall 4.4
+    _stub_archinstall "$(_tested_version)"
     cd "$BATS_TEST_TMPDIR"
     echo '{"hostname": "laptop"}' > base.json
     run _gen $'/dev/testdisk\n' --device /dev/testdisk --encrypt --base base.json -o out.json
@@ -316,7 +339,7 @@ assert 'disk_encryption' not in c
     # The Step 4 block runs archinstall --silent on install-config.json right
     # after the generator. An abort that left the previous file in place
     # handed archinstall a config for whatever disk the previous run named.
-    _stub_archinstall 4.4
+    _stub_archinstall "$(_tested_version)"
     cd "$BATS_TEST_TMPDIR"
     echo '{"PREVIOUS RUN": "/dev/sda"}' > out.json
     run _gen $'/dev/wrong\n' --device /dev/testdisk --encrypt -o out.json
@@ -326,7 +349,7 @@ assert 'disk_encryption' not in c
 }
 
 @test "EOF at the confirmation prompt aborts cleanly and leaves no config" {
-    _stub_archinstall 4.4
+    _stub_archinstall "$(_tested_version)"
     cd "$BATS_TEST_TMPDIR"
     echo '{"PREVIOUS RUN": "/dev/sda"}' > out.json
     run _gen '' --device /dev/testdisk -o out.json
@@ -337,24 +360,24 @@ assert 'disk_encryption' not in c
 }
 
 @test "an archinstall other than the verified release is refused before the dump" {
-    _stub_archinstall 4.5
+    _stub_archinstall 9.9
     cd "$BATS_TEST_TMPDIR"
     echo '{"PREVIOUS RUN": "/dev/sda"}' > out.json
     run _gen $'/dev/testdisk\n' --device /dev/testdisk -o out.json
     [ "$status" -eq 1 ]
-    [[ "$output" == *"archinstall 4.5"* ]]
-    [[ "$output" == *"--archinstall-version-verified 4.5"* ]]
+    [[ "$output" == *"archinstall 9.9"* ]]
+    [[ "$output" == *"--archinstall-version-verified 9.9"* ]]
     [[ "$output" != *"ERASE"* ]]
     [ ! -e out.json ]
 }
 
 @test "the version override only counts for the version actually running" {
-    _stub_archinstall 4.5
+    _stub_archinstall 9.9
     cd "$BATS_TEST_TMPDIR"
-    run _gen $'/dev/testdisk\n' --device /dev/testdisk -o out.json --archinstall-version-verified 4.6
+    run _gen $'/dev/testdisk\n' --device /dev/testdisk -o out.json --archinstall-version-verified 9.8
     [ "$status" -eq 1 ]
     [ ! -e out.json ]
-    run _gen $'/dev/testdisk\n' --device /dev/testdisk -o out.json --archinstall-version-verified 4.5
+    run _gen $'/dev/testdisk\n' --device /dev/testdisk -o out.json --archinstall-version-verified 9.9
     [ "$status" -eq 0 ]
     [ -f out.json ]
 }
@@ -374,7 +397,7 @@ print(g._describe_device({'path': '/dev/sdb', 'model': 'SanDisk', 'size': '28.6 
 }
 
 @test "--base and -o naming the same file is refused before it is deleted" {
-    _stub_archinstall 4.4
+    _stub_archinstall "$(_tested_version)"
     cd "$BATS_TEST_TMPDIR"
     echo '{"hostname": "laptop"}' > laptop.json
     run _gen $'/dev/testdisk\n' --device /dev/testdisk --base laptop.json -o laptop.json
@@ -385,4 +408,78 @@ print(g._describe_device({'path': '/dev/sdb', 'model': 'SanDisk', 'size': '28.6 
 @test "there is no flag that skips the confirmation" {
     run python3 "$GEN" --help
     [[ "$output" != *"no-confirm"* ]]
+}
+
+@test "the published creds.json.example is refused before anything is erased" {
+    # Unedited, it would encrypt the laptop with a passphrase anyone can read
+    # in this repository.
+    _stub_archinstall "$(_tested_version)"
+    cd "$BATS_TEST_TMPDIR"
+    echo '{"PREVIOUS RUN": "/dev/sda"}' > out.json
+    run _gen $'/dev/testdisk\n' --device /dev/testdisk --encrypt -o out.json \
+        --creds "$REPO/install/archinstall/creds.json.example"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"encryption_password"* ]]
+    [[ "$output" == *"!root-password"* ]]
+    [[ "$output" == *"!users[piero].!password"* ]]
+    [[ "$output" != *"ERASE"* ]]
+    [ ! -e out.json ]
+}
+
+@test "an empty or missing encryption_password is refused under --encrypt" {
+    # archinstall reads an empty passphrase as "no encryption" and installs
+    # in the clear, after the dump already showed [LUKS2].
+    _stub_archinstall "$(_tested_version)"
+    cd "$BATS_TEST_TMPDIR"
+    for enc in '"encryption_password": "",' ''; do
+        printf '{%s "!users": [{"username": "u", "!password": "a"}], "!root-password": "b"}\n' "$enc" > c.json
+        run _gen $'/dev/testdisk\n' --device /dev/testdisk --encrypt -o out.json --creds c.json
+        [ "$status" -eq 1 ]
+        [[ "$output" == *"encryption_password"* ]]
+        [ ! -e out.json ]
+    done
+    # Without --encrypt there is no passphrase to need.
+    run _gen $'/dev/testdisk\n' --device /dev/testdisk -o out.json --creds c.json
+    [ "$status" -eq 0 ]
+    [ -f out.json ]
+}
+
+@test "a creds file that is missing or not JSON is refused" {
+    _stub_archinstall "$(_tested_version)"
+    cd "$BATS_TEST_TMPDIR"
+    run _gen $'/dev/testdisk\n' --device /dev/testdisk -o out.json --creds nope.json
+    [ "$status" -eq 1 ]
+    [[ "$output" != *"Traceback"* ]]
+    echo 'not json' > bad.json
+    run _gen $'/dev/testdisk\n' --device /dev/testdisk -o out.json --creds bad.json
+    [ "$status" -eq 1 ]
+    [[ "$output" != *"Traceback"* ]]
+    [ ! -e out.json ]
+}
+
+@test "the last line of a successful run is the one the checklist tells you to look for" {
+    _stub_archinstall "$(_tested_version)"
+    cd "$BATS_TEST_TMPDIR"
+    run _gen $'/dev/testdisk\n' --device /dev/testdisk --encrypt -o out.json
+    [ "$status" -eq 0 ]
+    # Piped stdin echoes no newline after the prompt, so the line ends with it.
+    [[ "${lines[-1]}" == *"wrote out.json" ]]
+}
+
+@test "a failed write leaves neither the config nor its temp file" {
+    _stub_archinstall "$(_tested_version)"
+    cd "$BATS_TEST_TMPDIR"
+    # A base value json cannot serialise makes json.dump fail mid-write.
+    run bash -c "printf '/dev/testdisk\n' | PYTHONPATH='$STUB_PATH' python3 -c '
+import importlib.util, sys, json
+spec = importlib.util.spec_from_file_location(\"g\", sys.argv[1])
+g = importlib.util.module_from_spec(spec); spec.loader.exec_module(g)
+real = g.build_config
+g.build_config = lambda *a: {**real(*a), \"bad\": object()}
+sys.argv = [\"g\", \"--device\", \"/dev/testdisk\", \"-o\", \"out.json\", \"--creds\", sys.argv[2]]
+g.main()
+' '$GEN' '$(_set_creds)'"
+    [ "$status" -ne 0 ]
+    [ ! -e out.json ]
+    [ ! -e out.json.tmp ]
 }

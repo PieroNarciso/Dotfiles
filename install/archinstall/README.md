@@ -4,7 +4,9 @@ Verified against **archinstall 4.4** (Arch ISO 2026.09.01).
 `make-disk-config.py` enforces this: on any other release it stops before
 touching a disk (`TESTED_ARCHINSTALL` in the script). Re-verify the config
 keys against the new release, then either bump that constant together with
-this line or pass `--archinstall-version-verified <version>` for one run.
+this line and the archive URL below, or pass
+`--archinstall-version-verified <version>` for one run. Do not use
+`pacman -Sy archinstall` on the ISO: it installs whatever is current.
 
 ## Before you start
 
@@ -29,6 +31,7 @@ boot, back up the LUKS header:
 
 ```bash
 sudo cryptsetup luksHeaderBackup /dev/nvme0n1p2 --header-backup-file luks-header.img
+sudo chown "$USER": luks-header.img   # cryptsetup writes it root-owned, mode 0400
 ```
 
 Keep that file somewhere other than the laptop. Anyone holding it plus the
@@ -54,12 +57,14 @@ the only fix is to reinstall — a disk cannot be encrypted in place.
 Boot the Arch ISO, connect to the network (`iwctl` for wifi), then:
 
 ```bash
-pacman -Sy archinstall
+archinstall --version   # the ISO ships one; if it is not 4.4, install 4.4:
+pacman -U --noconfirm https://archive.archlinux.org/packages/a/archinstall/archinstall-4.4-1-any.pkg.tar.zst
 curl -LO https://raw.githubusercontent.com/PieroNarciso/Dotfiles/main/install/archinstall/laptop.json
 curl -LO https://raw.githubusercontent.com/PieroNarciso/Dotfiles/main/install/archinstall/creds.json.example
 curl -LO https://raw.githubusercontent.com/PieroNarciso/Dotfiles/main/install/archinstall/make-disk-config.py
 mv creds.json.example creds.json
 # edit creds.json: set the user password, root password and encryption_password
+# (the generator refuses to run while any of them is empty or CHANGE-ME...)
 
 lsblk -o NAME,SIZE,MODEL,TRAN,RM,FSTYPE,MOUNTPOINTS   # find the target disk
 ```
@@ -69,7 +74,7 @@ archinstall line to the generator's retype prompt:
 
 ```bash
 python make-disk-config.py --device /dev/nvme0n1 --encrypt \
-    --base laptop.json -o install-config.json
+    --base laptop.json --creds creds.json -o install-config.json
 ```
 
 ```bash
@@ -80,8 +85,9 @@ archinstall --config install-config.json --creds creds.json --silent
 The generator deletes any `install-config.json` left by an earlier run before
 it does anything else, so an aborted run leaves nothing for archinstall to
 pick up. It prints the disk as it is now — model, size, every existing
-partition, and `REMOVABLE` if it is a USB device such as the stick you
-booted from — then the partition layout it is about to write, then asks you
+partition, and `REMOVABLE` if the kernel flags it removable, as it does
+the stick you booted from (a USB SSD is not flagged: `lsblk`'s `TRAN`
+column says `usb` for both) — then the partition layout it is about to write, then asks you
 to retype the device path. **Read the layout, not the prompt.** The prompt no
 longer names the device — retyping it catches a slip between reading `lsblk`
 and typing, and nothing more; it cannot catch a wrong decision about which

@@ -253,3 +253,30 @@ extract_recovery() {
     [[ "$output" == *"user_credentials.json"* ]]
     [[ "$output" != *"clean:"* ]]
 }
+
+# Step 4 prose, by line number within the step. Reading the dump only helps
+# if the instructions for reading it come before the command that erases.
+_step4() {
+    sed -n '/\*\*Step 4: Run stage 0\.\*\*/,/\*\*Step 5:/p' "$CHECKLIST"
+}
+
+@test "Step 4 explains the dump before the archinstall command that erases" {
+    local step luks erase
+    step="$(_step4)"
+    [ -n "$step" ]
+    luks="$(grep -n 'must carry a `\[LUKS2\]` tag' <<< "$step" | cut -d: -f1)"
+    erase="$(grep -n '^  archinstall --config' <<< "$step" | cut -d: -f1)"
+    [ -n "$luks" ] && [ -n "$erase" ]
+    [ "$luks" -lt "$erase" ]
+}
+
+@test "Step 4 hands the generator the creds file and never pacman -Sy archinstall" {
+    local step
+    step="$(_step4)"
+    grep -q -- '--creds creds.json -o install-config.json' <<< "$step"
+    ! grep -qE '^  pacman -Sy' <<< "$step"
+}
+
+@test "the header backup is handed back to the user" {
+    grep -A1 'luksHeaderBackup' "$CHECKLIST" | grep -q 'chown "$USER":'
+}

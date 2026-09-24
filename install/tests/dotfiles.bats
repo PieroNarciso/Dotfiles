@@ -303,3 +303,40 @@ teardown() { teardown_tmpdir; }
     [[ "$output" == *"returned=1"* ]]
     [ ! -e "$TEST_TMPDIR/clone" ]
 }
+
+@test "a broken symlink the repo carries, reached through a folded directory, stays in the repo" {
+    # readlink -f says nothing useful about a dangling link, so the "resolves
+    # into the repo" test missed it and the repo's own link was moved out.
+    ln -s /nonexistent/on-this-machine/target "$REPO/config/.config/nvim/dangling"
+    mkdir -p "$FAKE_HOME/.config"
+    ln -s ../../repo/config/.config/nvim "$FAKE_HOME/.config/nvim"
+    run bash -c "source '$INSTALL_DIR/lib/log.sh'; source '$INSTALL_DIR/lib/dotfiles.sh'; \
+        df_backup_conflicts '$REPO' '$FAKE_HOME' '$TEST_TMPDIR/backup'; echo moved=\$DF_BACKED_UP"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"moved=0"* ]]
+    [ -L "$REPO/config/.config/nvim/dangling" ]
+}
+
+@test "a path the package's .stow-local-ignore excludes is never moved aside" {
+    # stow will never link it, so it is not a conflict; moving it only takes
+    # the user's own data (here: nvim's generated state) out of the way.
+    mkdir -p "$REPO/local/.local/share/nvim" "$REPO/local/.local/bin"
+    printf '%s\n' '^/\.local/share/nvim$' > "$REPO/local/.stow-local-ignore"
+    echo repo-state > "$REPO/local/.local/share/nvim/shada"
+    echo repo-bin > "$REPO/local/.local/bin/tool"
+    mkdir -p "$FAKE_HOME/.local/share/nvim" "$FAKE_HOME/.local/bin"
+    echo mine > "$FAKE_HOME/.local/share/nvim/shada"
+    echo old-tool > "$FAKE_HOME/.local/bin/tool"
+    run bash -c "source '$INSTALL_DIR/lib/log.sh'; source '$INSTALL_DIR/lib/dotfiles.sh'; \
+        df_backup_conflicts '$REPO' '$FAKE_HOME' '$TEST_TMPDIR/backup'; echo moved=\$DF_BACKED_UP"
+    [ "$status" -eq 0 ]
+    [ "$(cat "$FAKE_HOME/.local/share/nvim/shada")" = "mine" ]
+    [ ! -e "$FAKE_HOME/.local/bin/tool" ]
+    [ "$(cat "$TEST_TMPDIR/backup/.local/bin/tool")" = "old-tool" ]
+    [[ "$output" == *"moved=1"* ]]
+    # And stow itself is then happy with what is left.
+    run bash -c "source '$INSTALL_DIR/lib/log.sh'; source '$INSTALL_DIR/lib/dotfiles.sh'; \
+        df_stow_repo '$REPO' '$FAKE_HOME'"
+    [ "$status" -eq 0 ]
+    [ -L "$FAKE_HOME/.local/bin/tool" ]
+}

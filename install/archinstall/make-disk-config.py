@@ -30,8 +30,8 @@ CONFIRM_PROMPT = "Retype the target device path to confirm, or anything else to 
 
 # The release every archinstall import below was verified against. They reach
 # into private modules (disk_menu, device_handler), so a different release can
-# break them -- or, worse, silently generate a different config. The ISO's
-# `pacman -Sy archinstall` installs whatever is current, not this.
+# break them -- or, worse, silently generate a different config. A
+# `pacman -Sy archinstall` on the ISO installs whatever is current, not this.
 TESTED_ARCHINSTALL = "4.4"
 
 
@@ -60,6 +60,33 @@ def _archinstall_version() -> str | None:
         return version("archinstall")
     except PackageNotFoundError:
         return None
+
+
+def creds_problems(creds: dict, encrypt: bool) -> list[str]:
+    """Every secret in creds that is missing, empty, or still the placeholder.
+
+    archinstall reads an empty encryption_password as "no encryption" and
+    installs in the clear without a word (DiskEncryption.parse_arg returns
+    None), and an unedited creds.json.example would encrypt with a passphrase
+    that is published in the repository. Both must stop here, before erasing.
+    """
+    def bad(value) -> bool:
+        return not isinstance(value, str) or not value or value.startswith("CHANGE-ME")
+
+    problems = []
+    if encrypt and bad(creds.get("encryption_password")):
+        problems.append("encryption_password")
+    if bad(creds.get("!root-password")):
+        problems.append("!root-password")
+    users = creds.get("!users")
+    if not isinstance(users, list) or not users:
+        problems.append("!users")
+    else:
+        for i, user in enumerate(users):
+            if not isinstance(user, dict) or bad(user.get("!password")):
+                name = user.get("username", i) if isinstance(user, dict) else i
+                problems.append(f"!users[{name}].!password")
+    return problems
 
 
 def confirm_device(typed: str, expected: str) -> bool:
@@ -237,6 +264,11 @@ def main() -> int:
     ap.add_argument("--base", default=None, help="base config JSON to merge into")
     ap.add_argument("-o", "--output", required=True, help="where to write the config")
     ap.add_argument(
+        "--creds",
+        required=True,
+        help="the creds.json archinstall will be given; checked for unset secrets, never copied",
+    )
+    ap.add_argument(
         "--archinstall-version-verified",
         metavar="VERSION",
         default=None,
@@ -254,6 +286,21 @@ def main() -> int:
     if os.path.lexists(args.output):
         os.remove(args.output)
         print(f"removed {args.output} from an earlier run")
+
+    try:
+        with open(args.creds) as fh:
+            creds = json.load(fh)
+    except (OSError, ValueError) as exc:
+        print(f"cannot read {args.creds}: {exc}", file=sys.stderr)
+        return 1
+    unset = creds_problems(creds if isinstance(creds, dict) else {}, args.encrypt)
+    if unset:
+        print(
+            f"{args.creds} still has unset or placeholder secrets: {', '.join(unset)}\n"
+            "set every one before generating; nothing written",
+            file=sys.stderr,
+        )
+        return 1
 
     problem = version_problem(_archinstall_version(), args.archinstall_version_verified)
     if problem:
@@ -286,14 +333,16 @@ def main() -> int:
     # Written whole or not at all: a partial file is a config archinstall
     # might half-parse.
     tmp = f"{args.output}.tmp"
-    with open(tmp, "w") as fh:
-        json.dump(out, fh, indent=2)
-        fh.write("\n")
-    os.replace(tmp, args.output)
+    try:
+        with open(tmp, "w") as fh:
+            json.dump(out, fh, indent=2)
+            fh.write("\n")
+        os.replace(tmp, args.output)
+    finally:
+        if os.path.lexists(tmp):
+            os.remove(tmp)
 
     print(f"wrote {args.output}")
-    if args.encrypt:
-        print("remember: the passphrase goes in creds.json under 'encryption_password'")
     return 0
 
 

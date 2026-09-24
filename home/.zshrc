@@ -90,7 +90,7 @@ fi
 #############
 ## ALIASES ##
 #############
-alias cp-'cp -i'
+alias cp='cp -i'
 alias df='df -h'
 alias free='free -m'
 alias ll='ls -alhF'

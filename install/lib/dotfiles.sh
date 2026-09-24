@@ -31,6 +31,32 @@ _df_packages() {
     done | sort
 }
 
+# Every file and symlink stow would link from one package, relative to the
+# package, leaving out whatever .stow-local-ignore (or stow's built-in list)
+# excludes -- a path stow will never link is not a conflict, and moving it
+# only takes the user's data out of the way for nothing. Asks stow's own Perl
+# module, so the answer is stow's rather than an imitation of its rules. With
+# no stow installed yet (a dry run on a fresh machine) it falls back to every
+# file, which over-reports but never misses one.
+_df_stow_paths() { # <repo> <pkg>
+    local repo="$1" pkg="$2"
+    if ! perl -MStow -e 1 2>/dev/null; then
+        (cd "$repo/$pkg" && find . -mindepth 1 \( -type f -o -type l \) | sed 's|^\./||')
+        return 0
+    fi
+    perl -MStow -MFile::Find -e '
+        my ($repo, $pkg) = @ARGV;
+        my $stow = Stow->new(dir => $repo, target => "/");
+        my $root = "$repo/$pkg";
+        find({ no_chdir => 1, wanted => sub {
+            return if $_ eq $root;
+            (my $rel = $_) =~ s{^\Q$root\E/}{};
+            if ($stow->ignore($repo, $pkg, $rel)) { $File::Find::prune = 1; return; }
+            print "$rel\n" if -l $_ || -f $_;
+        } }, $root);
+    ' "$repo" "$pkg"
+}
+
 # How many paths were actually moved aside. The backup directory is shared
 # with the loader-entry backup in phase_microcode, so its existence proves
 # nothing about dotfiles -- a caller that tests `[ -d "$BACKUP_DIR" ]` sends
@@ -40,11 +66,10 @@ DF_BACKED_UP=0
 # Move aside anything stow would refuse to overwrite.
 df_backup_conflicts() {
     local repo="$1" target="$2" backup="$3"
-    local pkg src rel dst real_repo
+    local pkg rel dst real_repo
     real_repo="$(readlink -f "$repo")"
     for pkg in $(_df_packages "$repo"); do
-        while IFS= read -r src; do
-            rel="${src#"$repo/$pkg/"}"
+        while IFS= read -r rel; do
             dst="$target/$rel"
             # Anything that already resolves into the repo is our own work;
             # leave it. That includes a plain file reached through a folded
@@ -56,6 +81,11 @@ df_backup_conflicts() {
             # like ~/.dotfiles-backup-* from passing as "inside the repo".
             if [ -e "$dst" ] || [ -L "$dst" ]; then
                 [[ "$(readlink -f "$dst")" == "$real_repo"/* ]] && continue
+                # A symlink the repo itself carries, reached through a folded
+                # parent, can be broken (its target is on another machine).
+                # readlink -f then says nothing useful about it, but its
+                # directory still resolves into the repo -- it IS the repo's.
+                [[ "$(readlink -f "$(dirname "$dst")")" == "$real_repo"/* ]] && continue
             fi
             # Anything else that exists must move, INCLUDING a symlink that
             # points somewhere else: stow refuses to adopt a target it does
@@ -74,7 +104,7 @@ df_backup_conflicts() {
             run mkdir -p "$(dirname "$dest")"
             run mv "$dst" "$dest"
             DF_BACKED_UP=$((DF_BACKED_UP + 1))
-        done < <(find "$repo/$pkg" \( -type f -o -type l \))
+        done < <(_df_stow_paths "$repo" "$pkg")
     done
 }
 

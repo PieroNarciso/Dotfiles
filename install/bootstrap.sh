@@ -7,7 +7,6 @@ set -euo pipefail
 INSTALL_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 readonly INSTALL_DIR
 # shellcheck source=lib/log.sh
-# shellcheck source=lib/log.sh
 source "$INSTALL_DIR/lib/log.sh"
 
 # Ctrl-C at a package prompt sends SIGINT to the whole foreground process
@@ -128,8 +127,17 @@ phase_microcode() {
             log_warn "$bootctl_out"
         fi
     fi
-    # Installing the package only drops the image into /boot. The microcode is
-    # loaded only when a loader entry names it, and `bootctl update` refreshes
+    # The package is still worth having with the hook: its files trigger an
+    # initramfs rebuild, and that rebuild is what embeds the microcode. The
+    # loader entries are then left alone -- a second, separate initrd line
+    # would load the same update twice, and editing the bootloader is the one
+    # step in this script that can leave a machine unbootable.
+    if boot_initramfs_has_microcode; then
+        log_info "mkinitcpio's microcode hook already loads $ucode early; loader entries left alone"
+        return 0
+    fi
+    # Without the hook, installing the package only drops the image into
+    # /boot. The microcode is loaded only when a loader entry names it, and `bootctl update` refreshes
     # the systemd-boot binary without ever touching the entries — so this runs
     # on the already-installed path too: a machine that has the package and no
     # initrd line is exactly the broken case worth fixing.
@@ -318,8 +326,9 @@ phase_version_managers() {
         # profile of $SHELL -- still bash in this session, since chsh only
         # takes effect at the next login -- and ~/.bashrc is a stowed link
         # into the repo, so the append dirties home/.bashrc. .zshrc already
-        # loads nvm.
-        run bash -c 'curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | PROFILE=/dev/null bash' \
+        # loads nvm. pipefail: without it the pipeline's status is bash's,
+        # and bash reading an empty script from a failed curl exits 0.
+        run bash -c 'set -o pipefail; curl -fsSL https://raw.githubusercontent.com/nvm-sh/nvm/v0.40.1/install.sh | PROFILE=/dev/null bash' \
         || log_warn "the nvm installer failed; install it by hand from https://github.com/nvm-sh/nvm"
     fi
     if [ -d "$HOME/.pyenv" ]; then
@@ -371,15 +380,11 @@ MANUAL
 main() {
     parse_args "$@"
     # shellcheck source=lib/hw.sh
-    # shellcheck source=lib/hw.sh
     source "$INSTALL_DIR/lib/hw.sh"
-    # shellcheck source=lib/boot.sh
     # shellcheck source=lib/boot.sh
     source "$INSTALL_DIR/lib/boot.sh"
     # shellcheck source=lib/pkg.sh
-    # shellcheck source=lib/pkg.sh
     source "$INSTALL_DIR/lib/pkg.sh"
-    # shellcheck source=lib/dotfiles.sh
     # shellcheck source=lib/dotfiles.sh
     source "$INSTALL_DIR/lib/dotfiles.sh"
 

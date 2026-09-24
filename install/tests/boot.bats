@@ -12,7 +12,14 @@ setup() {
     mkdir -p "$BOOTCTL_ESP"
     : > "$BOOTCTL_ESP/amd-ucode.img"
 }
-teardown() { teardown_tmpdir; }
+teardown() {
+    # The real-sudo tests' fixtures are root-owned, so a failed assertion
+    # there would otherwise leave them in /tmp for good.
+    if [ "${BOOTSTRAP_TEST_REAL_SUDO:-0}" = 1 ] && [ -n "${TEST_TMPDIR:-}" ]; then
+        sudo -n rm -rf "$TEST_TMPDIR/rootesp" "$TEST_TMPDIR/rootesp2" 2>/dev/null || true
+    fi
+    teardown_tmpdir
+}
 
 # Three entries, covering every shape the function has to handle: one ordinary
 # entry with no microcode line, one that already has it, and one that is not a
@@ -203,7 +210,10 @@ STUB
 # not the evidence for the fix, the test above is. It is kept so the
 # machinery is exercised against genuine privilege whenever that is available.
 @test "a root-owned mode-700 entries directory is still processed (real sudo)" {
-    sudo -n true 2>/dev/null || skip "needs passwordless sudo"
+    # Opt-in, not "whenever sudo happens to be cached": a failure here
+    # leaves root-owned directories behind that the suite cannot remove.
+    [ "${BOOTSTRAP_TEST_REAL_SUDO:-0}" = 1 ] && sudo -n true 2>/dev/null \
+        || skip "set BOOTSTRAP_TEST_REAL_SUDO=1, with passwordless sudo"
 
     local dir="$TEST_TMPDIR/rootesp/loader/entries"
     sudo mkdir -p "$dir"
@@ -243,7 +253,10 @@ EOF
 }
 
 @test "a root-owned entries directory is left byte-identical by a dry run (real sudo)" {
-    sudo -n true 2>/dev/null || skip "needs passwordless sudo"
+    # Opt-in, not "whenever sudo happens to be cached": a failure here
+    # leaves root-owned directories behind that the suite cannot remove.
+    [ "${BOOTSTRAP_TEST_REAL_SUDO:-0}" = 1 ] && sudo -n true 2>/dev/null \
+        || skip "set BOOTSTRAP_TEST_REAL_SUDO=1, with passwordless sudo"
 
     local dir="$TEST_TMPDIR/rootesp2/loader/entries"
     sudo mkdir -p "$dir"
@@ -349,4 +362,59 @@ EOF
     [ "$status" -eq 0 ]
     [[ "$output" == *"not on the ESP"* ]]
     [ "$(cat "$ENTRIES/arch.conf")" = "$before" ]
+}
+
+# --- the mkinitcpio microcode hook -----------------------------------------
+
+has_hook() { # <conf-contents> [drop-in-contents]
+    printf '%s\n' "$1" > "$TEST_TMPDIR/mkinitcpio.conf"
+    if [ -n "${2:-}" ]; then
+        mkdir -p "$TEST_TMPDIR/mkinitcpio.conf.d"
+        printf '%s\n' "$2" > "$TEST_TMPDIR/mkinitcpio.conf.d/10-x.conf"
+    fi
+    bash -c "source '$INSTALL_DIR/lib/log.sh'; source '$INSTALL_DIR/lib/boot.sh'
+             MKINITCPIO_CONF='$TEST_TMPDIR/mkinitcpio.conf' boot_initramfs_has_microcode"
+}
+
+@test "archinstall 4.4's default hooks count as loading microcode" {
+    run has_hook 'HOOKS=(base systemd autodetect microcode modconf kms keyboard sd-vconsole block sd-encrypt filesystems fsck)'
+    [ "$status" -eq 0 ]
+}
+
+@test "hooks without microcode, commented out, or in a trailing comment do not count" {
+    run has_hook 'HOOKS=(base udev autodetect keyboard keymap modconf block filesystems fsck)'
+    [ "$status" -ne 0 ]
+    run has_hook $'#HOOKS=(base microcode)\nHOOKS=(base udev)'
+    [ "$status" -ne 0 ]
+    run has_hook 'HOOKS=(base udev) # add microcode later'
+    [ "$status" -ne 0 ]
+    # A hook whose name merely contains the word is not the hook.
+    run has_hook 'HOOKS=(base microcode-extra udev)'
+    [ "$status" -ne 0 ]
+}
+
+@test "a mkinitcpio.conf.d drop-in overrides the main file's hooks" {
+    run has_hook 'HOOKS=(base udev)' 'HOOKS=(base microcode udev)'
+    [ "$status" -eq 0 ]
+    run has_hook 'HOOKS=(base microcode udev)' 'HOOKS=(base udev)'
+    [ "$status" -ne 0 ]
+}
+
+@test "phase_microcode leaves the loader entries alone when the hook is present" {
+    # archinstall 4.4 installs with the microcode hook, so the laptop gets its
+    # microcode from the initramfs. Editing the entries on top of that would
+    # load it twice and risk the one step that can make the machine unbootable.
+    setup_entries
+    printf 'HOOKS=(base systemd autodetect microcode block filesystems)\n' > "$TEST_TMPDIR/mkinitcpio.conf"
+    printf 'vendor_id\t: AuthenticAMD\n' > "$TEST_TMPDIR/cpuinfo"
+    before="$(cat "$ENTRIES"/*.conf)"
+    run bash -c "HOME='$TEST_TMPDIR'; source '$INSTALL_DIR/bootstrap.sh'
+        source '$INSTALL_DIR/lib/hw.sh'; source '$INSTALL_DIR/lib/boot.sh'
+        pkg_missing() { :; }
+        HW_CPUINFO='$TEST_TMPDIR/cpuinfo' MKINITCPIO_CONF='$TEST_TMPDIR/mkinitcpio.conf' \
+            BOOTCTL_ENTRIES_DIR='$ENTRIES' BOOTCTL_ESP='$ESP' phase_microcode 2>&1"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"microcode hook"* ]]
+    [ "$before" = "$(cat "$ENTRIES"/*.conf)" ]
+    ! compgen -G "$TEST_TMPDIR/.dotfiles-backup-*" >/dev/null
 }

@@ -24,20 +24,39 @@ steps in order.
 - [ ] **Step 2: Record the LUKS passphrase in your password manager before starting.** There is no recovery.
 - [ ] **Step 3: Boot the Arch ISO on the laptop, connect to wifi with `iwctl`.**
 - [ ] **Step 4: Run stage 0.** Nothing you need is on the ISO yet — the repo is
-  not cloned at this point — so fetch the installer and the three files first:
+  not cloned at this point — so fetch the three files first, and check the
+  ISO's archinstall:
 
   ```bash
-  pacman -Sy archinstall
-  archinstall --version    # write this number down on paper or in your phone
   curl -LO https://raw.githubusercontent.com/PieroNarciso/Dotfiles/main/install/archinstall/laptop.json
   curl -LO https://raw.githubusercontent.com/PieroNarciso/Dotfiles/main/install/archinstall/creds.json.example
   curl -LO https://raw.githubusercontent.com/PieroNarciso/Dotfiles/main/install/archinstall/make-disk-config.py
   mv creds.json.example creds.json
+  archinstall --version    # write this number down on paper or in your phone
   ```
+
+  The generator only runs on the archinstall release it was verified against
+  (see `install/archinstall/README.md`). If the version above is not that
+  release, install it from the Arch archive — not `pacman -Sy archinstall`,
+  which pulls whatever is current:
+
+  ```bash
+  pacman -U --noconfirm https://archive.archlinux.org/packages/a/archinstall/archinstall-4.4-1-any.pkg.tar.zst
+  archinstall --version
+  ```
+
+  If that archived build will not start (the ISO's Python has moved past
+  it), boot an ISO from the month it was current instead:
+  <https://archive.archlinux.org/iso/>. Do not reach for the generator's
+  override flag until you have re-verified the config keys against the
+  release you are on — on a spare machine or the VM, not by guessing.
 
   Edit `creds.json` and set all three secrets: the user password, the root
   password, and `encryption_password`. That last one is the LUKS passphrase
-  from Step 2 and must match it exactly, or the disk will not unlock.
+  from Step 2 and must match it exactly, or the disk will not unlock. The
+  generator refuses to run while any of them is empty or still `CHANGE-ME…`:
+  archinstall reads an empty passphrase as "do not encrypt", and the
+  placeholder is published in the repository.
 
   Then read the target disk off `lsblk`, generate the disk config against it,
   retype the device path when the generator asks to confirm, and hand the
@@ -49,10 +68,34 @@ steps in order.
   lsblk -o NAME,SIZE,MODEL,TRAN,RM,FSTYPE,MOUNTPOINTS
   ```
 
+  The internal disk is the one with `TRAN` `nvme` (or `sata`). Anything with
+  `TRAN` `usb` is external — the stick you booted from, or a USB SSD, which
+  `RM` does not flag.
+
   ```bash
   python make-disk-config.py --device /dev/nvme0n1 --encrypt \
-      --base laptop.json -o install-config.json
+      --base laptop.json --creds creds.json -o install-config.json
   ```
+
+  Before you retype anything, read what the generator printed:
+
+  - First the disk as it is now — model, size, and every partition that is
+    about to be destroyed. Match the model and size against `lsblk`. If it
+    says `REMOVABLE`, you have almost certainly named the USB stick you
+    booted from.
+  - Then the layout it will write. Check sizes and mountpoints against what
+    `lsblk` showed. The retype prompt does not name the device, so it
+    catches a typo between reading and typing; it cannot catch a wrong
+    decision about which disk to erase. The dump can.
+  - **The root line must carry a `[LUKS2]` tag.** That tag is the only
+    pre-erase evidence that `--encrypt` took effect — a dropped or mistyped
+    flag produces a perfectly valid config for an *unencrypted* disk, and the
+    next chance to notice is Step 7, where the only fix is to reinstall. If
+    the generator prints `NOTE: this dump found no root partition to tag
+    [LUKS2]`, stop and work out why before erasing anything.
+
+  This is also the last confirmation you get: `--silent` suppresses every
+  prompt archinstall would otherwise show before writing partitions.
 
   Run archinstall only if the generator ended with `wrote install-config.json`.
   It deletes any `install-config.json` from an earlier run before it starts,
@@ -63,33 +106,6 @@ steps in order.
   ```bash
   archinstall --config install-config.json --creds creds.json --silent
   ```
-
-  The generator refuses to run on an archinstall other than the release it
-  was verified against (see `install/archinstall/README.md`). If it stops
-  there, do not reach for the override flag it names until you have
-  re-verified the config keys against that release — on a spare machine or
-  the VM, not by guessing.
-
-  The generator first prints the disk as it is now — model, size, and every
-  partition that is about to be destroyed — then the layout it will write.
-  Match the model and size against `lsblk`. If it says `REMOVABLE`, you have
-  almost certainly named the USB stick you booted from.
-
-  The generator prints the layout it is about to write before it asks you to
-  retype the device path. Read that layout — sizes and mountpoints against
-  what `lsblk` showed. The retype prompt does not name the device, so it
-  catches a typo between reading and typing; it cannot catch a wrong decision
-  about which disk to erase. The layout dump can.
-
-  It is also the last confirmation you get: `--silent` suppresses every
-  prompt archinstall would otherwise show before writing partitions.
-
-  **Check the root line carries a `[LUKS2]` tag** before you retype anything.
-  That tag is the only pre-erase evidence that `--encrypt` took effect — a
-  dropped or mistyped flag produces a perfectly valid config for an
-  *unencrypted* disk, and the next chance to notice is Step 7, where the only
-  fix is to reinstall. If the generator prints `NOTE: this dump found no root
-  partition to tag [LUKS2]`, stop and work out why before erasing anything.
 
   Record the `archinstall --version` number off-machine: the repo is not
   cloned yet and you are on a ramdisk, so there is nowhere here to keep it.
@@ -366,6 +382,7 @@ steps in order.
 
   ```bash
   sudo cryptsetup luksHeaderBackup /dev/nvme0n1p2 --header-backup-file ~/luks-header.img
+  sudo chown "$USER": ~/luks-header.img   # cryptsetup writes it root-owned, mode 0400
   ```
 
   Copy `~/luks-header.img` off the laptop, then delete it here. A header
@@ -437,5 +454,6 @@ steps in order.
   there is no battery. It says which ones it skipped. If Step 4 ran on a
   newer archinstall that you verified and let through with
   `--archinstall-version-verified`, bump `TESTED_ARCHINSTALL` in
-  `make-disk-config.py` and the version line in
-  `install/archinstall/README.md` together. Commit both changes together.
+  `make-disk-config.py`, the version line in
+  `install/archinstall/README.md`, and the archive URL in Step 4 of this
+  checklist. Commit the three changes together.

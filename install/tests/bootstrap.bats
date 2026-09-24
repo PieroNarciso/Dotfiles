@@ -22,6 +22,11 @@ setup_fixture() {
     printf '[multilib]\nInclude = /etc/pacman.d/mirrorlist\nColor\nParallelDownloads = 5\n' > "$FAKE_PACMAN_CONF"
     FIXTURE_ENV="HOME='$FAKE_HOME' BOOTSTRAP_PACMAN_CONF='$FAKE_PACMAN_CONF'"
     FIXTURE_ENV="$FIXTURE_ENV BOOTCTL_ENTRIES_DIR='$FAKE_ENTRIES' BOOTSTRAP_SKIP_NETCHECK=1"
+    # No microcode hook, so phase_microcode still reaches the loader entries
+    # whatever this machine's own /etc/mkinitcpio.conf says.
+    FAKE_MKINITCPIO="$TEST_TMPDIR/mkinitcpio.conf"
+    printf 'HOOKS=(base udev autodetect block filesystems fsck)\n' > "$FAKE_MKINITCPIO"
+    FIXTURE_ENV="$FIXTURE_ENV MKINITCPIO_CONF='$FAKE_MKINITCPIO'"
 }
 
 @test "--help exits 0 and documents the flags" {
@@ -69,6 +74,15 @@ _snapshot() {
     git -C "$repo" add -A
     git -C "$repo" -c user.email=t@t -c user.name=t commit -qm init
     echo "the user's own" > "$FAKE_HOME/.zshrc"
+    # A second repo with nothing colliding. The first repo's collision makes
+    # a real stow abort without linking anything, so on its own it could not
+    # tell a dry run from a stow that actually ran; this one would link.
+    local nvim="$FAKE_HOME/.nvim-config"
+    mkdir -p "$nvim/nvim-config/.config/nvim"
+    echo "-- repo" > "$nvim/nvim-config/.config/nvim/init.lua"
+    git -C "$nvim" init -q
+    git -C "$nvim" add -A
+    git -C "$nvim" -c user.email=t@t -c user.name=t commit -qm init
     before="$(_snapshot "$FAKE_HOME")"
     entries_before="$(_snapshot "$FAKE_ENTRIES")"
     run bash -c "$FIXTURE_ENV bash '$INSTALL_DIR/bootstrap.sh' --dry-run 2>&1"
@@ -296,4 +310,32 @@ STUB
     [ "$status" -eq 0 ]
     [[ "$output" == *"multilib already enabled"* ]]
     [[ "$output" == *"pacman -Syu"* ]]
+}
+
+@test "a failed nvm download is reported, not passed off as installed" {
+    # curl | bash without pipefail takes bash's status, and bash exits 0 on
+    # the empty script a failed curl leaves it.
+    setup_fixture
+    mkdir -p "$TEST_TMPDIR/bin"
+    printf '#!/bin/sh\nexit 22\n' > "$TEST_TMPDIR/bin/curl"
+    chmod +x "$TEST_TMPDIR/bin/curl"
+    run bash -c "PATH='$TEST_TMPDIR/bin:$PATH' HOME='$FAKE_HOME'; source '$INSTALL_DIR/bootstrap.sh'
+        phase_version_managers 2>&1"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"the nvm installer failed"* ]]
+}
+
+@test "every detected GPU gets its driver list, and an unknown one a warning" {
+    # A hybrid laptop reports two vendors; both need their packages.
+    setup_fixture
+    run bash -c "HOME='$FAKE_HOME'; source '$INSTALL_DIR/bootstrap.sh'
+        DRY_RUN=1; PKG_GROUPS=core
+        aur_install_file() { echo \"INSTALL \$(basename \"\$1\")\"; }
+        hw_gpu_vendors() { printf 'intel\nnvidia\nunknown\n'; }
+        phase_packages 2>&1"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"INSTALL gpu-intel.txt"* ]]
+    [[ "$output" == *"INSTALL gpu-nvidia.txt"* ]]
+    [[ "$output" != *"INSTALL gpu-amd.txt"* ]]
+    [[ "$output" == *"unrecognised GPU"* ]]
 }

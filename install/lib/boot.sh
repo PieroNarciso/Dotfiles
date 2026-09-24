@@ -27,6 +27,29 @@ _boot_backup_entry() {
     run $sudo_cmd cp -a "$entry" "$entry.bak-$ts"
 }
 
+# Where mkinitcpio reads its hooks from. Overridable so the tests can point
+# it at a fixture instead of the real /etc.
+MKINITCPIO_CONF="${MKINITCPIO_CONF:-/etc/mkinitcpio.conf}"
+
+# boot_initramfs_has_microcode
+#
+# True when mkinitcpio's HOOKS include `microcode`. That hook packs the
+# microcode into the initramfs itself, so the kernel loads it early with no
+# separate initrd line -- archinstall 4.4 puts it in the default hooks, as
+# does every mkinitcpio.conf shipped since mkinitcpio 38. Drop-ins in
+# mkinitcpio.conf.d are read after the main file, so the last HOOKS= wins.
+boot_initramfs_has_microcode() {
+    local conf="${MKINITCPIO_CONF:-/etc/mkinitcpio.conf}" hooks
+    local -a files=("$conf")
+    local f
+    for f in "$conf.d"/*.conf; do
+        [ -e "$f" ] && files+=("$f")
+    done
+    hooks="$(grep -hE '^[[:space:]]*HOOKS=' "${files[@]}" 2>/dev/null | tail -n 1)"
+    hooks="${hooks%%#*}"
+    [[ " ${hooks//[()\"\']/ } " == *" microcode "* ]]
+}
+
 # boot_add_microcode_initrd <ucode-image> [backup-dir]
 #
 # Installing amd-ucode/intel-ucode only drops the image into /boot; the CPU
